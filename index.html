@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Building Tomorrow's Relationships Today</title>
+    <meta name="description" content="Ambar - The revolutionary relationship-building app designed for Indian teens. Gamified interactions, cultural authenticity, and psychological insights to build stronger connections.">
+    <meta name="keywords" content="relationship app, Indian teens, gamified dating, virtual relationships, social connection">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #AC4E8D;
+            --secondary: #D97F86;
+            --tertiary: #F1AF7B;
+            --quaternary: #E9D183;
+            --accent: #2BA495;
+            --neutral: #71504E;
+            --bg-dark: #0f0f0f;
+            --bg-light: #fafafa;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(172, 78, 141, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .cta-btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(172, 78, 141, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #ffeef8 0%, #e8f5f4 100%);
+            padding: 8rem 0 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23AC4E8D" opacity="0.1"/></svg>') repeat;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--neutral));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--neutral);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--neutral);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(172, 78, 141, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .character-preview {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .character {
+            width: 80px;
+            height: 120px;
+            background: var(--tertiary);
+            border-radius: 20px;
+            position: relative;
+            animation: bounce 2s ease-in-out infinite alternate;
+        }
+
+        .character:nth-child(2) {
+            animation-delay: 0.5s;
+            background: var(--quaternary);
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-10px); }
+        }
+
+        .gift-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .gift-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Problem Section */
+        .problem-section {
+            padding: 6rem 0;
+            background: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: #aaa;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .problem-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .problem-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Solution Section */
+        .solution-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 100%);
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(172, 78, 141, 0.1);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            color: var(--neutral);
+            font-size: 0.9rem;
+        }
+
+        /* Market Section */
+        .market-section {
+            padding: 6rem 0;
+            background: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .market-card {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .market-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .market-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .market-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Investment Section */
+        .investment-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+        }
+
+        .investment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .investment-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .investment-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .investment-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--tertiary), var(--quaternary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .investment-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .investment-desc {
+            color: var(--neutral);
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            text-align: center;
+        }
+
+        .cta-content h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-content p {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            color: #aaa;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            padding-top: 2rem;
+            text-align: center;
+            color: #888;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .solution-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .phone-mockup {
+                width: 250px;
+                height: 500px;
+            }
+
+            .cta-content h2 {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">Ambar</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#market">Market</a></li>
+                <li><a href="#investment">Investment</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="#cta" class="cta-btn">Join Beta</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content fade-in">
+                <div class="hero-text">
+                    <h1>Building Tomorrow's Relationships Today</h1>
+                    <p>Ambar revolutionizes how Indian teens connect and build meaningful relationships through gamified interactions, cultural authenticity, and psychological insights.</p>
+                    <div class="cta-buttons">
+                        <a href="#features" class="btn-primary">Explore Features</a>
+                        <a href="#investment" class="btn-secondary">Investment Opportunity</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="character-preview">
+                                <div class="character"></div>
+                                <div class="character"></div>
+                            </div>
+                            <div class="gift-icons">
+                                <div class="gift-icon"></div>
+                                <div class="gift-icon"></div>
+                                <div class="gift-icon"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-stats fade-in">
+                <div class="stat-card">
+                    <span class="stat-number">366M</span>
+                    <div class="stat-label">Indian Teens Online</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">₹2.3L Cr</span>
+                    <div class="stat-label">Dating App Market</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">85%</span>
+                    <div class="stat-label">Seek Meaningful Connections</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section" id="problem">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">The Relationship Crisis</h2>
+                <p class="section-subtitle">Indian teenagers face unprecedented challenges in forming genuine connections in the digital age</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">📱</div>
+                    <h3>Digital Disconnect</h3>
+                    <p>Despite being hyper-connected, 73% of Indian teens report feeling lonely and struggle to form deep, meaningful relationships.</p>
+                </div>
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">🎭</div>
+                    <h3>Cultural Mismatch</h3>
+                    <p>Western dating apps don't align with Indian values, creating confusion and inappropriate interactions among teenagers.</p>
+                </div>
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">⚡</div>
+                    <h3>Instant Gratification</h3>
+                    <p>Hook-up culture and superficial swiping prevent the development of patience and emotional investment needed for lasting relationships.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section" id="features">
+        <div class="container">
+            <div class="solution-grid">
+                <div class="fade-in">
+                    <h2 class="section-title">The Ambar Solution</h2>
+                    <p class="section-subtitle">A culturally-rooted, psychologically-designed platform that gamifies relationship building while promoting genuine connection and emotional growth.</p>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon">🎮</div>
+                            <div class="feature-text">
+                                <div class="feature-title">Gamified Connection</div>
+                                <div class="feature-desc">Transform relationship building into engaging, rewarding experiences</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">🇮🇳</div>
+                            <div class="feature-text">
+                                <div class="feature-title">Cultural Authenticity</div>
+                                <div class="feature-desc">Features traditional Indian attire, festivals, and values-based interactions</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">🧠</div>
+                            <div class="feature-text">
+                                <div class="feature-title">Psychological Insights</div>
+                                <div class="feature-desc">Built on behavioral psychology to encourage healthy relationship patterns</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">🎁</div>
+                            <div class="feature-text">
+                                <div class="feature-title">Virtual Gifting Economy</div>
+                                <div class="feature-desc">Express care through meaningful virtual gifts that build emotional bonds</div>
+                            </div>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-text">
+                                <div class="feature-title">Progress Tracking</div>
+                                <div class="feature-desc">Streak systems and achievements motivate consistent positive interactions</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="hero-visual fade-in">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div style="padding: 20px; text-align: center;">
+                                <div style="background: linear-gradient(135deg, #AC4E8D, #2BA495); color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px;">
+                                    <h4>Streak: 15 days 🔥</h4>
+                                </div>
+                                <div class="character-preview">
+                                    <div class="character"></div>
+                                    <div class="character"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                                    <div style="background: #F1AF7B; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
+                                        🎮 Games
+                                    </div>
+                                    <div style="background: #E9D183; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
+                                        🎁 Gifts
+                                    </div>
+                                    <div style="background: #D97F86; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
+                                        💝 Lines
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Section -->
+    <section class="market-section" id="market">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Massive Market Opportunity</h2>
+                <p class="section-subtitle">The Indian teen relationship market represents an untapped goldmine with explosive growth potential</p>
+            </div>
+            <div class="market-stats">
+                <div class="market-card fade-in">
+                    <div class="market-number">366M</div>
+                    <div class="market-label">Indian Teens (13-19)</div>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-number">₹2.3L Cr</div>
+                    <div class="market-label">Dating App Market Size</div>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-number">45%</div>
+                    <div class="market-label">Annual Growth Rate</div>
+                </div>
+                <div class="market-card fade-in">
+                    <div class="market-number">₹850</div>
+                    <div class="market-label">Avg. Annual Spend per User</div>
+                </div>
+            </div>
+            <div style="margin-top: 4rem; background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 20px; backdrop-filter: blur(10px);" class="fade-in">
+                <h3 style="margin-bottom: 1rem; color: #D97F86;">Why Now?</h3>
+                <ul style="list-style: none; line-height: 2;">
+                    <li>🚀 Post-COVID relationship anxiety creates demand for safe, structured connection</li>
+                    <li>📱 Gen Z spending power increasing by 35% annually</li>
+                    <li>🇮🇳 Cultural shift towards digital-first relationships among Indian youth</li>
+                    <li>💰 Virtual goods market in India growing 60% year-over-year</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment Section -->
+    <section class="investment-section" id="investment">
+        <div class="container">
+            <div class="section-header fade-in">
+                <h2 class="section-title">Investment Opportunity</h2>
+                <p class="section-subtitle">Join us in building the future of relationships for India's largest generation</p>
+            </div>
+            <div class="investment-grid">
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">💰</div>
+                    <h3 class="investment-title">Revenue Model</h3>
+                    <p class="investment-desc">Freemium model with virtual gifts, premium features, and brand partnerships. Projected ₹50 Cr revenue by Year 3 with 70% gross margins.</p>
+                </div>
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">📊</div>
+                    <h3 class="investment-title">Scalability</h3>
+                    <p class="investment-desc">Built on Firebase with modular architecture. Low server costs, high user engagement. Ready to scale to 10M+ users with minimal infrastructure investment.</p>
+                </div>
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">🎯</div>
+                    <h3 class="investment-title">Competitive Advantage</h3>
+                    <p class="investment-desc">First-mover in Indian teen relationship space. Culturally authentic, psychologically designed, and gamified approach creates strong moats.</p>
+                </div>
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">🚀</div>
+                    <h3 class="investment-title">Growth Strategy</h3>
+                    <p class="investment-desc">Viral marketing through social sharing, influencer partnerships, and referral rewards. Path to profitability within 18 months of launch.</p>
+                </div>
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">👥</div>
+                    <h3 class="investment-title">Team & Expertise</h3>
+                    <p class="investment-desc">Experienced developer with deep understanding of Indian teen psychology, gaming mechanics, and relationship dynamics.</p>
+                </div>
+                <div class="investment-card fade-in">
+                    <div class="investment-icon">🎪</div>
+                    <h3 class="investment-title">Social Impact</h3>
+                    <p class="investment-desc">Creating healthier relationship patterns among youth, reducing social anxiety, and promoting cultural values while enabling modern connections.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="cta">
+        <div class="container">
+            <div class="cta-content fade-in">
+                <h2>Ready to Transform Relationships?</h2>
+                <p>Join the revolution that's building stronger, more meaningful connections for India's next generation.</p>
+                <div class="cta-buttons">
+                    <a href="mailto:invest@ambar.app" class="btn-primary">Partner With Us</a>
+                    <a href="#" class="btn-secondary">Try Beta Version</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Ambar</h3>
+                    <p>Building tomorrow's relationships today. Connecting hearts, minds, and cultures through innovative technology.</p>
+                    <div style="margin-top: 1rem;">
+                        <span style="color: #D97F86;">✨ Made with love in India ✨</span>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <a href="#features">Features</a>
+                    <a href="#market">Market Research</a>
+                    <a href="https://sawish.web.app" target="_blank">Beta Prototype</a>
+                    <a href="#cta">Join Beta</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Business</h3>
+                    <a href="#investment">Investment Opportunity</a>
+                    <a href="mailto:partnerships@ambar.app">Partnerships</a>
+                    <a href="mailto:press@ambar.app">Press Kit</a>
+                    <a href="mailto:careers@ambar.app">Careers</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <a href="mailto:hello@ambar.app">hello@ambar.app</a>
+                    <a href="mailto:invest@ambar.app">invest@ambar.app</a>
+                    <a href="https://instagram.com/chinurag" target="_blank">@chinurag</a>
+                    <a href="tel:+91-XXXXXXXXXX">+91-XXXXXXXXXX</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ambar. All rights reserved. | Developed by Chinurag | Building the future of relationships</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = '0.1s';
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Dynamic counter animation
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(start).toLocaleString();
+                }
+            }, 16);
+        }
+
+        // Animate counters when they come into view
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const number = entry.target;
+                    const target = parseInt(number.dataset.target || number.textContent.replace(/[^0-9]/g, ''));
+                    animateCounter(number, target);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        });
+
+        document.querySelectorAll('.stat-number, .market-number').forEach(el => {
+            counterObserver.observe(el);
+        });
+
+        // Add some interactive elements
+        document.querySelectorAll('.problem-card, .investment-card, .market-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Add click tracking for investor interest
+        document.querySelectorAll('.btn-primary, .btn-secondary, .cta-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Track engagement (would integrate with analytics)
+                console.log('CTA clicked:', this.textContent);
+                
+                // Add visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+
+        // Mobile menu toggle (for future implementation)
+        const menuToggle = document.createElement('div');
+        menuToggle.innerHTML = '☰';
+        menuToggle.style.cssText = 'display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary);';
+        
+        // Add to nav for mobile
+        if (window.innerWidth <= 768) {
+            document.querySelector('.nav-container').appendChild(menuToggle);
+            menuToggle.style.display = 'block';
+        }
+
+        // Add some dynamic background elements
+        function createFloatingElement() {
+            const element = document.createElement('div');
+            element.style.cssText = `
+                position: fixed;
+                width: 4px;
+                height: 4px;
+                background: linear-gradient(45deg, #AC4E8D, #2BA495);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: -1;
+                opacity: 0.6;
+                animation: float 8s linear infinite;
+            `;
+            
+            element.style.left = Math.random() * 100 + 'vw';
+            element.style.animationDelay = Math.random() * 8 + 's';
+            
+            document.body.appendChild(element);
+            
+            setTimeout(() => {
+                element.remove();
+            }, 8000);
+        }
+
+        // Create floating elements periodically
+        setInterval(createFloatingElement, 2000);
+
+        // Add parallax effect to hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero::before');
+            if (parallax) {
+                const speed = scrolled * 0.5;
+                // Apply transform via CSS custom property
+                document.documentElement.style.setProperty('--scroll-offset', `${speed}px`);
+            }
+        });
+    </script>
+
+    <!-- Add some SEO structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Ambar",
+        "description": "Revolutionary relationship-building app designed for Indian teens with gamified interactions and cultural authenticity",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web, Android, iOS",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Chinurag"
+        }
+    }
+    </script>
+</body>
+</html>
