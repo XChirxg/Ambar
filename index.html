@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ambar - Building Tomorrow's Relationships Today</title>
-    <meta name="description" content="Ambar - The revolutionary relationship-building app designed for Indian teens. Gamified interactions, cultural authenticity, and psychological insights to build stronger connections.">
-    <meta name="keywords" content="relationship app, Indian teens, gamified dating, virtual relationships, social connection">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Ambar - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -16,1057 +13,738 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #AC4E8D;
-            --secondary: #D97F86;
-            --tertiary: #F1AF7B;
-            --quaternary: #E9D183;
-            --accent: #2BA495;
-            --neutral: #71504E;
-            --bg-dark: #0f0f0f;
-            --bg-light: #fafafa;
-            --text-light: #ffffff;
-            --text-dark: #333333;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text-dark);
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        /* Desktop Background Particles */
+        .bg-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            display: block;
         }
 
-        /* Navigation */
-        nav {
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 4px; height: 4px; left: 15%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 3px; height: 3px; left: 25%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 5px; height: 5px; left: 65%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 3px; height: 3px; left: 85%; animation-delay: 6s; }
+        .particle:nth-child(5) { width: 4px; height: 4px; left: 45%; animation-delay: 1s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        /* Top Header */
+        .top-header {
             position: fixed;
             top: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
-            z-index: 1000;
-            border-bottom: 1px solid rgba(172, 78, 141, 0.1);
-        }
-
-        .nav-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
+            padding: 0 30px;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .logo {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            font-family: 'Dancing Script', cursive;
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: 1px;
         }
 
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .cta-btn {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .cta-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(172, 78, 141, 0.3);
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #ffeef8 0%, #e8f5f4 100%);
-            padding: 8rem 0 4rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 200%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="%23AC4E8D" opacity="0.1"/></svg>') repeat;
-            animation: float 20s linear infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-100px) rotate(360deg); }
-        }
-
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-text h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--neutral));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-text p {
-            font-size: 1.25rem;
-            color: var(--neutral);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary);
-            display: block;
-        }
-
-        .stat-label {
-            color: var(--neutral);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        .hero-visual {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .phone-mockup {
-            width: 300px;
-            height: 600px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 40px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(172, 78, 141, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .phone-screen {
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .character-preview {
+        .currency-bar {
             display: flex;
             gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .character {
-            width: 80px;
-            height: 120px;
-            background: var(--tertiary);
-            border-radius: 20px;
-            position: relative;
-            animation: bounce 2s ease-in-out infinite alternate;
-        }
-
-        .character:nth-child(2) {
-            animation-delay: 0.5s;
-            background: var(--quaternary);
-        }
-
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
-        }
-
-        .gift-icons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .gift-icon {
-            width: 30px;
-            height: 30px;
-            background: var(--secondary);
-            border-radius: 50%;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-
-        /* Problem Section */
-        .problem-section {
-            padding: 6rem 0;
-            background: var(--bg-dark);
-            color: var(--text-light);
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .section-subtitle {
-            font-size: 1.25rem;
-            color: #aaa;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .problem-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .problem-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .problem-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .problem-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-        }
-
-        /* Solution Section */
-        .solution-section {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 100%);
-        }
-
-        .solution-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
             align-items: center;
         }
 
-        .feature-list {
-            list-style: none;
-        }
-
-        .feature-item {
+        .currency-item {
             display: flex;
             align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(172, 78, 141, 0.1);
-        }
-
-        .feature-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 16px;
+            border-radius: 30px;
             color: white;
-            font-weight: bold;
-        }
-
-        .feature-text {
-            flex: 1;
-        }
-
-        .feature-title {
             font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .feature-desc {
-            color: var(--neutral);
-            font-size: 0.9rem;
-        }
-
-        /* Market Section */
-        .market-section {
-            padding: 6rem 0;
-            background: var(--bg-dark);
-            color: var(--text-light);
-        }
-
-        .market-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .market-card {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            padding: 2rem;
-            border-radius: 20px;
-            text-align: center;
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .market-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .market-number {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .market-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        /* Investment Section */
-        .investment-section {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
-        }
-
-        .investment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-
-        .investment-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 25px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .investment-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .investment-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--tertiary), var(--quaternary));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 2rem;
-        }
-
-        .investment-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .investment-desc {
-            color: var(--neutral);
-            line-height: 1.6;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            padding: 8rem 0;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            text-align: center;
-        }
-
-        .cta-content h2 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-        }
-
-        .cta-content p {
-            font-size: 1.25rem;
-            margin-bottom: 3rem;
-            opacity: 0.9;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--primary);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.3s ease;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            padding: 1rem 2rem;
-            border: 2px solid white;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             transition: all 0.3s ease;
         }
 
-        .btn-primary:hover, .btn-secondary:hover {
-            transform: translateY(-2px);
+        .currency-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .btn-secondary:hover {
-            background: white;
-            color: var(--primary);
+        .currency-icon {
+            font-size: 16px;
         }
 
-        /* Footer */
-        footer {
-            background: var(--bg-dark);
-            color: var(--text-light);
-            padding: 3rem 0 1rem;
+        .coins { color: #ffd700; }
+        .stars { color: #ff6b9d; }
+        .hearts { color: #e74c3c; }
+
+        /* Action Buttons - Updated for vertical layout */
+        .top-actions {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 90;
         }
 
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: auto;
         }
 
-        .footer-section h3 {
-            margin-bottom: 1rem;
-            color: var(--secondary);
+        .action-btn {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .footer-section a {
-            color: #aaa;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 0.5rem;
-            transition: color 0.3s ease;
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
         }
 
-        .footer-section a:hover {
-            color: var(--secondary);
+        .action-btn i {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .footer-bottom {
-            border-top: 1px solid #333;
-            padding-top: 2rem;
-            text-align: center;
-            color: #888;
+        .timer-btn i { color: #ff6b9d; }
+        .save-btn i { color: #4CAF50; }
+        .line-btn i { color: #64b5f6; }
+        .gift-btn i { color: #ff6b9d; }
+
+        /* Timer Display */
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: -120px;
+            transform: translateY(-50%);
+            background: rgba(255, 107, 157, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
         }
 
-        /* Responsive Design */
+        .timer-btn:hover .timer-display {
+            opacity: 1;
+        }
+
+        /* Characters Display Area - Edge to edge */
+        .characters-container {
+            position: absolute;
+            top: 80px;
+            left: 0;
+            right: 0;
+            bottom: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .character-display {
+            position: relative;
+            width: 300px;
+            height: 533px;
+            transform: scale(0.85);
+            transform-origin: center;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+        }
+
+        .character-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .character-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 12px 20px;
+            border-radius: 20px;
+            min-width: 80px;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-btn.active {
+            color: #ff6b9d;
+        }
+
+        .nav-btn i {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-btn span {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Mobile Styles */
         @media (max-width: 768px) {
-            .nav-links {
+            body {
+                background: #000;
+            }
+
+            .bg-particles {
                 display: none;
             }
 
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
+            .top-header {
+                padding: 0 20px;
+                height: 70px;
             }
 
-            .hero-text h1 {
-                font-size: 2.5rem;
+            .logo {
+                font-size: 28px;
             }
 
-            .solution-grid {
-                grid-template-columns: 1fr;
+            .currency-bar {
+                gap: 2px;
             }
 
-            .phone-mockup {
-                width: 250px;
-                height: 500px;
+            .currency-item {
+                padding: 6px 12px;
+                font-size: 12px;
             }
 
-            .cta-content h2 {
-                font-size: 2rem;
+            .currency-icon {
+                font-size: 14px;
             }
 
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
+            .top-actions {
+                left: 15px;
+                right: 15px;
+            }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+            }
+
+            .action-btn:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: scale(1.05);
+            }
+
+            .action-btn i {
+                font-size: 14px;
+            }
+
+            .action-group {
+                gap: 12px;
+            }
+
+            .characters-container {
+                top: 70px;
+                left: 0;
+                right: 0;
+                bottom: 90px;
+                padding: 0;
+            }
+
+            .character-display {
+                transform: scale(1);
+                width: 100vw;
+                height: calc(100vh - 160px);
+                filter: none;
+            }
+
+            .character-layer img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+
+            .bottom-nav {
+                height: 90px;
+                padding: 15px 10px;
+            }
+
+            .nav-btn {
+                padding: 8px 2px;
+                min-width: 60px;
+            }
+
+            .nav-btn i {
+                font-size: 20px;
+            }
+
+            .nav-btn span {
+                font-size: 10px;
+            }
+
+            .timer-display {
+                display: none;
             }
         }
 
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
+        @media (max-width: 480px) {
+            .top-header {
+                padding: 0 15px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .currency-item {
+                padding: 5px 10px;
+                font-size: 11px;
+                gap: 6px;
+            }
+
+            .currency-icon {
+                font-size: 12px;
+            }
+
+            .top-actions {
+                left: 10px;
+                right: 10px;
+            }
+
+            .action-btn {
+                width: 32px;
+                height: 32px;
+            }
+
+            .action-btn i {
+                font-size: 12px;
+            }
+
+            .action-group {
+                gap: 10px;
+            }
         }
 
-        /* Loading animation */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s ease forwards;
-        }
-
+        /* Premium loading animation */
         @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
+        .character-display {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .nav-btn.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #ff6b9d;
+            border-radius: 50%;
+        }
+
+        /* Subtle glow effect for premium feel */
+        .character-display::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(255, 107, 157, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @media (min-width: 769px) {
+            .character-display::after {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .character-display::after {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <div class="logo">Ambar</div>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#market">Market</a></li>
-                <li><a href="#investment">Investment</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <a href="#cta" class="cta-btn">Join Beta</a>
-        </div>
-    </nav>
+    <!-- Background Particles (Desktop Only) -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="container">
-            <div class="hero-content fade-in">
-                <div class="hero-text">
-                    <h1>Building Tomorrow's Relationships Today</h1>
-                    <p>Ambar revolutionizes how Indian teens connect and build meaningful relationships through gamified interactions, cultural authenticity, and psychological insights.</p>
-                    <div class="cta-buttons">
-                        <a href="#features" class="btn-primary">Explore Features</a>
-                        <a href="#investment" class="btn-secondary">Investment Opportunity</a>
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <div class="phone-mockup">
-                        <div class="phone-screen">
-                            <div class="character-preview">
-                                <div class="character"></div>
-                                <div class="character"></div>
-                            </div>
-                            <div class="gift-icons">
-                                <div class="gift-icon"></div>
-                                <div class="gift-icon"></div>
-                                <div class="gift-icon"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="logo">Ambar</div>
+        <div class="currency-bar">
+            <div class="currency-item">
+                <i class="fas fa-coins currency-icon coins"></i>
+                <span>1,250</span>
             </div>
-            <div class="hero-stats fade-in">
-                <div class="stat-card">
-                    <span class="stat-number">366M</span>
-                    <div class="stat-label">Indian Teens Online</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">₹2.3L Cr</span>
-                    <div class="stat-label">Dating App Market</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">85%</span>
-                    <div class="stat-label">Seek Meaningful Connections</div>
-                </div>
+            <div class="currency-item">
+                <i class="fas fa-star currency-icon stars"></i>
+                <span>15</span>
+            </div>
+            <div class="currency-item">
+                <i class="fas fa-heart currency-icon hearts"></i>
+                <span>420</span>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Problem Section -->
-    <section class="problem-section" id="problem">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">The Relationship Crisis</h2>
-                <p class="section-subtitle">Indian teenagers face unprecedented challenges in forming genuine connections in the digital age</p>
-            </div>
-            <div class="problem-grid">
-                <div class="problem-card fade-in">
-                    <div class="problem-icon">📱</div>
-                    <h3>Digital Disconnect</h3>
-                    <p>Despite being hyper-connected, 73% of Indian teens report feeling lonely and struggle to form deep, meaningful relationships.</p>
-                </div>
-                <div class="problem-card fade-in">
-                    <div class="problem-icon">🎭</div>
-                    <h3>Cultural Mismatch</h3>
-                    <p>Western dating apps don't align with Indian values, creating confusion and inappropriate interactions among teenagers.</p>
-                </div>
-                <div class="problem-card fade-in">
-                    <div class="problem-icon">⚡</div>
-                    <h3>Instant Gratification</h3>
-                    <p>Hook-up culture and superficial swiping prevent the development of patience and emotional investment needed for lasting relationships.</p>
-                </div>
-            </div>
+    <!-- Top Action Buttons -->
+    <div class="top-actions">
+        <div class="action-group">
+            <button class="action-btn timer-btn" onclick="showTimer()">
+                <i class="fas fa-clock"></i>
+                <div class="timer-display">23:42:15</div>
+            </button>
+            <button class="action-btn save-btn" onclick="savePhoto()">
+                <i class="fas fa-camera"></i>
+            </button>
         </div>
-    </section>
+        <div class="action-group">
+            <button class="action-btn line-btn" onclick="openLineScreen()">
+                <i class="fas fa-comment-dots"></i>
+            </button>
+            <button class="action-btn gift-btn" onclick="openGiftScreen()">
+                <i class="fas fa-gift"></i>
+            </button>
+        </div>
+    </div>
 
-    <!-- Solution Section -->
-    <section class="solution-section" id="features">
-        <div class="container">
-            <div class="solution-grid">
-                <div class="fade-in">
-                    <h2 class="section-title">The Ambar Solution</h2>
-                    <p class="section-subtitle">A culturally-rooted, psychologically-designed platform that gamifies relationship building while promoting genuine connection and emotional growth.</p>
-                    <ul class="feature-list">
-                        <li class="feature-item">
-                            <div class="feature-icon">🎮</div>
-                            <div class="feature-text">
-                                <div class="feature-title">Gamified Connection</div>
-                                <div class="feature-desc">Transform relationship building into engaging, rewarding experiences</div>
-                            </div>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon">🇮🇳</div>
-                            <div class="feature-text">
-                                <div class="feature-title">Cultural Authenticity</div>
-                                <div class="feature-desc">Features traditional Indian attire, festivals, and values-based interactions</div>
-                            </div>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon">🧠</div>
-                            <div class="feature-text">
-                                <div class="feature-title">Psychological Insights</div>
-                                <div class="feature-desc">Built on behavioral psychology to encourage healthy relationship patterns</div>
-                            </div>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon">🎁</div>
-                            <div class="feature-text">
-                                <div class="feature-title">Virtual Gifting Economy</div>
-                                <div class="feature-desc">Express care through meaningful virtual gifts that build emotional bonds</div>
-                            </div>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-icon">📈</div>
-                            <div class="feature-text">
-                                <div class="feature-title">Progress Tracking</div>
-                                <div class="feature-desc">Streak systems and achievements motivate consistent positive interactions</div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="hero-visual fade-in">
-                    <div class="phone-mockup">
-                        <div class="phone-screen">
-                            <div style="padding: 20px; text-align: center;">
-                                <div style="background: linear-gradient(135deg, #AC4E8D, #2BA495); color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px;">
-                                    <h4>Streak: 15 days 🔥</h4>
-                                </div>
-                                <div class="character-preview">
-                                    <div class="character"></div>
-                                    <div class="character"></div>
-                                </div>
-                                <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                                    <div style="background: #F1AF7B; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
-                                        🎮 Games
-                                    </div>
-                                    <div style="background: #E9D183; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
-                                        🎁 Gifts
-                                    </div>
-                                    <div style="background: #D97F86; padding: 10px; border-radius: 10px; font-size: 0.8rem;">
-                                        💝 Lines
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Characters Display -->
+    <div class="characters-container">
+        <div class="character-display" id="characterDisplay">
+            <!-- Background Layer -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/background/1.png" alt="Background">
+            </div>
+            
+            <!-- Boy Back Hair -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/backhair/1.png" alt="Boy Back Hair">
+            </div>
+            
+            <!-- Girl Back Hair -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/backhair/1.png" alt="Girl Back Hair">
+            </div>
+            
+            <!-- Boy Skin -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/skin/1.png" alt="Boy Skin">
+            </div>
+            
+            <!-- Girl Skin -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/skin/1.png" alt="Girl Skin">
+            </div>
+            
+            <!-- Boy Bottom -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/bottom/1.png" alt="Boy Bottom">
+            </div>
+            
+            <!-- Girl Bottom -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/bottom/1.png" alt="Girl Bottom">
+            </div>
+            
+            <!-- Boy Shoes -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/shoes/1.png" alt="Boy Shoes">
+            </div>
+            
+            <!-- Girl Shoes -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/shoes/1.png" alt="Girl Shoes">
+            </div>
+            
+            <!-- Boy Top -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/top/1.png" alt="Boy Top">
+            </div>
+            
+            <!-- Girl Top -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/top/1.png" alt="Girl Top">
+            </div>
+            
+            <!-- Boy Face Elements -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/eyeball/1.png" alt="Boy Eyes">
+            </div>
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/eyebrow/1.png" alt="Boy Eyebrows">
+            </div>
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/mouth/1.png" alt="Boy Mouth">
+            </div>
+            
+            <!-- Girl Face Elements -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/eyeball/1.png" alt="Girl Eyes">
+            </div>
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/eyebrow/1.png" alt="Girl Eyebrows">
+            </div>
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/mouth/1.png" alt="Girl Mouth">
+            </div>
+            
+            <!-- Boy Front Hair -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/fronthair/1.png" alt="Boy Front Hair">
+            </div>
+            
+            <!-- Girl Front Hair -->
+            <div class="character-layer">
+                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/fronthair/1.png" alt="Girl Front Hair">
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Market Section -->
-    <section class="market-section" id="market">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">Massive Market Opportunity</h2>
-                <p class="section-subtitle">The Indian teen relationship market represents an untapped goldmine with explosive growth potential</p>
-            </div>
-            <div class="market-stats">
-                <div class="market-card fade-in">
-                    <div class="market-number">366M</div>
-                    <div class="market-label">Indian Teens (13-19)</div>
-                </div>
-                <div class="market-card fade-in">
-                    <div class="market-number">₹2.3L Cr</div>
-                    <div class="market-label">Dating App Market Size</div>
-                </div>
-                <div class="market-card fade-in">
-                    <div class="market-number">45%</div>
-                    <div class="market-label">Annual Growth Rate</div>
-                </div>
-                <div class="market-card fade-in">
-                    <div class="market-number">₹850</div>
-                    <div class="market-label">Avg. Annual Spend per User</div>
-                </div>
-            </div>
-            <div style="margin-top: 4rem; background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 20px; backdrop-filter: blur(10px);" class="fade-in">
-                <h3 style="margin-bottom: 1rem; color: #D97F86;">Why Now?</h3>
-                <ul style="list-style: none; line-height: 2;">
-                    <li>🚀 Post-COVID relationship anxiety creates demand for safe, structured connection</li>
-                    <li>📱 Gen Z spending power increasing by 35% annually</li>
-                    <li>🇮🇳 Cultural shift towards digital-first relationships among Indian youth</li>
-                    <li>💰 Virtual goods market in India growing 60% year-over-year</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Investment Section -->
-    <section class="investment-section" id="investment">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">Investment Opportunity</h2>
-                <p class="section-subtitle">Join us in building the future of relationships for India's largest generation</p>
-            </div>
-            <div class="investment-grid">
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">💰</div>
-                    <h3 class="investment-title">Revenue Model</h3>
-                    <p class="investment-desc">Freemium model with virtual gifts, premium features, and brand partnerships. Projected ₹50 Cr revenue by Year 3 with 70% gross margins.</p>
-                </div>
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">📊</div>
-                    <h3 class="investment-title">Scalability</h3>
-                    <p class="investment-desc">Built on Firebase with modular architecture. Low server costs, high user engagement. Ready to scale to 10M+ users with minimal infrastructure investment.</p>
-                </div>
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">🎯</div>
-                    <h3 class="investment-title">Competitive Advantage</h3>
-                    <p class="investment-desc">First-mover in Indian teen relationship space. Culturally authentic, psychologically designed, and gamified approach creates strong moats.</p>
-                </div>
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">🚀</div>
-                    <h3 class="investment-title">Growth Strategy</h3>
-                    <p class="investment-desc">Viral marketing through social sharing, influencer partnerships, and referral rewards. Path to profitability within 18 months of launch.</p>
-                </div>
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">👥</div>
-                    <h3 class="investment-title">Team & Expertise</h3>
-                    <p class="investment-desc">Experienced developer with deep understanding of Indian teen psychology, gaming mechanics, and relationship dynamics.</p>
-                </div>
-                <div class="investment-card fade-in">
-                    <div class="investment-icon">🎪</div>
-                    <h3 class="investment-title">Social Impact</h3>
-                    <p class="investment-desc">Creating healthier relationship patterns among youth, reducing social anxiety, and promoting cultural values while enabling modern connections.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section" id="cta">
-        <div class="container">
-            <div class="cta-content fade-in">
-                <h2>Ready to Transform Relationships?</h2>
-                <p>Join the revolution that's building stronger, more meaningful connections for India's next generation.</p>
-                <div class="cta-buttons">
-                    <a href="mailto:xchirxg@gmail.com" class="btn-primary">Partner With Us</a>
-                    <a href="https://sawish5.web.app/" class="btn-secondary">Try Beta Version</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="contact">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Ambar</h3>
-                    <p>Building tomorrow's relationships today. Connecting hearts, minds, and cultures through innovative technology.</p>
-                    <div style="margin-top: 1rem;">
-                        <span style="color: #D97F86;">✨ Made with love in India ✨</span>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Product</h3>
-                    <a href="#features">Features</a>
-                    <a href="#market">Market Research</a>
-                    <a href="https://sawish5.web.app/" target="_blank">Beta Prototype</a>
-                    <a href="https://sawish5.web.app/">Join Beta</a>
-                </div>
-                <div class="footer-section">
-                    <h3>Business</h3>
-                    <a href="#investment">Investment Opportunity</a>
-                    <a href="mailto:partnerships@ambar.app">Partnerships</a>
-                    <a href="mailto:press@ambar.app">Press Kit</a>
-                    <a href="mailto:careers@ambar.app">Careers</a>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact</h3>
-                    <a href="mailto:xchirxg@gmai.com">xchirxg@gmail.com</a>
-                    <a href="https://instagram.com/chinurag" target="_blank">@chinurag</a>
-                    <a href="tel:+91-XXXXXXXXXX">+91-XXXXXXXXXX</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Ambar. All rights reserved. | Developed by Chinurag | Building the future of relationships</p>
-            </div>
-        </div>
-    </footer>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="navigateTo('home')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('games')">
+            <i class="fas fa-gamepad"></i>
+            <span>Games</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('store')">
+            <i class="fas fa-store"></i>
+            <span>Store</span>
+        </button>
+        <button class="nav-btn" onclick="navigateTo('profile')">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </button>
+    </div>
 
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        // Navigation functions
+        function navigateTo(screen) {
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            event.target.closest('.nav-btn').classList.add('active');
+            
+            console.log(`Navigating to ${screen} screen`);
+        }
 
-        // Add fade-in animation on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        // Action button functions
+        function openLineScreen() {
+            console.log('Opening line/chat screen');
+        }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animationDelay = '0.1s';
-                    entry.target.classList.add('fade-in');
-                }
-            });
-        }, observerOptions);
+        function openGiftScreen() {
+            console.log('Opening gift screen');
+        }
 
-        // Observe all fade-in elements
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
+        function showTimer() {
+            console.log('Timer clicked - showing countdown details');
+        }
 
-        // Dynamic counter animation
-        function animateCounter(element, target, duration = 2000) {
-            let start = 0;
-            const increment = target / (duration / 16);
-            const timer = setInterval(() => {
-                start += increment;
-                if (start >= target) {
-                    element.textContent = target.toLocaleString();
-                    clearInterval(timer);
+        function savePhoto() {
+            console.log('Saving couple photo');
+            saveAsImage();
+        }
+
+        // Save functionality
+        async function saveAsImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 533;
+
+            const characterDisplay = document.getElementById('characterDisplay');
+            const images = characterDisplay.querySelectorAll('img');
+            
+            let loadedCount = 0;
+            const totalImages = images.length;
+            
+            images.forEach((img, index) => {
+                if (img.complete) {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    loadedCount++;
+                    
+                    if (loadedCount === totalImages) {
+                        downloadImage(canvas);
+                    }
                 } else {
-                    element.textContent = Math.floor(start).toLocaleString();
-                }
-            }, 16);
-        }
-
-        // Animate counters when they come into view
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const number = entry.target;
-                    const target = parseInt(number.dataset.target || number.textContent.replace(/[^0-9]/g, ''));
-                    animateCounter(number, target);
-                    counterObserver.unobserve(entry.target);
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        loadedCount++;
+                        
+                        if (loadedCount === totalImages) {
+                            downloadImage(canvas);
+                        }
+                    };
                 }
             });
-        });
-
-        document.querySelectorAll('.stat-number, .market-number').forEach(el => {
-            counterObserver.observe(el);
-        });
-
-        // Add some interactive elements
-        document.querySelectorAll('.problem-card, .investment-card, .market-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px) scale(1.02)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-
-        // Add click tracking for investor interest
-        document.querySelectorAll('.btn-primary, .btn-secondary, .cta-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Track engagement (would integrate with analytics)
-                console.log('CTA clicked:', this.textContent);
-                
-                // Add visual feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-            });
-        });
-
-        // Mobile menu toggle (for future implementation)
-        const menuToggle = document.createElement('div');
-        menuToggle.innerHTML = '☰';
-        menuToggle.style.cssText = 'display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary);';
-        
-        // Add to nav for mobile
-        if (window.innerWidth <= 768) {
-            document.querySelector('.nav-container').appendChild(menuToggle);
-            menuToggle.style.display = 'block';
         }
 
-        // Add some dynamic background elements
-        function createFloatingElement() {
-            const element = document.createElement('div');
-            element.style.cssText = `
-                position: fixed;
-                width: 4px;
-                height: 4px;
-                background: linear-gradient(45deg, #AC4E8D, #2BA495);
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: -1;
-                opacity: 0.6;
-                animation: float 8s linear infinite;
-            `;
-            
-            element.style.left = Math.random() * 100 + 'vw';
-            element.style.animationDelay = Math.random() * 8 + 's';
-            
-            document.body.appendChild(element);
-            
-            setTimeout(() => {
-                element.remove();
-            }, 8000);
+        function downloadImage(canvas) {
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ambar-couple-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
         }
 
-        // Create floating elements periodically
-        setInterval(createFloatingElement, 2000);
-
-        // Add parallax effect to hero section
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const parallax = document.querySelector('.hero::before');
-            if (parallax) {
-                const speed = scrolled * 0.5;
-                // Apply transform via CSS custom property
-                document.documentElement.style.setProperty('--scroll-offset', `${speed}px`);
+        // Timer countdown functionality
+        function updateTimer() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const timeLeft = tomorrow - now;
+            
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            const timerDisplay = document.querySelector('.timer-display');
+            if (timerDisplay) {
+                timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
-        });
-    </script>
-
-    <!-- Add some SEO structured data -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Ambar",
-        "description": "Revolutionary relationship-building app designed for Indian teens with gamified interactions and cultural authenticity",
-        "applicationCategory": "SocialNetworkingApplication",
-        "operatingSystem": "Web, Android, iOS",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "INR"
-        },
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "1250"
-        },
-        "author": {
-            "@type": "Person",
-            "name": "Chinurag"
         }
-    }
+
+        // Update timer every second
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // Premium loading animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const currencyItems = document.querySelectorAll('.currency-item');
+            currencyItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(-10px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+        });
     </script>
 </body>
 </html>

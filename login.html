@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Welcome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .floating-hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 20px;
+            animation: float-heart 15s infinite linear;
+        }
+
+        .heart:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .heart:nth-child(2) { left: 20%; animation-delay: 2s; }
+        .heart:nth-child(3) { left: 30%; animation-delay: 4s; }
+        .heart:nth-child(4) { left: 40%; animation-delay: 6s; }
+        .heart:nth-child(5) { left: 50%; animation-delay: 8s; }
+        .heart:nth-child(6) { left: 60%; animation-delay: 10s; }
+        .heart:nth-child(7) { left: 70%; animation-delay: 12s; }
+        .heart:nth-child(8) { left: 80%; animation-delay: 14s; }
+
+        @keyframes float-heart {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Main container */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-logo {
+            font-family: 'Dancing Script', cursive;
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .tagline {
+            color: #6c757d;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-content {
+            transition: all 0.4s ease;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #718096;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .btn-google {
+            background: white;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-google:hover {
+            background: #f7fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        /* Form Screen */
+        .form-screen {
+            display: none;
+        }
+
+        .form-screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .gender-selector {
+            display: flex;
+            gap: 12px;
+        }
+
+        .gender-option {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .gender-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .gender-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .gender-option span {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .success-message {
+            color: #38a169;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .auth-card {
+                margin: 10px;
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            .app-logo {
+                font-size: 40px;
+            }
+
+            .welcome-title {
+                font-size: 24px;
+            }
+
+            .btn {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            .gender-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="floating-hearts">
+            <div class="heart">💕</div>
+            <div class="heart">💖</div>
+            <div class="heart">💗</div>
+            <div class="heart">💝</div>
+            <div class="heart">💕</div>
+            <div class="heart">💖</div>
+            <div class="heart">💗</div>
+            <div class="heart">💝</div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <button class="back-btn" id="backBtn" style="display: none;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="app-logo">Ambar</div>
+                <div class="tagline">Build meaningful connections</div>
+            </div>
+
+            <!-- Welcome Screen -->
+            <div class="auth-content" id="welcomeScreen">
+                <div class="welcome-screen">
+                    <h1 class="welcome-title">Welcome to Ambar</h1>
+                    <p class="welcome-subtitle">Connect, play games, and build lasting relationships with your special someone</p>
+                    
+                    <div class="auth-buttons">
+                        <button class="btn btn-google" id="googleSignIn">
+                            <i class="fab fa-google"></i>
+                            Continue with Google
+                        </button>
+                        
+                        <div class="divider">
+                            <span>or</span>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="createAccount">
+                            Create Account
+                        </button>
+                        
+                        <button class="btn btn-secondary" id="signInBtn">
+                            Sign In
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="auth-content form-screen" id="registrationForm">
+                <div class="form-header">
+                    <h2 class="form-title">Create Your Account</h2>
+                    <p class="form-subtitle">Tell us a bit about yourself to get started</p>
+                </div>
+
+                <form id="regForm">
+                    <div class="form-group">
+                        <label class="form-label" for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-input" placeholder="Enter your full name" required>
+                        <div class="error-message" id="nameError">Please enter a valid name</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" id="email" class="form-input" placeholder="Enter your email" required>
+                        <div class="error-message" id="emailError">Please enter a valid email address</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="age">Age</label>
+                        <input type="number" id="age" class="form-input" placeholder="Enter your age" min="13" max="99" required>
+                        <div class="error-message" id="ageError">Age must be between 13 and 99</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <div class="gender-selector">
+                            <div class="gender-option" data-gender="male">
+                                <i class="fas fa-mars"></i>
+                                <span>Male</span>
+                            </div>
+                            <div class="gender-option" data-gender="female">
+                                <i class="fas fa-venus"></i>
+                                <span>Female</span>
+                            </div>
+                        </div>
+                        <div class="error-message" id="genderError">Please select your gender</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" id="password" class="form-input" placeholder="Create a strong password" required>
+                        <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="registerBtn">
+                        Create Account & Continue
+                    </button>
+
+                    <div class="loading" id="registerLoading">
+                        <div class="spinner"></div>
+                        <span>Creating your account...</span>
+                    </div>
+
+                    <div class="success-message" id="registerSuccess">Account created successfully!</div>
+                </form>
+            </div>
+
+            <!-- Sign In Form -->
+            <div class="auth-content form-screen" id="signInForm">
+                <div class="form-header">
+                    <h2 class="form-title">Welcome Back</h2>
+                    <p class="form-subtitle">Sign in to continue your journey</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required>
+                        <div class="error-message" id="loginEmailError">Please enter a valid email address</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+                        <div class="error-message" id="loginPasswordError">Please enter your password</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="loginBtn">
+                        Sign In
+                    </button>
+
+                    <div class="loading" id="loginLoading">
+                        <div class="spinner"></div>
+                        <span>Signing you in...</span>
+                    </div>
+
+                    <div class="success-message" id="loginSuccess">Welcome back!</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AmbarAuth {
+            constructor() {
+                this.currentScreen = 'welcome';
+                this.selectedGender = null;
+                this.userData = {};
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.checkExistingSession();
+            }
+
+            setupEventListeners() {
+                // Navigation buttons
+                document.getElementById('createAccount').addEventListener('click', () => {
+                    this.showScreen('registration');
+                });
+
+                document.getElementById('signInBtn').addEventListener('click', () => {
+                    this.showScreen('signIn');
+                });
+
+                document.getElementById('googleSignIn').addEventListener('click', () => {
+                    this.handleGoogleSignIn();
+                });
+
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    this.showScreen('welcome');
+                });
+
+                // Gender selection
+                document.querySelectorAll('.gender-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        document.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
+                        e.currentTarget.classList.add('selected');
+                        this.selectedGender = e.currentTarget.dataset.gender;
+                        document.getElementById('genderError').style.display = 'none';
+                    });
+                });
+
+                // Form submissions
+                document.getElementById('regForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegistration();
+                });
+
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSignIn();
+                });
+
+                // Input validation
+                document.getElementById('fullName').addEventListener('input', () => {
+                    this.hideError('nameError');
+                });
+                document.getElementById('email').addEventListener('input', () => {
+                    this.hideError('emailError');
+                });
+                document.getElementById('age').addEventListener('input', () => {
+                    this.hideError('ageError');
+                });
+                document.getElementById('password').addEventListener('input', () => {
+                    this.hideError('passwordError');
+                });
+                document.getElementById('loginEmail').addEventListener('input', () => {
+                    this.hideError('loginEmailError');
+                });
+                document.getElementById('loginPassword').addEventListener('input', () => {
+                    this.hideError('loginPasswordError');
+                });
+            }
+
+            showScreen(screen) {
+                // Hide all screens
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('registrationForm').classList.remove('active');
+                document.getElementById('signInForm').classList.remove('active');
+                
+                // Show back button for forms
+                const backBtn = document.getElementById('backBtn');
+                if (screen === 'welcome') {
+                    backBtn.style.display = 'none';
+                } else {
+                    backBtn.style.display = 'flex';
+                }
+
+                // Show selected screen
+                switch(screen) {
+                    case 'welcome':
+                        document.getElementById('welcomeScreen').style.display = 'block';
+                        break;
+                    case 'registration':
+                        document.getElementById('registrationForm').classList.add('active');
+                        break;
+                    case 'signIn':
+                        document.getElementById('signInForm').classList.add('active');
+                        break;
+                }
+
+                this.currentScreen = screen;
+            }
+
+            checkExistingSession() {
+                const userData = localStorage.getItem('ambarUser');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    if (user.characterDesigned) {
+                        this.redirectToHome();
+                    } else {
+                        this.redirectToCharacterDesign(user);
+                    }
+                }
+            }
+
+            async handleGoogleSignIn() {
+                try {
+                    // Simulate Google OAuth flow
+                    this.showLoading('registerLoading');
+                    
+                    // In a real implementation, you would use Google OAuth API
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Mock Google user data
+                    const googleUser = {
+                        id: 'google_' + Date.now(),
+                        name: 'Demo User',
+                        email: 'demo@gmail.com',
+                        loginMethod: 'google',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    this.hideLoading('registerLoading');
+                    
+                    // Ask for additional info (age and gender)
+                    this.handleGoogleUserSetup(googleUser);
+                    
+                } catch (error) {
+                    this.hideLoading('registerLoading');
+                    this.showError('registerEmailError', 'Google sign-in failed. Please try again.');
+                }
+            }
+
+            handleGoogleUserSetup(googleUser) {
+                // Pre-fill form with Google data
+                document.getElementById('fullName').value = googleUser.name;
+                document.getElementById('email').value = googleUser.email;
+                document.getElementById('email').disabled = true;
+                document.getElementById('password').style.display = 'none';
+                document.querySelector('label[for="password"]').style.display = 'none';
+                
+                this.userData = googleUser;
+                this.showScreen('registration');
+            }
+
+            async handleRegistration() {
+                if (!this.validateRegistrationForm()) {
+                    return;
+                }
+
+                this.showLoading('registerLoading');
+
+                try {
+                    const formData = {
+                        id: this.userData.id || 'user_' + Date.now(),
+                        name: document.getElementById('fullName').value,
+                        email: document.getElementById('email').value,
+                        age: parseInt(document.getElementById('age').value),
+                        gender: this.selectedGender,
+                        password: document.getElementById('password').value,
+                        loginMethod: this.userData.loginMethod || 'email',
+                        characterDesigned: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Store user data
+                    localStorage.setItem('ambarUser', JSON.stringify(formData));
+
+                    this.hideLoading('registerLoading');
+                    this.showSuccess('registerSuccess');
+
+                    // Redirect to character design after success
+                    setTimeout(() => {
+                        this.redirectToCharacterDesign(formData);
+                    }, 1500);
+
+                } catch (error) {
+                    this.hideLoading('registerLoading');
+                    this.showError('emailError', 'Registration failed. Please try again.');
+                }
+            }
+
+            async handleSignIn() {
+                if (!this.validateSignInForm()) {
+                    return;
+                }
+
+                this.showLoading('loginLoading');
+
+                try {
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+
+                    // Simulate API call
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Mock user data (in real app, this would come from API)
+                    const userData = {
+                        id: 'user_' + Date.now(),
+                        name: 'Existing User',
+                        email: email,
+                        age: 25,
+                        gender: 'male',
+                        characterDesigned: Math.random() > 0.5, // Random for demo
+                        createdAt: new Date().toISOString()
+                    };
+
+                    localStorage.setItem('ambarUser', JSON.stringify(userData));
+
+                    this.hideLoading('loginLoading');
+                    this.showSuccess('loginSuccess');
+
+                    // Redirect based on character design status
+                    setTimeout(() => {
+                        if (userData.characterDesigned) {
+                            this.redirectToHome();
+                        } else {
+                            this.redirectToCharacterDesign(userData);
+                        }
+                    }, 1500);
+
+                } catch (error) {
+                    this.hideLoading('loginLoading');
+                    this.showError('loginPasswordError', 'Invalid credentials. Please try again.');
+                }
+            }
+
+            validateRegistrationForm() {
+                let isValid = true;
+
+                const name = document.getElementById('fullName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const age = parseInt(document.getElementById('age').value);
+                const password = document.getElementById('password').value;
+
+                if (name.length < 2) {
+                    this.showError('nameError', 'Name must be at least 2 characters long');
+                    isValid = false;
+                }
+
+                if (!this.isValidEmail(email)) {
+                    this.showError('emailError', 'Please enter a valid email address');
+                    isValid = false;
+                }
+
+                if (!age || age < 13 || age > 99) {
+                    this.showError('ageError', 'Age must be between 13 and 99');
+                    isValid = false;
+                }
+
+                if (!this.selectedGender) {
+                    this.showError('genderError', 'Please select your gender');
+                    isValid = false;
+                }
+
+                if (!this.userData.loginMethod && password.length < 6) {
+                    this.showError('passwordError', 'Password must be at least 6 characters long');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            validateSignInForm() {
+                let isValid = true;
+
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+
+                if (!this.isValidEmail(email)) {
+                    this.showError('loginEmailError', 'Please enter a valid email address');
+                    isValid = false;
+                }
+
+                if (password.length < 1) {
+                    this.showError('loginPasswordError', 'Please enter your password');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            hideError(elementId) {
+                document.getElementById(elementId).style.display = 'none';
+            }
+
+            showSuccess(elementId) {
+                document.getElementById(elementId).style.display = 'block';
+            }
+
+            showLoading(elementId) {
+                document.getElementById(elementId).classList.add('active');
+            }
+
+            hideLoading(elementId) {
+                document.getElementById(elementId).classList.remove('active');
+            }
+
+            redirectToCharacterDesign(userData) {
+                // Store the character design flow data
+                localStorage.setItem('characterDesignFlow', JSON.stringify({
+                    fromRegistration: true,
+                    userData: userData
+                }));
+                
+                // In a real app, you would navigate to character design page
+                alert(`Welcome ${userData.name}! Redirecting to character customization...`);
+                // window.location.href = 'character-design.html';
+            }
+
+            redirectToHome() {
+                // In a real app, you would navigate to home page
+                alert('Welcome back! Redirecting to home screen...');
+                // window.location.href = 'home.html';
+            }
+        }
+
+        // Initialize the authentication system
+        new AmbarAuth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Designer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: black;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .character-canvas {
+            width: 100vw;
+            height: 75vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: black;
+        }
+
+        .character-display {
+            position: relative;
+            width: 300px;
+            height: 533px;
+            transform-origin: top center;
+        }
+
+        .character-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .character-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .controls-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+        }
+
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            gap: 8px;
+        }
+
+        .gender-toggle {
+            display: flex;
+            gap: 4px;
+        }
+
+        .gender-btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn.active {
+            background: #667eea;
+        }
+
+        .save-btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 12px;
+            background: #4CAF50;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            background: #45a049;
+        }
+
+        .categories-row {
+            height: 35px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding: 4px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .categories-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            display: inline-block;
+            padding: 4px 10px;
+            margin-right: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .category-btn.active {
+            background: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .items-row {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding: 4px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .items-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .item-thumbnail {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            margin-right: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: white;
+        }
+
+        .item-thumbnail.active {
+            border-color: #667eea;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+        }
+
+        .item-thumbnail.loading {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .item-thumbnail canvas,
+        .item-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .bald-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+        }
+
+        /* Shimmer Animation */
+        .shimmer-placeholder {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            margin-right: 6px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.1) 25%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.1) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .shimmer-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .character-display {
+                transform: scale(1.2);
+            }
+        }
+
+        @media (max-width: 320px) {
+            .character-display {
+                transform: scale(0.9);
+            }
+            
+            .item-thumbnail {
+                width: 45px;
+                height: 45px;
+            }
+
+            .shimmer-placeholder {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="character-canvas">
+        <div class="character-display" id="characterDisplay">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <div class="controls-container">
+        <div class="top-controls">
+            <div class="gender-toggle">
+                <button class="gender-btn active" data-gender="boy">Boy</button>
+                <button class="gender-btn" data-gender="girl">Girl</button>
+            </div>
+            <button class="save-btn" id="saveBtn">Save PNG</button>
+        </div>
+
+        <div class="categories-row" id="categoriesRow"></div>
+        <div class="items-row" id="itemsRow"></div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            baseUrl: "https://raw.githubusercontent.com/xchirxg/db/main",
+            cropConfigs: {
+                boy: {
+                    backhair: {x: 255, y: 520, w: 352, h: 358},
+                    bottom: {x: 277, y: 1056, w: 292, h: 466},
+                    fronthair: {x: 275, y: 570, w: 332, h: 294},
+                    full: {x: 251, y: 818, w: 326, h: 706},
+                    shoes: {x: 309, y: 1309, w: 244, h: 216},
+                    skin: {x: 373, y: 659, w: 114, h: 110},
+                    top: {x: 281, y: 842, w: 292, h: 442}
+                },
+                girl: {
+                    backhair: {x: 467, y: 594, w: 454, h: 674},
+                    bottom: {x: 493, y: 1068, w: 374, h: 448},
+                    fronthair: {x: 558, y: 692, w: 278, h: 270},
+                    full: {x: 499, y: 931, w: 388, h: 592},
+                    shoes: {x: 568, y: 1295, w: 232, h: 248},
+                    skin: {x: 638, y: 807, w: 82, h: 78},
+                    top: {x: 513, y: 925, w: 338, h: 456}
+                }
+            },
+            assets: {
+                background: {maxCount: 100, path: "background", crop: false},
+                boy: {
+                    backhair: {maxCount: 100, path: "boy/backhair", crop: true, hasBald: true},
+                    bottom: {maxCount: 100, path: "boy/bottom", crop: true},
+                    fronthair: {maxCount: 100, path: "boy/fronthair", crop: true, hasBald: true},
+                    full: {maxCount: 100, path: "boy/full", crop: true},
+                    shoes: {maxCount: 100, path: "boy/shoes", crop: true},
+                    skin: {maxCount: 100, path: "boy/skin", crop: true},
+                    thing1: {maxCount: 100, path: "boy/thing1", crop: false},
+                    top: {maxCount: 100, path: "boy/top", crop: true}
+                },
+                girl: {
+                    backhair: {maxCount: 100, path: "girl/backhair", crop: true, hasBald: true},
+                    bottom: {maxCount: 100, path: "girl/bottom", crop: true},
+                    fronthair: {maxCount: 100, path: "girl/fronthair", crop: true, hasBald: true},
+                    full: {maxCount: 100, path: "girl/full", crop: true},
+                    shoes: {maxCount: 100, path: "girl/shoes", crop: true},
+                    skin: {maxCount: 100, path: "girl/skin", crop: true},
+                    thing1: {maxCount: 100, path: "girl/thing1", crop: false},
+                    top: {maxCount: 100, path: "girl/top", crop: true}
+                }
+            },
+            faceAssets: {
+                boy: {
+                    eyeball: {maxCount: 100, path: "boy/face/eyeball"},
+                    eyebrow: {maxCount: 100, path: "boy/face/eyebrow"},
+                    mouth: {maxCount: 100, path: "boy/face/mouth"}
+                },
+                girl: {
+                    eyeball: {maxCount: 100, path: "girl/face/eyeball"},
+                    eyebrow: {maxCount: 100, path: "girl/face/eyebrow"},
+                    mouth: {maxCount: 100, path: "girl/face/mouth"}
+                }
+            },
+            categoryGroups: [
+                {name: "Background", categories: ["background"]},
+                {name: "Hair & Skin", categories: ["skin", "fronthair", "backhair"]},
+                {name: "Clothing", categories: ["top", "bottom", "shoes"]},
+                {name: "Full & Items", categories: ["full", "thing1"]}
+            ],
+            layerOrder: ["background", "backhair", "skin", "bottom", "shoes", "top", "full", "thing1", "eyeball", "eyebrow", "mouth", "fronthair"]
+        };
+
+        class CharacterDesigner {
+            constructor() {
+                this.currentGender = 'boy';
+                this.currentCategory = 'background';
+                this.selections = {
+                    background: 1,
+                    boy: { 
+                        skin: 1,
+                        eyeball: 1,
+                        eyebrow: 1,
+                        mouth: 1,
+                        full: 1,
+                        fronthair: 1,
+                        backhair: 1
+                    },
+                    girl: { 
+                        skin: 1,
+                        eyeball: 1,
+                        eyebrow: 1,
+                        mouth: 1,
+                        full: 1,
+                        fronthair: 1,
+                        backhair: 1
+                    }
+                };
+                this.availableCounts = {};
+                this.loadedCategories = new Set();
+                this.imageCache = new Map();
+                this.expressionInterval = null;
+                this.pendingLoads = new Map();
+                this.currentlyLoading = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.renderCategories();
+                this.loadDefaultAssets();
+                this.renderCharacter();
+                this.startExpressionCycle();
+            }
+
+            async loadDefaultAssets() {
+                // Load defaults for current selection
+                await this.discoverAvailableAssets('background');
+                await this.discoverAvailableAssets(this.currentCategory);
+                this.renderItems();
+            }
+
+            async discoverAvailableAssets(category) {
+                if (this.availableCounts[category]) return this.availableCounts[category];
+
+                let categoryData;
+                if (category === 'background') {
+                    categoryData = CONFIG.assets.background;
+                } else {
+                    categoryData = CONFIG.assets[this.currentGender][category];
+                    if (!categoryData) return 0;
+                }
+
+                // Binary search to find the actual count
+                let count = await this.binarySearchCount(categoryData.path, categoryData.maxCount);
+                this.availableCounts[category] = count;
+                return count;
+            }
+
+            async binarySearchCount(path, maxCount) {
+                let left = 1;
+                let right = maxCount;
+                let found = 0;
+
+                while (left <= right) {
+                    const mid = Math.floor((left + right) / 2);
+                    const exists = await this.checkImageExists(`${CONFIG.baseUrl}/${path}/${mid}.png`);
+                    
+                    if (exists) {
+                        found = mid;
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+
+                return found;
+            }
+
+            checkImageExists(url) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                    // Timeout after 3 seconds
+                    setTimeout(() => resolve(false), 3000);
+                });
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.gender-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelector('.gender-btn.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        this.currentGender = e.target.dataset.gender;
+                        this.renderCategories();
+                        this.renderItems();
+                        this.renderCharacter();
+                    });
+                });
+
+                document.getElementById('saveBtn').addEventListener('click', () => {
+                    this.saveAsImage();
+                });
+            }
+
+            startExpressionCycle() {
+                this.expressionInterval = setInterval(() => {
+                    ['boy', 'girl'].forEach(gender => {
+                        // Only change expressions if we have the counts
+                        const eyeballCount = this.availableCounts[`${gender}_eyeball`] || 1;
+                        const eyebrowCount = this.availableCounts[`${gender}_eyebrow`] || 1;
+                        const mouthCount = this.availableCounts[`${gender}_mouth`] || 1;
+                        
+                        this.selections[gender].eyeball = Math.ceil(Math.random() * eyeballCount);
+                        this.selections[gender].eyebrow = Math.ceil(Math.random() * eyebrowCount);
+                        this.selections[gender].mouth = Math.ceil(Math.random() * mouthCount);
+                    });
+                    this.renderCharacter();
+                }, 5000);
+            }
+
+            renderCategories() {
+                const container = document.getElementById('categoriesRow');
+                container.innerHTML = '';
+                
+                CONFIG.categoryGroups.forEach(group => {
+                    group.categories.forEach(category => {
+                        if (category === 'background' || CONFIG.assets[this.currentGender][category]) {
+                            const btn = document.createElement('button');
+                            btn.className = `category-btn ${category === this.currentCategory ? 'active' : ''}`;
+                            btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                            btn.addEventListener('click', async () => {
+                                document.querySelector('.category-btn.active')?.classList.remove('active');
+                                btn.classList.add('active');
+                                this.currentCategory = category;
+                                
+                                // Show shimmer immediately, then load
+                                this.showShimmerPlaceholders(category);
+                                
+                                // Load category if not loaded
+                                if (!this.loadedCategories.has(category)) {
+                                    await this.discoverAvailableAssets(category);
+                                    this.loadedCategories.add(category);
+                                }
+                                
+                                this.renderItems();
+                            });
+                            container.appendChild(btn);
+                        }
+                    });
+                });
+            }
+
+            showShimmerPlaceholders(category) {
+                const container = document.getElementById('itemsRow');
+                container.innerHTML = '';
+                this.currentlyLoading = category;
+
+                // Estimate count or use cached count
+                let estimatedCount = this.availableCounts[category] || 10; // Default to 10 shimmer boxes
+                
+                // If we have cached count, use it, otherwise show estimated
+                if (this.availableCounts[category]) {
+                    estimatedCount = this.availableCounts[category];
+                } else {
+                    // For first time loading, show a reasonable number of shimmers
+                    estimatedCount = 8; // Show 8 shimmer boxes by default
+                }
+
+                // Add bald option shimmer for hair categories
+                let categoryData;
+                if (category === 'background') {
+                    categoryData = CONFIG.assets.background;
+                } else {
+                    categoryData = CONFIG.assets[this.currentGender][category];
+                }
+
+                if (categoryData && categoryData.hasBald && (category === 'fronthair' || category === 'backhair')) {
+                    const shimmer = document.createElement('div');
+                    shimmer.className = 'shimmer-placeholder';
+                    container.appendChild(shimmer);
+                }
+
+                // Add shimmer placeholders
+                for (let i = 0; i < estimatedCount; i++) {
+                    const shimmer = document.createElement('div');
+                    shimmer.className = 'shimmer-placeholder';
+                    container.appendChild(shimmer);
+                }
+            }
+
+            async renderItems() {
+                // Check if we're still loading the same category
+                if (this.currentlyLoading !== this.currentCategory) {
+                    return;
+                }
+
+                const container = document.getElementById('itemsRow');
+                
+                let categoryData;
+                let currentSelection;
+                let count;
+
+                if (this.currentCategory === 'background') {
+                    categoryData = CONFIG.assets.background;
+                    currentSelection = this.selections.background;
+                    count = this.availableCounts.background || 0;
+                } else {
+                    categoryData = CONFIG.assets[this.currentGender][this.currentCategory];
+                    currentSelection = this.selections[this.currentGender][this.currentCategory];
+                    count = this.availableCounts[this.currentCategory] || 0;
+                }
+
+                if (!categoryData || count === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                // Clear shimmer and render actual items
+                container.innerHTML = '';
+                this.currentlyLoading = null;
+
+                // Add bald option for hair categories
+                if (categoryData.hasBald && (this.currentCategory === 'fronthair' || this.currentCategory === 'backhair')) {
+                    const baldThumbnail = document.createElement('div');
+                    baldThumbnail.className = `item-thumbnail ${currentSelection === null ? 'active' : ''}`;
+                    baldThumbnail.innerHTML = '<div class="bald-icon">🚫</div>';
+                    baldThumbnail.addEventListener('click', () => {
+                        this.selectItem(null);
+                    });
+                    container.appendChild(baldThumbnail);
+                }
+
+                // Create all thumbnails first
+                const thumbnails = [];
+                for (let i = 1; i <= count; i++) {
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = `item-thumbnail ${currentSelection === i ? 'active' : ''}`;
+                    
+                    thumbnail.addEventListener('click', () => {
+                        this.selectItem(i);
+                    });
+                    
+                    container.appendChild(thumbnail);
+                    thumbnails.push({ element: thumbnail, index: i });
+                }
+
+                // Load images asynchronously for better performance
+                thumbnails.forEach(({ element, index }) => {
+                    if (this.currentCategory !== 'background' && categoryData.crop && CONFIG.cropConfigs[this.currentGender][this.currentCategory]) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 100;
+                        canvas.height = 100;
+                        element.appendChild(canvas);
+                        this.createThumbnail(canvas, categoryData.path, index, this.currentCategory);
+                    } else {
+                        const img = document.createElement('img');
+                        img.onload = () => {
+                            // Smooth fade in
+                            img.style.opacity = '0';
+                            img.style.transition = 'opacity 0.3s ease';
+                            setTimeout(() => {
+                                img.style.opacity = '1';
+                            }, 10);
+                        };
+                        img.src = `${CONFIG.baseUrl}/${categoryData.path}/${index}.png`;
+                        element.appendChild(img);
+                    }
+                });
+            }
+
+            createThumbnail(canvas, path, id, category) {
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = () => {
+                    const crop = CONFIG.cropConfigs[this.currentGender][category];
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(
+                        img,
+                        crop.x, crop.y, crop.w, crop.h,
+                        0, 0, canvas.width, canvas.height
+                    );
+                    
+                    // Smooth fade in
+                    canvas.style.opacity = '0';
+                    canvas.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        canvas.style.opacity = '1';
+                    }, 10);
+                };
+                
+                img.src = `${CONFIG.baseUrl}/${path}/${id}.png`;
+            }
+
+            selectItem(id) {
+                const oldSelection = this.currentCategory === 'background' 
+                    ? this.selections.background 
+                    : this.selections[this.currentGender][this.currentCategory];
+
+                if (this.currentCategory === 'background') {
+                    this.selections.background = id;
+                } else {
+                    // Handle clothing change logic
+                    if (['top', 'bottom', 'shoes'].includes(this.currentCategory) && id !== null) {
+                        // When selecting clothing items, remove full outfit but set defaults for other clothing
+                        if (this.selections[this.currentGender].full) {
+                            delete this.selections[this.currentGender].full;
+                            // Set defaults for other clothing items if they don't exist
+                            ['top', 'bottom', 'shoes'].forEach(item => {
+                                if (item !== this.currentCategory && !this.selections[this.currentGender][item]) {
+                                    this.selections[this.currentGender][item] = 1;
+                                }
+                            });
+                        }
+                    } else if (this.currentCategory === 'full' && id !== null) {
+                        // When selecting full outfit, remove individual clothing items
+                        delete this.selections[this.currentGender].top;
+                        delete this.selections[this.currentGender].bottom;
+                        delete this.selections[this.currentGender].shoes;
+                    }
+
+                    this.selections[this.currentGender][this.currentCategory] = id;
+                }
+
+                this.renderItems();
+                this.renderCharacter();
+            }
+
+            async renderCharacter() {
+                const container = document.getElementById('characterDisplay');
+                container.innerHTML = '';
+
+                // Render all layers in order
+                for (const layer of CONFIG.layerOrder) {
+                    let selection, path;
+
+                    if (layer === 'background') {
+                        selection = this.selections.background;
+                        path = CONFIG.assets.background.path;
+                    } else if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                        // Handle face assets for both characters
+                        for (const gender of ['boy', 'girl']) {
+                            selection = this.selections[gender][layer];
+                            if (selection) {
+                                path = CONFIG.faceAssets[gender][layer].path;
+                                const layerDiv = document.createElement('div');
+                                layerDiv.className = 'character-layer';
+                                
+                                const img = document.createElement('img');
+                                img.src = `${CONFIG.baseUrl}/${path}/${selection}.png`;
+                                
+                                layerDiv.appendChild(img);
+                                container.appendChild(layerDiv);
+                            }
+                        }
+                        continue;
+                    } else {
+                        // Handle regular assets for both characters
+                        for (const gender of ['boy', 'girl']) {
+                            selection = this.selections[gender][layer];
+                            if (selection && CONFIG.assets[gender][layer]) {
+                                path = CONFIG.assets[gender][layer].path;
+                                const layerDiv = document.createElement('div');
+                                layerDiv.className = 'character-layer';
+                                
+                                const img = document.createElement('img');
+                                img.src = `${CONFIG.baseUrl}/${path}/${selection}.png`;
+                                
+                                layerDiv.appendChild(img);
+                                container.appendChild(layerDiv);
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Handle background layer
+                    if (selection && layer === 'background') {
+                        const layerDiv = document.createElement('div');
+                        layerDiv.className = 'character-layer';
+                        
+                        const img = document.createElement('img');
+                        img.src = `${CONFIG.baseUrl}/${path}/${selection}.png`;
+                        
+                        layerDiv.appendChild(img);
+                        container.appendChild(layerDiv);
+                    }
+                }
+            }
+
+            async saveAsImage() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 300;
+                canvas.height = 533;
+
+                const loadPromises = [];
+
+                for (const layer of CONFIG.layerOrder) {
+                    let selection, path;
+
+                    if (layer === 'background') {
+                        selection = this.selections.background;
+                        path = CONFIG.assets.background.path;
+                        if (selection) {
+                            const promise = this.loadImageForCanvas(`${CONFIG.baseUrl}/${path}/${selection}.png`)
+                                .then(img => ({ img, layer: 'background' }));
+                            loadPromises.push(promise);
+                        }
+                    } else if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                        for (const gender of ['boy', 'girl']) {
+                            selection = this.selections[gender][layer];
+                            if (selection) {
+                                path = CONFIG.faceAssets[gender][layer].path;
+                                const promise = this.loadImageForCanvas(`${CONFIG.baseUrl}/${path}/${selection}.png`)
+                                    .then(img => ({ img, layer: `${gender}_${layer}` }));
+                                loadPromises.push(promise);
+                            }
+                        }
+                    } else {
+                        for (const gender of ['boy', 'girl']) {
+                            selection = this.selections[gender][layer];
+                            if (selection && CONFIG.assets[gender][layer]) {
+                                path = CONFIG.assets[gender][layer].path;
+                                const promise = this.loadImageForCanvas(`${CONFIG.baseUrl}/${path}/${selection}.png`)
+                                    .then(img => ({ img, layer: `${gender}_${layer}` }));
+                                loadPromises.push(promise);
+                            }
+                        }
+                    }
+                }
+
+                try {
+                    const results = await Promise.all(loadPromises);
+                    
+                    // Draw all images on canvas in layer order
+                    for (const layer of CONFIG.layerOrder) {
+                        if (layer === 'background') {
+                            const result = results.find(r => r.layer === 'background');
+                            if (result) {
+                                ctx.drawImage(result.img, 0, 0, canvas.width, canvas.height);
+                            }
+                        } else if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                            for (const gender of ['boy', 'girl']) {
+                                const result = results.find(r => r.layer === `${gender}_${layer}`);
+                                if (result) {
+                                    ctx.drawImage(result.img, 0, 0, canvas.width, canvas.height);
+                                }
+                            }
+                        } else {
+                            for (const gender of ['boy', 'girl']) {
+                                const result = results.find(r => r.layer === `${gender}_${layer}`);
+                                if (result) {
+                                    ctx.drawImage(result.img, 0, 0, canvas.width, canvas.height);
+                                }
+                            }
+                        }
+                    }
+
+                    // Download the image
+                    canvas.toBlob(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `character-${Date.now()}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    });
+
+                } catch (error) {
+                    console.error('Error saving image:', error);
+                    alert('Error saving image. Please try again.');
+                }
+            }
+
+            loadImageForCanvas(url) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = url;
+                });
+            }
+        }
+
+        // Initialize the app
+        new CharacterDesigner();
+    </script>
+</body>
+</html>
