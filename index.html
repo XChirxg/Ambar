@@ -632,34 +632,46 @@
         </button>
     </div>
 
-    <script>
-        // Navigation functions
-        function navigateTo(screen) {
-            // Remove active class from all nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            event.target.closest('.nav-btn').classList.add('active');
-            
-            console.log(`Navigating to ${screen} screen`);
-        }
+<script>
+    // Navigation functions
+    function navigateTo(screen) {
+        // Remove active class from all nav buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        event.target.closest('.nav-btn').classList.add('active');
 
-        // Action button functions
-        function openLineScreen() {
-            console.log('Opening line/chat screen');
+        // Redirect to pages
+        if (screen === 'home') {
+            window.location.href = 'home.html';
+        } else if (screen === 'games') {
+            window.location.href = 'game.html';
+        } else if (screen === 'store') {
+            window.location.href = 'store2.html';
+        } else if (screen === 'profile') {
+            window.location.href = 'profile.html';
         }
+    }
 
-        function openGiftScreen() {
-            console.log('Opening gift screen');
-        }
+    // Action button functions
+    function openLineScreen() {
+        alert('Line/Chat screen not yet implemented');
+    }
 
-        function showTimer() {
-            console.log('Timer clicked - showing countdown details');
-        }
+    function openGiftScreen() {
+        window.location.href = 'test3.html';
+    }
 
-        function savePhoto() {
-            console.log('Saving couple photo');
-            saveAsImage();
-        }
+    function showTimer() {
+        console.log('Timer clicked - showing countdown details');
+    }
+
+    function savePhoto() {
+        console.log('Saving couple photo');
+        saveAsImage();
+    }
+
+
+
 
         // Save functionality
         async function saveAsImage() {
