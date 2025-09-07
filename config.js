@@ -11,10 +11,7 @@ window.CONFIG = {
         measurementId: "G-JGVPCJQE5L"
     },
 
-    // Google AI Configuration
-    googleAI: {
-        apiKey: "AIzaSyA-0s6N4PZi2lrO9Ho1bfIk7wdiJrpRK8w",
-        baseUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-    }
+
+
 
 };
