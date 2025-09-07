@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Welcome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/index.css">
+
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Download Progress Overlay -->
+    <div class="download-progress" id="downloadProgress">
+        <div class="progress-content">
+            <div class="progress-spinner"></div>
+            <div class="progress-text">Preparing your avatar...</div>
+            <div class="progress-subtext" id="progressText">Loading character assets</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo">Ambar</div>
+        <div class="tagline">Build meaningful connections through shared experiences</div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+
+            <!-- Step 1: Login/Signup -->
+            <div class="form-step active" id="step1">
+                <div class="form-title" id="formTitle">Create Account</div>
+                <div class="form-subtitle">Join Ambar and start your journey</div>
+
+                <!-- Google Sign In Button -->
+                <button class="btn btn-google" id="googleSignInBtn" onclick="signInWithGoogle()">
+                    <i class="fab fa-google"></i>
+                    Continue with Google
+                </button>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <form id="authForm">
+                    <div class="form-group" id="nameGroup">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="name" placeholder="Enter your name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group" id="passwordGroup">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="password" placeholder="Create a password" required>
+                    </div>
+
+                    <div class="error-message" id="authError" style="display: none;"></div>
+
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-arrow-right"></i>
+                        Continue
+                    </button>
+                </form>
+
+                <div class="toggle-form">
+                    <span id="toggleText">Already have an account?</span> 
+                    <span class="toggle-link" id="toggleLink" onclick="toggleAuthMode()">Sign In</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Gender & Age -->
+            <div class="form-step" id="step2">
+                <div class="form-title">Tell us about yourself</div>
+                <div class="form-subtitle">This helps us personalize your experience</div>
+
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    <div class="gender-selection">
+                        <div class="gender-option" data-gender="boy" onclick="selectGender('boy')">
+                            <div class="gender-icon">♂️</div>
+                            <div class="gender-label">Male</div>
+                        </div>
+                        <div class="gender-option" data-gender="girl" onclick="selectGender('girl')">
+                            <div class="gender-icon">♀️</div>
+                            <div class="gender-label">Female</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" class="form-input age-input" id="age" placeholder="18" min="13" max="100" required>
+                </div>
+
+                <div class="error-message" id="step2Error" style="display: none;"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        <i class="fas fa-arrow-right"></i>
+                        Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Character Customization -->
+            <div class="form-step" id="step3">
+                <div class="form-title">Customize Your Avatar</div>
+                <div class="form-subtitle">Make your profile picture uniquely yours</div>
+
+                <div class="character-container">
+                    <div class="character-preview" id="characterPreview">
+                        <!-- Character layers will be added here -->
+                    </div>
+
+                    <div class="customization-options" id="customizationOptions">
+                        <!-- Options will be populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">
+                        <i class="fas fa-arrow-left"></i>
+                        Back
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        <i class="fas fa-arrow-right"></i>
+                        Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Complete -->
+            <div class="form-step" id="step4">
+                <div class="form-title">Welcome to Ambar!</div>
+                <div class="form-subtitle">Your account has been created successfully</div>
+
+                <div class="loading" id="loadingState">
+                    <div class="spinner"></div>
+                    <div>Setting up your profile...</div>
+                </div>
+
+                <button class="btn btn-primary" id="completeBtn" onclick="completeSetup()">
+                    <i class="fas fa-heart"></i>
+                    Start Your Journey
+                </button>
+            </div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            updateProfile,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc 
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        // Firebase configuration
+const firebaseConfig = window.CONFIG.firebase;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // Configure Google provider
+        googleProvider.addScope('profile');
+        googleProvider.addScope('email');
+        googleProvider.setCustomParameters({
+            prompt: 'select_account'
+        });
+
+        // Global variables
+        window.auth = auth;
+        window.db = db;
+        window.googleProvider = googleProvider;
+
+        // Make Firebase functions globally available
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signInWithPopup = signInWithPopup;
+        window.updateProfile = updateProfile;
+        window.setDoc = setDoc;
+        window.doc = doc;
+        window.getDoc = getDoc;
+
+        // Check if user is already authenticated
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                getDoc(doc(db, 'users', user.uid)).then(userDoc => {
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        saveUserDataLocally(userData);
+                        window.location.href = 'home.html';
+                    }
+                }).catch(error => {
+                    console.log('Error checking user profile:', error);
+                });
+            }
+        });
+    </script>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            baseUrl: "https://raw.githubusercontent.com/xchirxg/db/main",
+            cropConfigs: {
+                boy: { x: 198, y: 512, w: 484, h: 484 },
+                girl: { x: 470, y: 623, w: 466, h: 474 }
+            },
+            characterOptions: {
+                boy: { skin: 6, fronthair: 10, backhair: 8 },
+                girl: { skin: 6, fronthair: 12, backhair: 10 }
+            }
+        };
+
+        // State
+        let currentStep = 1;
+        let isSignUp = true;
+        let selectedGender = '';
+        let characterData = {
+            skin: 1,
+            fronthair: 1,
+            backhair: 1
+        };
+        let currentUser = null;
+        let isGoogleSignIn = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFormValidation();
+        });
+
+        function setupFormValidation() {
+            document.getElementById('authForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (isSignUp && !isGoogleSignIn) {
+                    handleSignUp();
+                } else if (!isGoogleSignIn) {
+                    handleSignIn();
+                }
+            });
+        }
+
+        // Google Sign In
+        window.signInWithGoogle = async function() {
+            try {
+                showLoading('googleSignInBtn');
+                
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+                
+                // Check if user profile exists in Firestore
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    saveUserDataLocally(userData);
+                    window.location.href = 'home.html';
+                } else {
+                    currentUser = user;
+                    isGoogleSignIn = true;
+                    
+                    // Pre-fill user data
+                    document.getElementById('name').value = user.displayName || '';
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('email').disabled = true;
+                    
+                    // Hide password field for Google users
+                    const passwordGroup = document.getElementById('passwordGroup');
+                    passwordGroup.style.display = 'none';
+                    
+                    nextStep();
+                }
+            } catch (error) {
+                let errorMessage = 'Google sign in failed. Please try again.';
+                
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = 'Sign in was cancelled. Please try again.';
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMessage = 'Popup was blocked. Please allow popups for this site.';
+                }
+                
+                showError(errorMessage);
+            } finally {
+                hideLoading('googleSignInBtn');
+            }
+        };
+
+        // Handle Email/Password Sign Up
+        async function handleSignUp() {
+            try {
+                showLoading('submitBtn');
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const name = document.getElementById('name').value.trim();
+
+                if (!validateInput(name, email, password)) {
+                    return;
+                }
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user;
+
+                await updateProfile(currentUser, {
+                    displayName: name
+                });
+
+                nextStep();
+            } catch (error) {
+                showError(getFirebaseErrorMessage(error.code));
+            } finally {
+                hideLoading('submitBtn');
+            }
+        }
+
+        // Handle Email/Password Sign In
+        async function handleSignIn() {
+            try {
+                showLoading('submitBtn');
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    showError('Please enter both email and password.');
+                    return;
+                }
+
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Check if user has completed setup
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    saveUserDataLocally(userData);
+                    window.location.href = 'home.html';
+                } else {
+                    // User exists but hasn't completed profile setup
+                    currentUser = user;
+                    document.getElementById('name').value = user.displayName || '';
+                    nextStep();
+                }
+            } catch (error) {
+                showError(getFirebaseErrorMessage(error.code));
+            } finally {
+                hideLoading('submitBtn');
+            }
+        }
+
+        function validateInput(name, email, password) {
+            if (isSignUp && (!name || name.length < 2)) {
+                showError('Please enter a valid name.');
+                return false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                showError('Please enter a valid email address.');
+                return false;
+            }
+
+            // Skip password validation for Google sign in
+            const passwordGroup = document.getElementById('passwordGroup');
+            if (passwordGroup.style.display !== 'none' && (!password || password.length < 6)) {
+                showError('Password must be at least 6 characters long.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function getFirebaseErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered. Try signing in instead.';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters.';
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email. Try signing up instead.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password. Please try again.';
+                case 'auth/invalid-credential':
+                    return 'Invalid email or password. Please check and try again.';
+                case 'auth/too-many-requests':
+                    return 'Too many attempts. Please try again later.';
+                case 'auth/network-request-failed':
+                    return 'Network error. Please check your connection.';
+                default:
+                    return 'An error occurred. Please try again.';
+            }
+        }
+
+        function saveUserDataLocally(userData) {
+            try {
+                const keys = {
+                    'userId': userData.userId || currentUser?.uid,
+                    'userName': userData.name,
+                    'userEmail': userData.email,
+                    'userGender': userData.gender,
+                    'userAge': userData.age,
+                    'userCharacter': JSON.stringify(userData.character),
+                    'userCreatedAt': userData.createdAt,
+                    'userSetupComplete': 'true'
+                };
+
+                Object.entries(keys).forEach(([key, value]) => {
+                    localStorage.setItem(key, value);
+                });
+
+                // Initialize default game values if not present
+                if (!userData.gameStats) {
+                    const gameDefaults = {
+                        'coins': '1000',
+                        'stars': '0',
+                        'hearts': '0',
+                        'totalWinRate': '0',
+                        'playerLevel': '1',
+                        'knowledgeMarks': '0'
+                    };
+
+                    Object.entries(gameDefaults).forEach(([key, value]) => {
+                        localStorage.setItem(key, value);
+                    });
+                } else {
+                    Object.entries(userData.gameStats).forEach(([key, value]) => {
+                        localStorage.setItem(key, value.toString());
+                    });
+                }
+            } catch (error) {
+                console.error('Error saving user data:', error);
+            }
+        }
+
+        function showLoading(buttonId) {
+            const button = document.getElementById(buttonId);
+            button.classList.add('disabled');
+            button.disabled = true;
+            const originalText = button.innerHTML;
+            button.dataset.originalText = originalText;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        }
+
+        function hideLoading(buttonId) {
+            const button = document.getElementById(buttonId);
+            button.classList.remove('disabled');
+            button.disabled = false;
+            button.innerHTML = button.dataset.originalText || button.innerHTML;
+        }
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            isGoogleSignIn = false;
+            
+            const formTitle = document.getElementById('formTitle');
+            const toggleText = document.getElementById('toggleText');
+            const toggleLink = document.getElementById('toggleLink');
+            const nameGroup = document.getElementById('nameGroup');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Reset form and errors
+            document.getElementById('authForm').reset();
+            document.getElementById('email').disabled = false;
+            passwordGroup.style.display = 'block';
+            hideError();
+
+            if (isSignUp) {
+                formTitle.textContent = 'Create Account';
+                toggleText.textContent = 'Already have an account?';
+                toggleLink.textContent = 'Sign In';
+                nameGroup.style.display = 'block';
+                document.getElementById('name').setAttribute('required', 'true'); 
+                submitBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Continue';
+            } else {
+                formTitle.textContent = 'Welcome Back';
+                toggleText.textContent = "Don't have an account?";
+                toggleLink.textContent = 'Sign Up';
+                nameGroup.style.display = 'none';
+                document.getElementById('name').removeAttribute('required');  
+                submitBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign In';
+            }
+        }
+
+        function validateStep2() {
+            const age = document.getElementById('age').value;
+
+            if (!selectedGender) {
+                showError('Please select your gender.', 'step2Error');
+                return false;
+            }
+
+            if (!age || age < 13 || age > 100) {
+                showError('Age must be between 13 and 100.', 'step2Error');
+                return false;
+            }
+
+            hideError('step2Error');
+            return true;
+        }
+
+        function selectGender(gender) {
+            selectedGender = gender;
+            document.querySelectorAll('.gender-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`[data-gender="${gender}"]`).classList.add('selected');
+            hideError('step2Error');
+        }
+
+        async function nextStep() {
+            if (currentStep === 2 && !validateStep2()) return;
+
+            currentStep++;
+            updateStepIndicator();
+            showStep(currentStep);
+
+            if (currentStep === 3) {
+                document.getElementById('downloadProgress').classList.add('show');
+                await initializeCharacterCustomization();
+                document.getElementById('downloadProgress').classList.remove('show');
+            } else if (currentStep === 4) {
+                showCompletionStep();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepIndicator();
+                showStep(currentStep);
+            }
+        }
+
+        function updateStepIndicator() {
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    dot.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+        }
+
+        async function initializeCharacterCustomization() {
+            updateProgress(10, 'Loading customization options...');
+            
+            if (!selectedGender) {
+                console.error('No gender selected');
+                return;
+            }
+            
+            updateProgress(30, 'Preparing character assets...');
+            await renderCharacterCustomization();
+            
+            updateProgress(70, 'Creating character preview...');
+            await renderCharacterPreview();
+            
+            updateProgress(100, 'Ready!');
+            
+            setTimeout(() => {
+                updateProgress(0, '');
+            }, 500);
+        }
+
+        async function renderCharacterCustomization() {
+            const container = document.getElementById('customizationOptions');
+            const categories = ['skin', 'fronthair', 'backhair'];
+
+            container.innerHTML = '';
+
+            for (const category of categories) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'option-category';
+
+                const label = document.createElement('div');
+                label.className = 'category-label';
+                label.textContent = category === 'fronthair' ? 'Front Hair' : 
+                                  category === 'backhair' ? 'Back Hair' : 
+                                  category.charAt(0).toUpperCase() + category.slice(1);
+
+                const thumbnailsDiv = document.createElement('div');
+                thumbnailsDiv.className = 'option-thumbnails';
+
+                const maxOptions = CONFIG.characterOptions[selectedGender][category] || 10;
+
+                for (let i = 1; i <= maxOptions; i++) {
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = `option-thumbnail ${characterData[category] === i ? 'selected' : ''}`;
+                    thumbnail.onclick = () => selectOption(category, i);
+                    thumbnail.dataset.category = category;
+                    thumbnail.dataset.id = i;
+
+                    thumbnail.classList.add('loading');
+                    thumbnail.textContent = i.toString();
+
+                    thumbnailsDiv.appendChild(thumbnail);
+                    loadThumbnail(thumbnail, selectedGender, category, i);
+                }
+
+                categoryDiv.appendChild(label);
+                categoryDiv.appendChild(thumbnailsDiv);
+                container.appendChild(categoryDiv);
+            }
+        }
+
+        function loadThumbnail(thumbnail, gender, category, id) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 80;
+            canvas.height = 80;
+            const ctx = canvas.getContext('2d');
+            
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                try {
+                    const crop = CONFIG.cropConfigs[gender];
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(
+                        img,
+                        crop.x, crop.y, crop.w, crop.h,
+                        0, 0, canvas.width, canvas.height
+                    );
+                    
+                    thumbnail.innerHTML = '';
+                    thumbnail.appendChild(canvas);
+                    thumbnail.classList.remove('loading');
+                } catch (error) {
+                    fallbackThumbnail(thumbnail, id);
+                }
+            };
+            
+            img.onerror = () => {
+                fallbackThumbnail(thumbnail, id);
+            };
+            
+            img.src = `${CONFIG.baseUrl}/${gender}/${category}/${id}.png`;
+        }
+
+        function fallbackThumbnail(thumbnail, id) {
+            thumbnail.classList.remove('loading');
+            thumbnail.style.backgroundColor = 'white';
+            thumbnail.style.color = '#666';
+            thumbnail.style.fontSize = '14px';
+            thumbnail.style.fontWeight = 'bold';
+            thumbnail.textContent = id.toString();
+        }
+
+        function selectOption(category, id) {
+            characterData[category] = id;
+            
+            document.querySelectorAll(`[data-category="${category}"]`).forEach((thumb) => {
+                thumb.classList.remove('selected');
+                if (parseInt(thumb.dataset.id) === id) {
+                    thumb.classList.add('selected');
+                }
+            });
+
+            renderCharacterPreview();
+        }
+
+        async function renderCharacterPreview() {
+            const container = document.getElementById('characterPreview');
+            container.innerHTML = '<div style="color: rgba(255,255,255,0.5); font-size: 12px; text-align: center; margin-top: 50px;">Generating...</div>';
+
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 200;
+                const ctx = canvas.getContext('2d');
+                
+                // White background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const crop = CONFIG.cropConfigs[selectedGender];
+                
+                // Layer order for proper rendering including default clothes
+                const renderOrder = [
+                    { category: 'backhair', id: characterData.backhair },
+                    { category: 'skin', id: characterData.skin },
+                    { category: 'top', id: 1 }, // Default top
+                    { category: 'bottom', id: 1 }, // Default bottom
+                    { category: 'shoes', id: 1 }, // Default shoes
+                    { category: 'fronthair', id: characterData.fronthair }
+                ];
+
+                for (const layer of renderOrder) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    await new Promise((resolve) => {
+                        img.onload = () => {
+                            try {
+                                ctx.drawImage(
+                                    img,
+                                    crop.x, crop.y, crop.w, crop.h,
+                                    0, 0, canvas.width, canvas.height
+                                );
+                                resolve();
+                            } catch (error) {
+                                resolve();
+                            }
+                        };
+                        
+                        img.onerror = () => resolve();
+                        img.src = `${CONFIG.baseUrl}/${selectedGender}/${layer.category}/${layer.id}.png`;
+                    });
+                }
+
+                finishPreviewRender(canvas);
+                
+            } catch (error) {
+                container.innerHTML = '<div style="color: #ff6b6b; font-size: 12px; text-align: center; margin-top: 50px;">Preview Error</div>';
+            }
+        }
+
+        function finishPreviewRender(canvas) {
+            const container = document.getElementById('characterPreview');
+            container.innerHTML = '';
+            
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = 120;
+            displayCanvas.height = 120;
+            const displayCtx = displayCanvas.getContext('2d');
+            
+            // White background
+            displayCtx.fillStyle = 'white';
+            displayCtx.fillRect(0, 0, 120, 120);
+            
+            // Create circular clip
+            displayCtx.save();
+            displayCtx.beginPath();
+            displayCtx.arc(60, 60, 60, 0, Math.PI * 2);
+            displayCtx.clip();
+            
+            // Draw the character centered
+            displayCtx.drawImage(canvas, 0, 0, 200, 200, 0, 0, 120, 120);
+            displayCtx.restore();
+            
+            container.appendChild(displayCanvas);
+        }
+
+        function showCompletionStep() {
+            const loadingState = document.getElementById('loadingState');
+            const completeBtn = document.getElementById('completeBtn');
+            
+            loadingState.classList.add('show');
+            completeBtn.style.display = 'none';
+
+            setTimeout(() => {
+                loadingState.classList.remove('show');
+                completeBtn.style.display = 'block';
+            }, 2000);
+        }
+
+        async function completeSetup() {
+            try {
+                showLoading('completeBtn');
+                
+                if (!currentUser) {
+                    throw new Error('No authenticated user found');
+                }
+
+                const userData = {
+                    userId: currentUser.uid,
+                    name: document.getElementById('name').value.trim() || currentUser.displayName,
+                    email: currentUser.email,
+                    gender: selectedGender,
+                    age: parseInt(document.getElementById('age').value),
+                    character: {
+                        ...characterData,
+                        top: 1,
+                        bottom: 1,
+                        shoes: 1,
+                        eyeball: 1,
+                        eyebrow: 1,
+                        mouth: 1
+                    },
+                    gameStats: {
+                        gameCoins: 1000,
+                        gameStars: 0,
+                        gameHearts: 0,
+                        totalWinRate: 0,
+                        playerLevel: 1,
+                        knowledgeMarks: 0
+                    },
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+
+                // Save user data to Firestore
+                await setDoc(doc(db, 'users', currentUser.uid), userData);
+
+                // Save to localStorage for offline access
+                saveUserDataLocally(userData);
+
+                // Redirect to add partner page for new signups
+                setTimeout(() => {
+                    window.location.href = 'add.html';
+                }, 1000);
+
+            } catch (error) {
+                showError('Error completing setup. Please try again.');
+            } finally {
+                hideLoading('completeBtn');
+            }
+        }
+
+        function updateProgress(percentage, text) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function showError(message, elementId = 'authError') {
+            const errorEl = document.getElementById(elementId);
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    errorEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function hideError(elementId = 'authError') {
+            const errorEl = document.getElementById(elementId);
+            if (errorEl) {
+                errorEl.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

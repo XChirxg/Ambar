@@ -1,0 +1,428 @@
+
+        body {
+            background: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: 80px;
+            padding-bottom: 100px;
+        }
+        
+        /* Main Game Container */
+        .game-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* Betting Section */
+        .betting-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .betting-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .bet-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .bet-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+        
+        .bet-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .bet-btn.selected {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-color: #FFD700;
+            color: #000;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .custom-bet {
+            margin: 20px 0;
+        }
+        
+        .custom-bet input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            width: 150px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-bet input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .start-game-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .start-game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .start-game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Game Area */
+        .game-area {
+            display: none;
+            text-align: center;
+        }
+        
+        .round-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bet-display {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .progress-section {
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        /* Prediction Section */
+        .prediction-section {
+            margin: 30px 0;
+        }
+        
+        .prediction-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .prediction-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .prediction-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 15px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .prediction-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .prediction-btn.selected {
+            background: linear-gradient(135deg, #64b5f6, #1976d2);
+            border-color: #64b5f6;
+            color: #000;
+            box-shadow: 0 5px 15px rgba(100, 181, 246, 0.3);
+        }
+        
+        .prediction-odds {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Dice Section */
+        .dice-section {
+            margin: 40px 0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffffff, #e0e0e0);
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .dice.rolling {
+            animation: diceRoll 1.5s ease-in-out;
+        }
+        
+        .dice.winner {
+            background: linear-gradient(135deg, #00FF00, #32CD32);
+            border-color: #00FF00;
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+            color: #000;
+        }
+        
+        .dice.loser {
+            background: linear-gradient(135deg, #FF4444, #CC0000);
+            border-color: #FF4444;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+        
+        @keyframes diceRoll {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            25% { transform: rotateX(90deg) rotateY(90deg) scale(1.1); }
+            50% { transform: rotateX(180deg) rotateY(180deg) scale(1.2); }
+            75% { transform: rotateX(270deg) rotateY(270deg) scale(1.1); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        
+        .roll-dice-btn {
+            background: linear-gradient(135deg, #64b5f6, #1976d2);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(100, 181, 246, 0.3);
+        }
+        
+        .roll-dice-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(100, 181, 246, 0.4);
+        }
+        
+        .roll-dice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-message {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            font-weight: 500;
+            min-height: 30px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Result Popup */
+        .result-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .popup-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: popupSlideIn 0.4s ease-out;
+        }
+        
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .result-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .result-amount {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        
+        .result-amount.positive {
+            color: #00FF00;
+        }
+        
+        .result-amount.negative {
+            color: #FF4444;
+        }
+        
+        .result-details {
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .next-game-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .next-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            .dice-container {
+                gap: 15px;
+            }
+            
+            .dice {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .betting-section {
+                padding: 25px 20px;
+            }
+            
+            .betting-title {
+                font-size: 1.5rem;
+            }
+            
+            .bet-options {
+                gap: 10px;
+            }
+            
+            .bet-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-width: 60px;
+            }
+            
+            .prediction-options {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+    

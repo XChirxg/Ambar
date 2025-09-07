@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar Notification System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style/notifications.css">
+
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Ambar Notification System</h1>
+            <p>Click buttons to test different notification types with real Firebase integration</p>
+        </div>
+
+        <div class="demo-buttons">
+            <button class="demo-btn" onclick="AmbarNotifications.showWelcomeBonus()">Welcome Bonus</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showGiftReceived('Cute Top', 'Sarah')">Gift Received</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showNewMessage('Hey! How are you doing?', 'Alex')">New Message</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showStreakAchievement(10)">Streak Achievement</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showCoinsEarned(10000, 'First 10K')">10K Coins Milestone</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showHeartsEarned(100)">100 Hearts Milestone</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showLevelUp(5, 'Knowledge')">Level Up</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showPartnerRequest('Maya', 85)">Partner Request</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showDailyReward(500, 2)">Daily Login Reward</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showPartnerOnline('John')">Partner Online Toast</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showGiftToast('Beautiful Dress', 'Emma')">Gift Toast</button>
+            <button class="demo-btn" onclick="AmbarNotifications.showStreakBreakWarning()">Streak Break Warning</button>
+        </div>
+    </div>
+
+    <!-- Notification Overlay -->
+    <div class="notification-overlay" id="notificationOverlay">
+        <div class="notification-modal" id="notificationModal">
+            <div class="notification-content">
+                <div class="notification-icon" id="notificationIcon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="notification-title" id="notificationTitle">Title</div>
+                <div class="notification-message" id="notificationMessage">Message</div>
+                <div class="notification-reward" id="notificationReward" style="display: none;">
+                    <i class="fas fa-coins"></i>
+                    <span>+1000 Coins</span>
+                </div>
+                <div class="notification-actions">
+                    <button class="notification-btn" id="notificationClose">Close</button>
+                    <button class="notification-btn primary" id="notificationAction">Action</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+<script src="config.js"></script>
+    <script type="module">
+        // Firebase imports and configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, 
+            doc, 
+            updateDoc, 
+            increment, 
+            serverTimestamp, 
+            getDoc,
+            arrayUnion
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        class AmbarNotificationSystem {
+            constructor() {
+                this.overlay = document.getElementById('notificationOverlay');
+                this.modal = document.getElementById('notificationModal');
+                this.icon = document.getElementById('notificationIcon');
+                this.title = document.getElementById('notificationTitle');
+                this.message = document.getElementById('notificationMessage');
+                this.reward = document.getElementById('notificationReward');
+                this.closeBtn = document.getElementById('notificationClose');
+                this.actionBtn = document.getElementById('notificationAction');
+                this.toastContainer = document.getElementById('toastContainer');
+                
+                this.currentUser = null;
+                this.userData = null;
+                
+                this.setupEventListeners();
+                this.initializeAuth();
+            }
+
+            initializeAuth() {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        this.currentUser = user;
+                        await this.loadUserData();
+                        this.checkForPendingNotifications();
+                    } else {
+                        this.currentUser = null;
+                        this.userData = null;
+                    }
+                });
+            }
+
+            async loadUserData() {
+                if (!this.currentUser) return;
+                
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', this.currentUser.uid));
+                    if (userDoc.exists()) {
+                        this.userData = userDoc.data();
+                        
+                        // Sync localStorage with Firebase data
+                        if (this.userData.gameStats) {
+                            if (this.userData.gameStats.coins !== undefined) {
+                                localStorage.setItem('coins', this.userData.gameStats.coins.toString());
+                            }
+                            if (this.userData.gameStats.stars !== undefined) {
+                                localStorage.setItem('stars', this.userData.gameStats.stars.toString());
+                            }
+                            if (this.userData.gameStats.hearts !== undefined) {
+                                localStorage.setItem('hearts', this.userData.gameStats.hearts.toString());
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            setupEventListeners() {
+                this.closeBtn.addEventListener('click', () => this.hide());
+                this.overlay.addEventListener('click', (e) => {
+                    if (e.target === this.overlay) this.hide();
+                });
+
+                // Listen for keyboard events
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.overlay.classList.contains('show')) {
+                        this.hide();
+                    }
+                });
+            }
+
+            show(config) {
+                // Set modal type class
+                this.modal.className = `notification-modal ${config.type || ''}`;
+                
+                // Set icon
+                this.icon.className = `notification-icon ${config.iconType || config.type || ''}`;
+                this.icon.innerHTML = `<i class="${config.icon}"></i>`;
+                
+                // Set content
+                this.title.textContent = config.title;
+                this.message.textContent = config.message;
+                
+                // Handle reward display
+                if (config.reward) {
+                    this.reward.style.display = 'flex';
+                    this.reward.innerHTML = config.reward;
+                    
+                    // Add reward to user's account
+                    if (config.currencyUpdate) {
+                        this.updateUserCurrency(config.currencyUpdate);
+                    }
+                } else {
+                    this.reward.style.display = 'none';
+                }
+                
+                // Set action button
+                if (config.action) {
+                    this.actionBtn.textContent = config.action.text;
+                    this.actionBtn.style.display = 'inline-block';
+                    this.actionBtn.onclick = () => {
+                        this.hide();
+                        if (config.action.callback) config.action.callback();
+                        if (config.action.redirect) window.location.href = config.action.redirect;
+                    };
+                } else {
+                    this.actionBtn.style.display = 'none';
+                }
+                
+                // Show overlay
+                this.overlay.classList.add('show');
+                
+                // Play notification sound
+                this.playNotificationSound(config.type);
+                
+                // Mark as shown
+                if (config.markAsShown) {
+                    this.markNotificationAsShown(config.markAsShown);
+                }
+                
+                // Update notification tracking
+                if (config.trackNotification) {
+                    this.trackNotification(config.trackNotification);
+                }
+            }
+
+            hide() {
+                this.overlay.classList.remove('show');
+            }
+
+            async updateUserCurrency(updates) {
+                if (!this.currentUser) return;
+                
+                try {
+                    const updateData = {};
+                    
+                    if (updates.coins) {
+                        updateData['gameStats.coins'] = increment(updates.coins);
+                        const currentCoins = parseInt(localStorage.getItem('coins') || '0');
+                        const newCoins = currentCoins + updates.coins;
+                        localStorage.setItem('coins', newCoins.toString());
+                        
+                        // Update header display if available
+                        this.updateHeaderDisplay('coins', newCoins);
+                    }
+                    
+                    if (updates.stars) {
+                        updateData['gameStats.stars'] = increment(updates.stars);
+                        const currentStars = parseInt(localStorage.getItem('stars') || '0');
+                        const newStars = currentStars + updates.stars;
+                        localStorage.setItem('stars', newStars.toString());
+                        
+                        this.updateHeaderDisplay('stars', newStars);
+                    }
+                    
+                    if (updates.hearts) {
+                        updateData['gameStats.hearts'] = increment(updates.hearts);
+                        const currentHearts = parseInt(localStorage.getItem('hearts') || '0');
+                        const newHearts = currentHearts + updates.hearts;
+                        localStorage.setItem('hearts', newHearts.toString());
+                        
+                        this.updateHeaderDisplay('hearts', newHearts);
+                    }
+
+                    if (updates.currentStreak !== undefined) {
+                        localStorage.setItem('currentStreak', updates.currentStreak.toString());
+                        updateData['gameStats.currentStreak'] = updates.currentStreak;
+                    }
+
+                    if (updates.level) {
+                        const currentLevel = parseInt(localStorage.getItem('level') || '1');
+                        const newLevel = Math.max(currentLevel, updates.level);
+                        localStorage.setItem('level', newLevel.toString());
+                        updateData['gameStats.level'] = newLevel;
+                    }
+                    
+                    if (Object.keys(updateData).length > 0) {
+                        await updateDoc(doc(db, 'users', this.currentUser.uid), {
+                            ...updateData,
+                            lastCurrencyUpdate: serverTimestamp()
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Error updating user currency:', error);
+                }
+            }
+
+            updateHeaderDisplay(currency, value) {
+                // Update header display if AmbarHeader is available
+                if (window.AmbarHeader && window.AmbarHeader.setCurrency) {
+                    window.AmbarHeader.setCurrency(currency, value);
+                }
+                
+                // Update profile display if ProfileAPI is available
+                if (window.ProfileAPI && window.ProfileAPI.refreshProfile) {
+                    window.ProfileAPI.refreshProfile();
+                }
+            }
+
+            async trackNotification(notificationData) {
+                if (!this.currentUser) return;
+                
+                try {
+                    await updateDoc(doc(db, 'users', this.currentUser.uid), {
+                        notifications: arrayUnion({
+                            ...notificationData,
+                            timestamp: serverTimestamp(),
+                            userId: this.currentUser.uid
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error tracking notification:', error);
+                }
+            }
+
+            playNotificationSound(type) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    let frequencies;
+                    
+                    switch(type) {
+                        case 'welcome':
+                        case 'achievement':
+                        case 'level':
+                            frequencies = [523.25, 659.25, 783.99]; // C-E-G chord
+                            break;
+                        case 'gift':
+                        case 'friend':
+                            frequencies = [659.25, 783.99]; // E-G
+                            break;
+                        case 'message':
+                            frequencies = [440]; // A
+                            break;
+                        case 'streak':
+                            frequencies = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C
+                            break;
+                        case 'coins':
+                        case 'hearts':
+                            frequencies = [784, 880, 988]; // G-A-B
+                            break;
+                        default:
+                            frequencies = [523.25]; // C
+                    }
+                    
+                    frequencies.forEach((freq, index) => {
+                        setTimeout(() => {
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                            
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                            
+                            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                            oscillator.type = 'sine';
+                            
+                            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                            
+                            oscillator.start(audioContext.currentTime);
+                            oscillator.stop(audioContext.currentTime + 0.3);
+                        }, index * 100);
+                    });
+                } catch (error) {
+                    console.log('Audio context not available');
+                }
+            }
+
+            showToast(type, title, message, action = null, duration = 5000) {
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                
+                const iconMap = {
+                    gift: 'fas fa-gift',
+                    message: 'fas fa-comment-dots',
+                    achievement: 'fas fa-trophy',
+                    coins: 'fas fa-coins',
+                    hearts: 'fas fa-heart',
+                    friend: 'fas fa-user-friends',
+                    developer: 'fas fa-code',
+                    streak: 'fas fa-fire',
+                    level: 'fas fa-arrow-up'
+                };
+                
+                toast.innerHTML = `
+                    <div class="toast-icon">
+                        <i class="${iconMap[type] || 'fas fa-bell'}"></i>
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-title">${this.escapeHtml(title)}</div>
+                        <div class="toast-message">${this.escapeHtml(message)}</div>
+                    </div>
+                    <button class="toast-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                // Add click handler
+                if (action) {
+                    toast.style.cursor = 'pointer';
+                    toast.addEventListener('click', (e) => {
+                        if (!e.target.closest('.toast-close')) {
+                            if (action.callback) action.callback();
+                            if (action.redirect) window.location.href = action.redirect;
+                            this.removeToast(toast);
+                        }
+                    });
+                }
+                
+                // Add close handler
+                toast.querySelector('.toast-close').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.removeToast(toast);
+                });
+                
+                this.toastContainer.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 100);
+                
+                // Auto remove
+                setTimeout(() => this.removeToast(toast), duration);
+                
+                return toast;
+            }
+
+            removeToast(toast) {
+                if (toast && toast.parentNode) {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 400);
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            markNotificationAsShown(notificationId) {
+                const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+                if (!shownNotifications.includes(notificationId)) {
+                    shownNotifications.push(notificationId);
+                    localStorage.setItem('shownNotifications', JSON.stringify(shownNotifications));
+                }
+            }
+
+            hasNotificationBeenShown(notificationId) {
+                const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+                return shownNotifications.includes(notificationId);
+            }
+
+            checkForPendingNotifications() {
+                if (!this.currentUser) return;
+
+                // Check for first time welcome bonus
+                if (!this.hasNotificationBeenShown('welcome-bonus')) {
+                    setTimeout(() => this.showWelcomeBonus(), 1000);
+                }
+
+                // Check for achievement notifications based on real data
+                setTimeout(() => this.checkAchievements(), 2000);
+
+                // Check for daily login rewards
+                setTimeout(() => this.checkDailyLogin(), 3000);
+
+                // Check for streak warnings
+                setTimeout(() => this.checkStreakWarnings(), 4000);
+            }
+
+            checkAchievements() {
+                if (!this.userData) return;
+
+                const coins = parseInt(localStorage.getItem('coins') || '0');
+                const stars = parseInt(localStorage.getItem('stars') || '0');
+                const hearts = parseInt(localStorage.getItem('hearts') || '0');
+                const level = parseInt(localStorage.getItem('level') || '1');
+                const currentStreak = parseInt(localStorage.getItem('currentStreak') || '0');
+
+                // Check 1000 coins achievement
+                if (coins >= 1000 && !this.hasNotificationBeenShown('achievement-1k-coins')) {
+                    setTimeout(() => this.showCoinsEarned(1000, 'First 1K'), 500);
+                }
+
+                // Check 10K coins achievement  
+                if (coins >= 10000 && !this.hasNotificationBeenShown('achievement-10k-coins')) {
+                    setTimeout(() => this.showCoinsEarned(10000, 'First 10K'), 1000);
+                }
+
+                // Check 10 day streak achievement
+                if (currentStreak >= 10 && !this.hasNotificationBeenShown('achievement-10-day-streak')) {
+                    setTimeout(() => this.showStreakAchievement(10), 1500);
+                }
+
+                // Check 100 hearts achievement
+                if (hearts >= 100 && !this.hasNotificationBeenShown('achievement-100-hearts')) {
+                    setTimeout(() => this.showHeartsEarned(100), 2000);
+                }
+
+                // Check level 5 achievement
+                if (level >= 5 && !this.hasNotificationBeenShown('achievement-level-5')) {
+                    setTimeout(() => this.showLevelUp(5, 'Overall'), 2500);
+                }
+
+                // Check if user has partner (show partner-related achievements)
+                if (this.userData.partnerId && !this.hasNotificationBeenShown('achievement-first-partner')) {
+                    setTimeout(() => this.showFirstPartnerAchievement(), 3000);
+                }
+            }
+
+            checkDailyLogin() {
+                const lastLogin = localStorage.getItem('lastLoginDate');
+                const today = new Date().toDateString();
+                
+                if (lastLogin !== today) {
+                    localStorage.setItem('lastLoginDate', today);
+                    
+                    const loginStreak = parseInt(localStorage.getItem('loginStreak') || '0') + 1;
+                    localStorage.setItem('loginStreak', loginStreak.toString());
+                    
+                    // Show daily reward based on login streak
+                    const baseReward = 100;
+                    const streakBonus = Math.min(loginStreak * 50, 500);
+                    const totalReward = baseReward + streakBonus;
+                    
+                    setTimeout(() => this.showDailyReward(totalReward, loginStreak), 500);
+                }
+            }
+
+            checkStreakWarnings() {
+                const lastGiftDate = localStorage.getItem('lastGiftDate');
+                if (!lastGiftDate) return;
+                
+                const lastGift = new Date(lastGiftDate);
+                const now = new Date();
+                const hoursSinceLastGift = (now - lastGift) / (1000 * 60 * 60);
+                
+                // Warn if more than 20 hours since last gift
+                if (hoursSinceLastGift > 20 && hoursSinceLastGift < 24) {
+                    this.showStreakBreakWarning();
+                }
+            }
+
+            // Notification Methods
+            showWelcomeBonus() {
+                this.show({
+                    type: 'welcome',
+                    iconType: 'coins',
+                    icon: 'fas fa-gift',
+                    title: 'Welcome to Ambar!',
+                    message: 'Your love journey begins now! Here\'s your starter bonus to help you get started.',
+                    reward: '<i class="fas fa-coins"></i> <span>+1000 Coins</span>',
+                    currencyUpdate: { coins: 1000 },
+                    action: {
+                        text: 'Start Playing',
+                        redirect: 'game.html'
+                    },
+                    markAsShown: 'welcome-bonus',
+                    trackNotification: {
+                        type: 'welcome_bonus',
+                        amount: 1000
+                    }
+                });
+            }
+
+            showGiftReceived(giftName, senderName) {
+                this.show({
+                    type: 'gift',
+                    icon: 'fas fa-gift',
+                    title: 'New Gift Received!',
+                    message: `${senderName} sent you a beautiful ${giftName}! Your bond is growing stronger.`,
+                    action: {
+                        text: 'View Chat',
+                        redirect: 'line.html'
+                    },
+                    trackNotification: {
+                        type: 'gift_received',
+                        giftName: giftName,
+                        sender: senderName
+                    }
+                });
+            }
+
+            showNewMessage(messageText, senderName) {
+                const preview = messageText.length > 50 ? messageText.substring(0, 50) + '...' : messageText;
+                
+                this.show({
+                    type: 'message',
+                    icon: 'fas fa-comment-dots',
+                    title: 'New Message',
+                    message: `${senderName}: "${preview}"`,
+                    action: {
+                        text: 'Reply',
+                        redirect: 'line.html'
+                    },
+                    trackNotification: {
+                        type: 'new_message',
+                        sender: senderName
+                    }
+                });
+            }
+
+            showStreakAchievement(days) {
+                this.show({
+                    type: 'streak',
+                    iconType: 'streak',
+                    icon: 'fas fa-fire',
+                    title: `${days} Day Streak!`,
+                    message: `Amazing dedication! You've maintained your gift exchange streak for ${days} consecutive days.`,
+                    reward: `<i class="fas fa-star"></i> <span>+${days} Stars</span>`,
+                    currencyUpdate: { stars: days },
+                    action: {
+                        text: 'Keep Going!',
+                        redirect: 'shop.html'
+                    },
+                    markAsShown: `achievement-${days}-day-streak`,
+                    trackNotification: {
+                        type: 'streak_achievement',
+                        days: days
+                    }
+                });
+            }
+
+            showCoinsEarned(amount, milestone) {
+                this.show({
+                    type: 'coins',
+                    iconType: 'coins',
+                    icon: 'fas fa-coins',
+                    title: `${milestone} Coins!`,
+                    message: `Congratulations! You've reached your ${milestone.toLowerCase()} coins milestone. Keep playing games to earn more!`,
+                    reward: `<i class="fas fa-trophy"></i> <span>${milestone} Coins Achievement</span>`,
+                    action: {
+                        text: 'Play More Games',
+                        redirect: 'game.html'
+                    },
+                    markAsShown: `achievement-${amount}-coins`,
+                    trackNotification: {
+                        type: 'coins_milestone',
+                        amount: amount,
+                        milestone: milestone
+                    }
+                });
+            }
+
+            showHeartsEarned(amount) {
+                this.show({
+                    type: 'hearts',
+                    iconType: 'hearts',
+                    icon: 'fas fa-heart',
+                    title: `${amount} Hearts Milestone!`,
+                    message: `Your partner really loves you! You've received ${amount} hearts total. Your relationship is blooming beautifully.`,
+                    reward: `<i class="fas fa-heart"></i> <span>${amount} Hearts Achievement</span>`,
+                    action: {
+                        text: 'View Profile',
+                        redirect: 'profile.html'
+                    },
+                    markAsShown: `achievement-${amount}-hearts`,
+                    trackNotification: {
+                        type: 'hearts_milestone',
+                        amount: amount
+                    }
+                });
+            }
+
+            showLevelUp(level, gameType) {
+                this.show({
+                    type: 'level',
+                    iconType: 'level',
+                    icon: 'fas fa-arrow-up',
+                    title: 'Level Up!',
+                    message: `Congratulations! You've reached level ${level} in ${gameType}! Your skills are improving.`,
+                    reward: '<i class="fas fa-coins"></i> <span>+200 Coins</span>',
+                    currencyUpdate: { coins: 200, level: level },
+                    action: {
+                        text: 'Continue Playing',
+                        redirect: 'game.html'
+                    },
+                    markAsShown: `achievement-level-${level}`,
+                    trackNotification: {
+                        type: 'level_up',
+                        level: level,
+                        gameType: gameType
+                    }
+                });
+            }
+
+            showPartnerRequest(partnerName, compatibility) {
+                this.show({
+                    type: 'friend-request',
+                    iconType: 'friend',
+                    icon: 'fas fa-user-plus',
+                    title: 'New Partner Request!',
+                    message: `${partnerName} wants to be your partner! You have ${compatibility}% compatibility based on your profiles.`,
+                    action: {
+                        text: 'View Request',
+                        redirect: 'add.html'
+                    },
+                    trackNotification: {
+                        type: 'partner_request',
+                        partnerName: partnerName,
+                        compatibility: compatibility
+                    }
+                });
+            }
+
+            showFirstPartnerAchievement() {
+                this.show({
+                    type: 'achievement',
+                    icon: 'fas fa-heart',
+                    title: 'First Partnership!',
+                    message: 'Congratulations! You\'ve found your first partner. Your love journey together begins now!',
+                    reward: '<i class="fas fa-gift"></i> <span>Partnership Bonus: +500 Coins</span>',
+                    currencyUpdate: { coins: 500 },
+                    action: {
+                        text: 'Start Chatting',
+                        redirect: 'line.html'
+                    },
+                    markAsShown: 'achievement-first-partner',
+                    trackNotification: {
+                        type: 'first_partner',
+                        bonus: 500
+                    }
+                });
+            }
+
+            showDailyReward(amount, streak) {
+                this.show({
+                    type: 'coins',
+                    iconType: 'coins',
+                    icon: 'fas fa-calendar-check',
+                    title: 'Daily Login Reward!',
+                    message: `Welcome back! Day ${streak} login bonus. Keep coming back for bigger rewards!`,
+                    reward: `<i class="fas fa-coins"></i> <span>+${amount} Coins</span>`,
+                    currencyUpdate: { coins: amount },
+                    action: {
+                        text: 'Explore',
+                        redirect: 'home.html'
+                    },
+                    trackNotification: {
+                        type: 'daily_reward',
+                        amount: amount,
+                        streak: streak
+                    }
+                });
+            }
+
+            showStreakBreakWarning() {
+                this.showToast('streak', 'Streak Warning!', 'Your streak will break in 4 hours if you don\'t send a gift!', {
+                    redirect: 'shop.html'
+                }, 8000);
+            }
+
+            showCertificateEarned(partnerName, matchPercentage) {
+                this.show({
+                    type: 'achievement',
+                    icon: 'fas fa-certificate',
+                    title: '30-Day Certificate Earned!',
+                    message: `Amazing! You and ${partnerName} completed 30 days together with ${matchPercentage}% compatibility!`,
+                    reward: '<i class="fas fa-trophy"></i> <span>Relationship Certificate</span>',
+                    action: {
+                        text: 'View Certificate',
+                        redirect: 'profile.html'
+                    },
+                    trackNotification: {
+                        type: 'certificate_earned',
+                        partnerName: partnerName,
+                        compatibility: matchPercentage
+                    }
+                });
+            }
+
+            // Toast Notifications for Quick Feedback
+            showPartnerOnline(partnerName) {
+                this.showToast('friend', 'Partner Online', `${partnerName} is now online!`, {
+                    redirect: 'line.html'
+                });
+            }
+
+            showGiftToast(giftName, senderName) {
+                this.showToast('gift', 'New Gift!', `${senderName} sent you a ${giftName}`, {
+                    redirect: 'line.html'
+                });
+            }
+
+            showMessageToast(messagePreview, senderName) {
+                this.showToast('message', 'New Message', `${senderName}: ${messagePreview}`, {
+                    redirect: 'line.html'
+                });
+            }
+
+            showAchievementToast(achievementTitle) {
+                this.showToast('achievement', 'Achievement!', achievementTitle, {
+                    redirect: 'profile.html'
+                });
+            }
+
+            showCoinsToast(amount) {
+                this.showToast('coins', 'Coins Earned!', `+${amount} coins added to your wallet`);
+            }
+
+            showHeartsToast(amount, senderName = 'Your partner') {
+                this.showToast('hearts', 'Hearts Received!', `+${amount} hearts from ${senderName}`);
+            }
+
+            showStreakToast(days) {
+                this.showToast('streak', 'Streak Continues!', `${days} day streak maintained!`);
+            }
+
+            showLevelUpToast(level, gameType) {
+                this.showToast('level', 'Level Up!', `Reached level ${level} in ${gameType}!`);
+            }
+
+            // Real-time notification methods for Firebase integration
+            async handleRealtimeGiftReceived(giftData) {
+                const { category, senderName, heartsValue } = giftData;
+                
+                // Add hearts to user account
+                await this.updateUserCurrency({ hearts: heartsValue });
+                
+                // Show notification
+                this.showGiftReceived(category, senderName);
+                
+                // Show toast for quick feedback
+                this.showHeartsToast(heartsValue, senderName);
+            }
+
+            async handleRealtimeMessageReceived(messageData) {
+                const { text, senderName } = messageData;
+                this.showMessageToast(text.substring(0, 40), senderName);
+            }
+
+            async handleRealtimeStreakUpdate(streakData) {
+                const { currentStreak, isNewRecord } = streakData;
+                
+                localStorage.setItem('currentStreak', currentStreak.toString());
+                
+                if (isNewRecord && currentStreak % 5 === 0) {
+                    // Show achievement for every 5-day milestone
+                    this.showStreakAchievement(currentStreak);
+                } else if (currentStreak > 1) {
+                    this.showStreakToast(currentStreak);
+                }
+            }
+
+            // Utility methods for external integration
+            static init() {
+                if (!window.AmbarNotifications) {
+                    window.AmbarNotifications = new AmbarNotificationSystem();
+                }
+                return window.AmbarNotifications;
+            }
+
+            static checkForNotifications() {
+                const notifications = AmbarNotificationSystem.init();
+                notifications.checkForPendingNotifications();
+            }
+
+            // API for external pages to trigger notifications
+            static showWelcomeBonus() {
+                AmbarNotificationSystem.init().showWelcomeBonus();
+            }
+
+            static showGiftReceived(giftName, senderName) {
+                AmbarNotificationSystem.init().showGiftReceived(giftName, senderName);
+            }
+
+            static showNewMessage(messageText, senderName) {
+                AmbarNotificationSystem.init().showNewMessage(messageText, senderName);
+            }
+
+            static showCoinsEarned(amount, milestone) {
+                AmbarNotificationSystem.init().showCoinsEarned(amount, milestone);
+            }
+
+            static showHeartsEarned(amount) {
+                AmbarNotificationSystem.init().showHeartsEarned(amount);
+            }
+
+            static showStreakAchievement(days) {
+                AmbarNotificationSystem.init().showStreakAchievement(days);
+            }
+
+            static showLevelUp(level, gameType) {
+                AmbarNotificationSystem.init().showLevelUp(level, gameType);
+            }
+
+            static showPartnerRequest(partnerName, compatibility) {
+                AmbarNotificationSystem.init().showPartnerRequest(partnerName, compatibility);
+            }
+
+            static showDailyReward(amount, streak) {
+                AmbarNotificationSystem.init().showDailyReward(amount, streak);
+            }
+
+            static showToast(type, title, message, action = null) {
+                AmbarNotificationSystem.init().showToast(type, title, message, action);
+            }
+
+            // Real-time handlers for Firebase listeners
+            static handleGiftReceived(giftData) {
+                AmbarNotificationSystem.init().handleRealtimeGiftReceived(giftData);
+            }
+
+            static handleMessageReceived(messageData) {
+                AmbarNotificationSystem.init().handleRealtimeMessageReceived(messageData);
+            }
+
+            static handleStreakUpdate(streakData) {
+                AmbarNotificationSystem.init().handleRealtimeStreakUpdate(streakData);
+            }
+        }
+
+        // Initialize the notification system
+        document.addEventListener('DOMContentLoaded', function() {
+            window.AmbarNotifications = AmbarNotificationSystem.init();
+        });
+
+        // Export for module use
+        window.AmbarNotificationSystem = AmbarNotificationSystem;
+
+        // Auto-check for notifications when page loads
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                AmbarNotificationSystem.checkForNotifications();
+            }, 1000);
+        });
+
+        // Listen for storage changes to sync across tabs
+        window.addEventListener('storage', function(event) {
+            if (event.storageArea === localStorage && window.AmbarNotifications) {
+                // Refresh user data when localStorage changes
+                if (window.AmbarNotifications.loadUserData) {
+                    window.AmbarNotifications.loadUserData();
+                }
+            }
+        });
+    </script>
+
+    <!-- Easy Integration Instructions -->
+    <script>
+        /*
+        EASY INTEGRATION GUIDE:
+        
+        1. Include this notification system in any page by adding this script tag:
+           <script src="notifications.html" defer>
+        
+        2. Call notifications from any page:
+           
+           // Basic notifications
+           AmbarNotifications.showWelcomeBonus();
+           AmbarNotifications.showGiftReceived('Cute Top', 'Sarah');
+           AmbarNotifications.showNewMessage('Hello!', 'Alex');
+           
+           // Achievement notifications  
+           AmbarNotifications.showCoinsEarned(10000, 'First 10K');
+           AmbarNotifications.showHeartsEarned(100);
+           AmbarNotifications.showStreakAchievement(10);
+           AmbarNotifications.showLevelUp(5, 'Knowledge');
+           
+           // Quick toast notifications
+           AmbarNotifications.showToast('gift', 'New Gift!', 'You received a dress');
+           AmbarNotifications.showToast('coins', 'Coins Earned!', '+500 coins');
+           
+           // Real-time Firebase integration
+           AmbarNotifications.handleGiftReceived({
+               category: 'top',
+               senderName: 'Partner',
+               heartsValue: 50
+           });
+           
+           AmbarNotifications.handleMessageReceived({
+               text: 'Hey how are you?',
+               senderName: 'Partner'
+           });
+           
+        3. The system automatically:
+           - Updates Firebase with real currency changes
+           - Syncs with localStorage
+           - Updates header displays
+           - Tracks notification history
+           - Plays appropriate sounds
+           - Manages achievement milestones
+           
+        4. For automatic checks on page load, the system will:
+           - Check for welcome bonus (first time only)
+           - Check achievement milestones based on real data
+           - Check daily login rewards
+           - Check streak warnings
+           
+        5. All currency updates are REAL and persist to Firebase!
+        */
+    </script>
+</body>
+</html>

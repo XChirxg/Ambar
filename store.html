@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/store.css">
+
+</head>
+<body>
+    <div class="store-container">
+        <div id="partnerSection">
+            <!-- Partner info will be inserted here -->
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-tabs">
+                <div class="filter-tab active" onclick="store.filterCategory('all')">All</div>
+                <div class="filter-tab" onclick="store.filterCategory('top')">Tops</div>
+                <div class="filter-tab" onclick="store.filterCategory('bottom')">Bottoms</div>
+                <div class="filter-tab" onclick="store.filterCategory('shoes')">Shoes</div>
+                <div class="filter-tab" onclick="store.filterCategory('full')">Outfits</div>
+            </div>
+
+            <div class="sort-controls">
+                <select class="sort-dropdown" onchange="store.sortProducts(this.value)">
+                    <option value="random">Sort by: Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="discount">Best Discounts</option>
+                </select>
+                <div class="results-count" id="resultsCount">
+                    Loading items...
+                </div>
+            </div>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be loaded here -->
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="product-modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Product Details</h2>
+                <button class="close-btn" onclick="store.closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-product-image" id="modalImage">
+                    <!-- Product image will be loaded here -->
+                </div>
+                <div class="modal-product-info">
+                    <h3 id="modalProductName">Product Name</h3>
+                    <div class="modal-product-category" id="modalProductCategory">Category</div>
+                    <div class="modal-product-description" id="modalProductDescription">
+                        <!-- Description will be loaded here -->
+                    </div>
+                    <div class="modal-product-features">
+                        <h4>Features:</h4>
+                        <ul class="feature-list" id="modalFeatureList">
+                            <!-- Features will be loaded here -->
+                        </ul>
+                    </div>
+                    <div class="modal-price-section" id="modalPriceSection">
+                        <!-- Price details will be loaded here -->
+                    </div>
+                    <button class="modal-buy-btn" id="modalBuyBtn" onclick="store.openBillingModal()">
+                        Send as Gift
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Confirmation Modal -->
+    <div class="billing-modal" id="billingModal">
+        <div class="billing-content">
+            <div class="billing-header">
+                <h3>Confirm Purchase</h3>
+                <p style="color: rgba(255,255,255,0.7); margin-top: 8px; font-size: 14px;">Review your gift before sending</p>
+            </div>
+            <div class="billing-body">
+                <div class="billing-item">
+                    <div class="billing-item-info">
+                        <div class="billing-item-name" id="billingItemName">Item Name</div>
+                        <div class="billing-item-category" id="billingItemCategory">Category</div>
+                    </div>
+                    <div class="billing-item-price" id="billingItemPrice">₹0</div>
+                </div>
+                
+                <div class="billing-total">
+                    <div class="billing-total-label">Total:</div>
+                    <div class="billing-total-amount" id="billingTotalAmount">₹0</div>
+                </div>
+
+                <div class="balance-info">
+                    <div class="balance-row">
+                        <span class="balance-label">Your Balance:</span>
+                        <span class="balance-value" style="color: #f8b500;" id="currentBalance">₹0</span>
+                    </div>
+                    <div class="balance-row">
+                        <span class="balance-label">After Purchase:</span>
+                        <span class="balance-value" id="afterBalance">₹0</span>
+                    </div>
+                </div>
+
+                <div class="billing-actions">
+                    <button class="billing-btn cancel" onclick="store.closeBillingModal()">Cancel</button>
+                    <button class="billing-btn confirm" id="confirmPurchaseBtn" onclick="store.confirmPurchase()">
+                        <i class="fas fa-gift"></i> Send Gift
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Animation -->
+    <div class="success-animation" id="successAnimation">
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="success-text">Gift Sent Successfully!</div>
+            <div class="success-subtext">Your partner will love it ❤️</div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script src="tool.js"></script>
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, updateDoc, increment, arrayUnion, serverTimestamp,
+            addDoc, collection
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+
+        const CONFIG = {
+            baseUrl: "https://raw.githubusercontent.com/xchirxg/db/main",
+            categories: ['top', 'bottom', 'shoes', 'full'],
+            itemsPerPage: 10,
+             
+            itemLimits: {
+                boy: { top: 23, bottom: 18, shoes: 4, full: 16 },
+                girl: { top: 34, bottom: 18, shoes: 10, full: 28 }
+            },
+            firstBatch: { top: 10, bottom: 10, shoes: 4, full: 8 },
+            cropConfigs: {
+                boy: {
+                    bottom: {x: 277, y: 1056, w: 292, h: 466},
+                    full: {x: 251, y: 818, w: 326, h: 706},
+                    shoes: {x: 309, y: 1309, w: 244, h: 216},
+                    top: {x: 281, y: 842, w: 292, h: 442}
+                },
+                girl: {
+                    bottom: {x: 493, y: 1068, w: 374, h: 448},
+                    full: {x: 499, y: 931, w: 388, h: 592},
+                    shoes: {x: 568, y: 1295, w: 232, h: 248},
+                    top: {x: 513, y: 925, w: 338, h: 456}
+                }
+            }
+        };
+
+        class StoreManager {
+            constructor() {
+                this.products = [];
+                this.filteredProducts = [];
+                this.currentCategory = 'all';
+                this.currentSort = 'random';
+                this.currentPage = 1;
+                this.totalPages = 1;
+                this.selectedProduct = null;
+                this.isLoading = false;
+                this.initialLoadComplete = false;
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        this.loadUserData();
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+
+            async loadUserData() {
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                    if (userDoc.exists()) {
+                        userData = userDoc.data();
+                        this.checkPartnerStatus();
+                        await this.generateProducts();
+                    } else {
+                        window.location.href = 'character-design.html';
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            checkPartnerStatus() {
+                const partnerSection = document.getElementById('partnerSection');
+                
+                if (!userData.partnerId || !userData.partnerData) {
+                    partnerSection.innerHTML = `
+                        <div class="no-partner-message">
+                            <h2>No Partner Found</h2>
+                            <p>You need a partner to send gifts! Find someone special to share your journey with.</p>
+                            <button class="find-partner-btn" onclick="window.location.href='add.html'">
+                                <i class="fas fa-heart"></i> Find a Partner
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    const partner = userData.partnerData;
+                    const genderText = partner.gender === 'girl' ? 'her' : 'him';
+                    
+                    partnerSection.innerHTML = `
+                        <div class="partner-info">
+                            <h2>Gift Shop for ${partner.name}</h2>
+                            <p>Send beautiful ${partner.gender === 'girl' ? 'feminine' : 'masculine'} items to make ${genderText} happy</p>
+                        </div>
+                    `;
+                }
+            }
+
+            async generateProducts() {
+                if (!userData.partnerId || !userData.partnerData) return;
+
+                this.products = [];
+                let id = 1;
+                const partnerGender = userData.partnerData.gender;
+
+                // Load first batch instantly
+                for (const category of CONFIG.categories) {
+                    const firstBatchCount = CONFIG.firstBatch[category] || 10;
+                    for (let i = 1; i <= firstBatchCount; i++) {
+                        this.products.push(this.createProduct(id++, category, i, partnerGender));
+                    }
+                }
+
+                // Shuffle and show initial products
+                this.shuffleProducts();
+                this.filterProducts();
+                this.initialLoadComplete = true;
+
+                // Load remaining items in background
+                this.loadRemainingItems(id, partnerGender);
+            }
+
+            async loadRemainingItems(startId, partnerGender) {
+                let id = startId;
+                const additionalProducts = [];
+
+                for (const category of CONFIG.categories) {
+                    const maxItems = CONFIG.itemLimits[partnerGender][category] || 20;
+                    const firstBatchCount = CONFIG.firstBatch[category] || 10;
+                    
+                    const realCount = await this.getItemCount(category, partnerGender);
+                    const safeCount = Math.min(realCount, maxItems);
+                    
+                    if (safeCount > firstBatchCount) {
+                        for (let i = firstBatchCount + 1; i <= safeCount; i++) {
+                            additionalProducts.push(this.createProduct(id++, category, i, partnerGender));
+                        }
+                    }
+                }
+
+                // Add to existing products without reloading UI
+                this.products.push(...additionalProducts);
+                this.shuffleProducts();
+                
+                // Only update if user is still on same filter
+                if (this.currentCategory === 'all' && this.currentSort === 'random') {
+                    this.filterProducts();
+                }
+            }
+
+            createProduct(id, category, itemId, gender) {
+                const basePrice = this.generatePrice(category);
+                const discount = Math.floor(Math.random() * 40) + 10; // 10-50% discount
+                const originalPrice = Math.floor(basePrice / (1 - discount / 100));
+                
+                return {
+                    id, category, itemId, gender,
+                    name: this.generateName(category, itemId),
+                    price: basePrice,
+                    originalPrice,
+                    discount,
+                    description: this.generateDescription(category),
+                    features: this.generateFeatures(category)
+                };
+            }
+
+            generateName(category, id) {
+                const names = {
+                    top: ['Elegant Blouse', 'Casual Tee', 'Designer Shirt', 'Trendy Top', 'Stylish Crop Top', 'Classic Polo', 'Chic Tank Top', 'Premium Hoodie'],
+                    bottom: ['Stylish Jeans', 'Casual Pants', 'Elegant Skirt', 'Trendy Shorts', 'Designer Leggings', 'Classic Trousers', 'Comfy Joggers', 'Chic Capris'],
+                    shoes: ['Casual Sneakers', 'Elegant Heels', 'Stylish Boots', 'Comfort Flats', 'Running Shoes', 'Party Heels', 'Ankle Boots', 'Ballet Flats'],
+                    full: ['Complete Outfit', 'Designer Set', 'Casual Combo', 'Elegant Ensemble', 'Party Dress', 'Business Suit', 'Summer Outfit', 'Winter Collection']
+                };
+                const categoryNames = names[category];
+                return categoryNames[Math.floor(Math.random() * categoryNames.length)] + ` #${id}`;
+            }
+
+            generatePrice(category) {
+                const basePrices = {
+                    top: { min: 150, max: 800 },
+                    bottom: { min: 200, max: 1200 },
+                    shoes: { min: 300, max: 1500 },
+                    full: { min: 500, max: 2000 }
+                };
+                const price = basePrices[category];
+                return Math.floor(Math.random() * (price.max - price.min) + price.min);
+            }
+
+            generateDescription(category) {
+                const descriptions = {
+                    top: 'Comfortable and stylish top perfect for any occasion. Made with high-quality fabric for lasting comfort.',
+                    bottom: 'Trendy and comfortable bottom wear that combines style with functionality. Perfect fit guaranteed.',
+                    shoes: 'Stylish and comfortable footwear designed for all-day wear. Premium materials and excellent craftsmanship.',
+                    full: 'Complete outfit set that combines style and comfort. Perfect coordination for any special occasion.'
+                };
+                return descriptions[category];
+            }
+
+            generateFeatures(category) {
+                const allFeatures = {
+                    top: ['Breathable fabric', 'Machine washable', 'Wrinkle resistant', 'Color fast', 'Comfortable fit'],
+                    bottom: ['Stretchable material', 'Fade resistant', 'Durable stitching', 'Perfect fit', 'Easy to maintain'],
+                    shoes: ['Comfortable sole', 'Durable material', 'Non-slip grip', 'Lightweight design', 'Stylish appearance'],
+                    full: ['Complete set', 'Coordinated colors', 'Premium quality', 'Versatile styling', 'Perfect matching']
+                };
+                return allFeatures[category].sort(() => Math.random() - 0.5).slice(0, 3);
+            }
+
+            async getItemCount(category, gender) {
+                for (let i = 1; i <= 50; i++) {
+                    const exists = await this.imageExists(`${CONFIG.baseUrl}/${gender}/${category}/${i}.png`);
+                    if (!exists) return i - 1;
+                }
+                return 50;
+            }
+
+            imageExists(url) {
+                return new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                    setTimeout(() => resolve(false), 2000);
+                });
+            }
+
+            shuffleProducts() {
+                this.products = this.products.sort(() => Math.random() - 0.5);
+            }
+
+            filterProducts() {
+                this.filteredProducts = this.products.filter(product => {
+                    return this.currentCategory === 'all' || product.category === this.currentCategory;
+                });
+                
+                this.sortProducts(this.currentSort);
+                this.totalPages = Math.ceil(this.filteredProducts.length / CONFIG.itemsPerPage);
+                this.currentPage = 1;
+                this.renderProducts();
+                this.renderPagination();
+                this.updateResultsCount();
+            }
+
+            sortProducts(sortType) {
+                this.currentSort = sortType;
+                
+                switch (sortType) {
+                    case 'price-low':
+                        this.filteredProducts.sort((a, b) => a.price - b.price);
+                        break;
+                    case 'price-high':
+                        this.filteredProducts.sort((a, b) => b.price - a.price);
+                        break;
+                    case 'discount':
+                        this.filteredProducts.sort((a, b) => b.discount - a.discount);
+                        break;
+                    default:
+                        this.filteredProducts = this.filteredProducts.sort(() => Math.random() - 0.5);
+                }
+                
+                this.totalPages = Math.ceil(this.filteredProducts.length / CONFIG.itemsPerPage);
+                this.currentPage = 1;
+                this.renderProducts();
+                this.renderPagination();
+            }
+
+            updateResultsCount() {
+                const resultsCount = document.getElementById('resultsCount');
+                if (resultsCount) {
+                    resultsCount.textContent = `${this.filteredProducts.length} items`;
+                }
+            }
+
+            async renderProducts() {
+                const grid = document.getElementById('productsGrid');
+                
+                if (!userData.partnerId || !userData.partnerData) {
+                    grid.innerHTML = '';
+                    return;
+                }
+                
+                if (this.filteredProducts.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.6);">
+                            <i class="fas fa-shopping-bag" style="font-size: 40px; margin-bottom: 15px; opacity: 0.3;"></i>
+                            <h3>No items found</h3>
+                            <p>Try adjusting your filters</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const startIndex = (this.currentPage - 1) * CONFIG.itemsPerPage;
+                const endIndex = startIndex + CONFIG.itemsPerPage;
+                const pageProducts = this.filteredProducts.slice(startIndex, endIndex);
+                
+                grid.innerHTML = '';
+                
+                pageProducts.forEach((product, i) => {
+                    const card = this.createProductCard(product);
+                    grid.appendChild(card);
+                    
+                    setTimeout(() => {
+                        this.loadProductImage(product, card.querySelector('.product-image'));
+                    }, i * 100);
+                });
+            }
+
+            createProductCard(product) {
+                const sentGifts = JSON.parse(localStorage.getItem('sentGifts') || '[]');
+                const isSent = sentGifts.some(gift => 
+                    gift.category === product.category && 
+                    gift.itemId === product.itemId && 
+                    gift.gender === product.gender
+                );
+                
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.onclick = () => this.openProductModal(product);
+                
+                card.innerHTML = `
+                    <div class="discount-badge">${product.discount}% OFF</div>
+                    <div class="product-image">
+                        <div class="loading-skeleton">
+                            <div class="skeleton-shimmer"></div>
+                            <div style="font-size: 10px;">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="product-details">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-category">${product.category.toUpperCase()}</div>
+                        <div class="product-price">
+                            <div class="price-section">
+                                <div class="current-price">
+                                    <i class="fas fa-coins"></i>
+                                    ₹${product.price}
+                                </div>
+                                <div class="original-price">₹${product.originalPrice}</div>
+                            </div>
+                        </div>
+                        <button class="buy-btn ${isSent ? 'purchased' : ''}" 
+                                onclick="event.stopPropagation(); ${isSent ? '' : 'store.openProductModal(' + product.id + ')'}"
+                                ${isSent ? 'disabled' : ''}>
+                            ${isSent ? 'Gift Sent' : 'View Details'}
+                        </button>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            loadProductImage(product, container) {
+                const imageUrl = `${CONFIG.baseUrl}/${product.gender}/${product.category}/${product.itemId}.png`;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = 80;
+                canvas.height = 80;
+                
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = () => {
+                    const crop = CONFIG.cropConfigs[product.gender][product.category];
+                    if (crop) {
+                        ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, 80, 80);
+                    } else {
+                        ctx.drawImage(img, 0, 0, 80, 80);
+                    }
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+                };
+                
+                img.onerror = () => {
+                    container.innerHTML = '<div style="color: rgba(255,255,255,0.5); font-size: 10px;">Unavailable</div>';
+                };
+                
+                img.src = imageUrl;
+            }
+
+            renderPagination() {
+                const pagination = document.getElementById('pagination');
+                
+                if (!userData.partnerId || !userData.partnerData || this.totalPages <= 1) {
+                    pagination.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = `
+                    <button class="page-btn" onclick="store.goToPage(${this.currentPage - 1})" 
+                            ${this.currentPage === 1 ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                `;
+
+                const startPage = Math.max(1, this.currentPage - 1);
+                const endPage = Math.min(this.totalPages, this.currentPage + 1);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHTML += `
+                        <button class="page-btn ${i === this.currentPage ? 'active' : ''}" 
+                                onclick="store.goToPage(${i})">${i}</button>
+                    `;
+                }
+
+                paginationHTML += `
+                    <button class="page-btn" onclick="store.goToPage(${this.currentPage + 1})" 
+                            ${this.currentPage === this.totalPages ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+
+                paginationHTML += `
+                    <div class="page-info">
+                        ${this.currentPage} of ${this.totalPages}
+                    </div>
+                `;
+
+                pagination.innerHTML = paginationHTML;
+            }
+
+            goToPage(page) {
+                if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+                this.currentPage = page;
+                this.renderProducts();
+                this.renderPagination();
+                
+                document.querySelector('.products-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            filterCategory(category) {
+                this.currentCategory = category;
+                
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                this.filterProducts();
+            }
+
+            openProductModal(productId) {
+                if (!userData.partnerId || !userData.partnerData) {
+                    window.location.href = 'add.html';
+                    return;
+                }
+
+                const product = typeof productId === 'object' ? productId : this.products.find(p => p.id === productId);
+                if (!product) return;
+
+                this.selectedProduct = product;
+                const modal = document.getElementById('productModal');
+                
+                document.getElementById('modalTitle').textContent = 'Product Details';
+                document.getElementById('modalProductName').textContent = product.name;
+                document.getElementById('modalProductCategory').textContent = product.category.toUpperCase();
+                document.getElementById('modalProductDescription').textContent = product.description;
+
+                const featureList = document.getElementById('modalFeatureList');
+                featureList.innerHTML = product.features.map(feature => `<li>${feature}</li>`).join('');
+
+                const priceSection = document.getElementById('modalPriceSection');
+                priceSection.innerHTML = `
+                    <div class="modal-discount-badge">${product.discount}% OFF</div>
+                    <div class="modal-price-row">
+                        <span class="modal-price-label">Original Price:</span>
+                        <span class="modal-original-price">₹${product.originalPrice}</span>
+                    </div>
+                    <div class="modal-price-row">
+                        <span class="modal-price-label">Discount:</span>
+                        <span class="modal-discount">-₹${product.originalPrice - product.price}</span>
+                    </div>
+                    <div class="modal-price-row">
+                        <span class="modal-price-label">Final Price:</span>
+                        <span class="modal-current-price">
+                            <i class="fas fa-coins"></i>
+                            ₹${product.price}
+                        </span>
+                    </div>
+                `;
+
+                const sentGifts = JSON.parse(localStorage.getItem('sentGifts') || '[]');
+                const isSent = sentGifts.some(gift => 
+                    gift.category === product.category && 
+                    gift.itemId === product.itemId && 
+                    gift.gender === product.gender
+                );
+
+                const buyBtn = document.getElementById('modalBuyBtn');
+                buyBtn.textContent = isSent ? 'Gift Already Sent' : 'Send as Gift';
+                buyBtn.className = `modal-buy-btn ${isSent ? 'purchased' : ''}`;
+                buyBtn.disabled = isSent;
+                buyBtn.onclick = isSent ? null : () => this.openBillingModal();
+
+                this.loadModalImage(product);
+                
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            loadModalImage(product) {
+                const container = document.getElementById('modalImage');
+                container.innerHTML = '<div class="loading-skeleton"><div class="skeleton-shimmer"></div></div>';
+                
+                const imageUrl = `${CONFIG.baseUrl}/${product.gender}/${product.category}/${product.itemId}.png`;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = 150;
+                canvas.height = 150;
+                
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = () => {
+                    const crop = CONFIG.cropConfigs[product.gender][product.category];
+                    if (crop) {
+                        ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, 150, 150);
+                    } else {
+                        ctx.drawImage(img, 0, 0, 150, 150);
+                    }
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+                };
+                
+                img.onerror = () => {
+                    container.innerHTML = '<div style="color: rgba(255,255,255,0.5);">Image unavailable</div>';
+                };
+                
+                img.src = imageUrl;
+            }
+
+            openBillingModal() {
+                if (!this.selectedProduct) return;
+
+                const product = this.selectedProduct;
+                const currentCoins = parseInt(localStorage.getItem('coins')) || 0;
+                
+                document.getElementById('billingItemName').textContent = product.name;
+                document.getElementById('billingItemCategory').textContent = product.category.toUpperCase();
+                document.getElementById('billingItemPrice').textContent = `₹${product.price}`;
+                document.getElementById('billingTotalAmount').textContent = `₹${product.price}`;
+                document.getElementById('currentBalance').textContent = `₹${currentCoins}`;
+                
+                const afterBalance = currentCoins - product.price;
+                const afterBalanceEl = document.getElementById('afterBalance');
+                afterBalanceEl.textContent = `₹${afterBalance}`;
+                afterBalanceEl.style.color = afterBalance >= 0 ? '#4CAF50' : '#f44336';
+
+                const confirmBtn = document.getElementById('confirmPurchaseBtn');
+                confirmBtn.disabled = afterBalance < 0;
+                confirmBtn.style.opacity = afterBalance < 0 ? '0.5' : '1';
+                
+                if (afterBalance < 0) {
+                    confirmBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Insufficient Funds';
+                } else {
+                    confirmBtn.innerHTML = '<i class="fas fa-gift"></i> Send Gift';
+                }
+
+                document.getElementById('billingModal').classList.add('show');
+            }
+
+            closeBillingModal() {
+                document.getElementById('billingModal').classList.remove('show');
+            }
+
+            closeModal() {
+                document.getElementById('productModal').classList.remove('show');
+                document.body.style.overflow = '';
+                this.selectedProduct = null;
+            }
+
+            async confirmPurchase() {
+                if (!this.selectedProduct) return;
+
+                const product = this.selectedProduct;
+                const currentCoins = parseInt(localStorage.getItem('coins')) || 0;
+
+                if (currentCoins < product.price) {
+                    this.showMessage('Insufficient coins! Play games to earn more.', 'error');
+                    return;
+                }
+
+                try {
+                    // Update user's coins in Firebase
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        'gameStats.coins': increment(-product.price),
+                        lastPurchase: serverTimestamp()
+                    });
+
+                    // Update partner's hearts and gifts
+                    const heartsToAdd = Math.floor(product.price / 10);
+                    const giftData = {
+                        id: product.id,
+                        category: product.category,
+                        itemId: product.itemId,
+                        recipientGender: product.gender,
+                        name: product.name,
+                        price: product.price,
+                        senderId: currentUser.uid,
+                        senderName: userData.name,
+                        receivedAt: Date.now()
+                    };
+
+                    await updateDoc(doc(db, 'users', userData.partnerId), {
+                        'gameStats.hearts': increment(heartsToAdd),
+                        receivedGifts: arrayUnion(giftData)
+                    });
+
+                    // Create chat message for the gift
+                    const chatId = [currentUser.uid, userData.partnerId].sort().join('_');
+                    const giftMessage = {
+                        text: `I sent you a ${product.category} gift! 🎁`,
+                        senderId: currentUser.uid,
+                        senderName: userData.name,
+                        timestamp: serverTimestamp(),
+                        type: 'gift',
+                        giftData: {
+                            category: product.category,
+                            itemId: product.itemId,
+                            recipientGender: product.gender
+                        },
+                        opened: false
+                    };
+
+                    const messagesRef = collection(db, 'chats', chatId, 'messages');
+                    await addDoc(messagesRef, giftMessage);
+
+                    // Update local storage
+                    localStorage.setItem('coins', (currentCoins - product.price).toString());
+                    
+                    const sentGifts = JSON.parse(localStorage.getItem('sentGifts') || '[]');
+                    sentGifts.push({
+                        category: product.category,
+                        itemId: product.itemId,
+                        gender: product.gender,
+                        sentAt: Date.now()
+                    });
+                    localStorage.setItem('sentGifts', JSON.stringify(sentGifts));
+
+                    // Update streak
+                    await this.updateDailyStreak();
+
+                    // Close modals and show success
+                    this.closeBillingModal();
+                    this.closeModal();
+                    this.showSuccessAnimation();
+
+                    // Refresh UI
+                    setTimeout(() => {
+                        this.renderProducts();
+                        if (window.AmbarHeader) {
+                            window.AmbarHeader.updateCurrencyDisplay();
+                        }
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('Error completing purchase:', error);
+                    this.showMessage('Purchase failed. Please try again.', 'error');
+                }
+            }
+
+            async updateDailyStreak() {
+                const today = new Date().toDateString();
+                const lastGiftDate = localStorage.getItem('lastGiftDate');
+                
+                if (lastGiftDate !== today) {
+                    const currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
+                    const newStreak = currentStreak + 1;
+                    
+                    localStorage.setItem('currentStreak', newStreak.toString());
+                    localStorage.setItem('lastGiftDate', today);
+                    
+                    const currentStars = parseInt(localStorage.getItem('stars')) || 0;
+                    localStorage.setItem('stars', (currentStars + 1).toString());
+                    
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        'gameStats.currentStreak': newStreak,
+                        'gameStats.stars': increment(1),
+                        lastGiftDate: today
+                    });
+                }
+            }
+
+            showSuccessAnimation() {
+                const animation = document.getElementById('successAnimation');
+                animation.classList.add('show');
+                
+                setTimeout(() => {
+                    animation.classList.remove('show');
+                }, 3000);
+            }
+
+            showMessage(text, type = 'info') {
+                const message = document.createElement('div');
+                message.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: ${type === 'error' ? '#e74c3c' : '#27ae60'};
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 12px;
+                    z-index: 1003;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    max-width: 280px;
+                    font-size: 13px;
+                `;
+                
+                message.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                        <span>${text}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(message);
+                
+                setTimeout(() => {
+                    document.body.removeChild(message);
+                }, 3000);
+            }
+        }
+
+        // Global store instance
+        const store = new StoreManager();
+        window.store = store;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.AmbarHeader) {
+                window.AmbarHeader.init({
+                    showCurrencies: ['coins', 'stars', 'hearts'],
+                    showSettings: false,
+                    showBackButton: false
+                });
+            }
+            
+            if (window.AmbarNavigation) {
+                window.AmbarNavigation.setActivePage('store');
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'productModal') {
+                store.closeModal();
+            }
+            if (e.target.id === 'billingModal') {
+                store.closeBillingModal();
+            }
+        });
+
+        // Handle escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                store.closeModal();
+                store.closeBillingModal();
+            }
+        });
+    </script>
+</body>
+</html>

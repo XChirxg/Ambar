@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Clicker Game - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+        <link rel="stylesheet" href="style/clicker.css">
+
+</head>
+<body>
+    
+    <div class="game-container">
+        <div class="betting-section" id="betting-section">
+            <h2 class="betting-title">Speed Clicker Challenge</h2>
+            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">Click targets as fast as you can in 30 seconds!</p>
+            <div class="bet-options">
+                <button class="bet-btn" data-bet="40">40</button>
+                <button class="bet-btn" data-bet="80">80</button>
+                <button class="bet-btn" data-bet="120">120</button>
+                <button class="bet-btn" data-bet="160">160</button>
+                <button class="bet-btn" data-bet="200">200</button>
+                <button class="bet-btn" id="all-in-btn">All In</button>
+            </div>
+            <div class="custom-bet">
+                <input type="number" id="custom-bet-input" placeholder="Custom amount" min="1">
+            </div>
+            <button class="start-game-btn" id="start-game-btn">Start Game</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">Bet Amount</div>
+                    <div class="info-value" id="current-bet">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Score</div>
+                    <div class="info-value" id="current-score">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Time Left</div>
+                    <div class="info-value" id="time-left">30</div>
+                </div>
+            </div>
+            
+            <div class="status-message" id="status-message">Get ready to click!</div>
+            
+            <div class="countdown" id="countdown"></div>
+            
+            <div class="game-board" id="game-board">
+                <!-- Targets will be spawned here -->
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="result-popup" id="result-popup">
+            <div class="popup-content">
+                <h2 class="result-title" id="result-title">Game Complete!</h2>
+                <div class="result-amount" id="result-amount">+0 coins</div>
+                <div class="result-details" id="result-details"></div>
+                <button class="next-game-btn" id="next-game-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="tool.js"></script>
+    <script>
+        class SpeedClickerGame {
+            constructor() {
+                this.currentBet = 0;
+                this.score = 0;
+                this.timeLeft = 30;
+                this.gameInProgress = false;
+                this.gameTimer = null;
+                this.spawnTimer = null;
+                this.targets = [];
+                this.targetId = 0;
+                this.gameStartTime = 0;
+                
+                this.initializeEventListeners();
+                this.updateDisplay();
+            }
+            
+            initializeEventListeners() {
+                // Bet buttons
+                document.querySelectorAll('.bet-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        if (btn.id === 'all-in-btn') {
+                            this.currentBet = AmbarHeader.getCurrency('coins');
+                            document.getElementById('custom-bet-input').value = this.currentBet;
+                        } else {
+                            this.currentBet = parseInt(btn.dataset.bet);
+                            document.getElementById('custom-bet-input').value = this.currentBet;
+                        }
+                        
+                        this.validateBet();
+                    });
+                });
+                
+                // Custom bet input
+                const customBetInput = document.getElementById('custom-bet-input');
+                customBetInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    this.currentBet = value;
+                    document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                    this.validateBet();
+                });
+                
+                // Start game button
+                document.getElementById('start-game-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Next game button
+                document.getElementById('next-game-btn').addEventListener('click', () => {
+                    this.nextGame();
+                });
+                
+                // Close popup on outside click
+                document.getElementById('result-popup').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.nextGame();
+                    }
+                });
+            }
+            
+            updateDisplay() {
+                const allInBtn = document.getElementById('all-in-btn');
+                if (allInBtn) {
+                    allInBtn.textContent = `All In (${AmbarHeader.getCurrency('coins')})`;
+                }
+            }
+            
+            validateBet() {
+                const startBtn = document.getElementById('start-game-btn');
+                const playerCoins = AmbarHeader.getCurrency('coins');
+                const isValid = this.currentBet > 0 && this.currentBet <= playerCoins;
+                
+                startBtn.disabled = !isValid;
+                startBtn.textContent = isValid ? 'Start Game' : 
+                    (this.currentBet > playerCoins ? 'Insufficient Coins' : 'Enter Bet Amount');
+            }
+            
+            startGame() {
+                if (this.currentBet <= 0 || this.currentBet > AmbarHeader.getCurrency('coins') || this.gameInProgress) return;
+                
+                this.gameInProgress = true;
+                AmbarHeader.updateCurrency('coins', -this.currentBet);
+                
+                document.getElementById('betting-section').style.display = 'none';
+                document.getElementById('game-area').style.display = 'block';
+                document.getElementById('current-bet').textContent = this.currentBet.toLocaleString();
+                
+                this.resetGame();
+                this.startCountdown();
+            }
+            
+            resetGame() {
+                this.score = 0;
+                this.timeLeft = 30;
+                this.targets = [];
+                this.targetId = 0;
+                this.gameStartTime = 0;
+                
+                document.getElementById('current-score').textContent = '0';
+                document.getElementById('time-left').textContent = '30';
+                document.getElementById('progress-fill').style.width = '0%';
+                document.getElementById('game-board').innerHTML = '';
+                document.getElementById('countdown').style.display = 'block';
+                document.getElementById('game-board').style.display = 'none';
+            }
+            
+            startCountdown() {
+                let count = 3;
+                const countdownEl = document.getElementById('countdown');
+                const statusEl = document.getElementById('status-message');
+                
+                statusEl.textContent = 'Get ready...';
+                
+                const countInterval = setInterval(() => {
+                    countdownEl.textContent = count;
+                    
+                    if (count <= 0) {
+                        clearInterval(countInterval);
+                        countdownEl.style.display = 'none';
+                        document.getElementById('game-board').style.display = 'block';
+                        this.startGameLoop();
+                    }
+                    count--;
+                }, 1000);
+            }
+            
+            startGameLoop() {
+                this.gameStartTime = Date.now();
+                document.getElementById('status-message').textContent = 'Click the targets!';
+                
+                // Start game timer
+                this.gameTimer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('time-left').textContent = this.timeLeft;
+                    
+                    const progress = ((30 - this.timeLeft) / 30) * 100;
+                    document.getElementById('progress-fill').style.width = `${progress}%`;
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+                
+                // Start spawning targets
+                this.spawnTarget();
+                this.spawnTimer = setInterval(() => {
+                    this.spawnTarget();
+                }, 800 - Math.min(this.score * 10, 400)); // Speed up as score increases
+            }
+            
+            spawnTarget() {
+                if (!this.gameInProgress || this.timeLeft <= 0) return;
+                
+                const gameBoard = document.getElementById('game-board');
+                const boardRect = gameBoard.getBoundingClientRect();
+                
+                // Clean up old targets
+                this.targets = this.targets.filter(target => {
+                    if (Date.now() - target.spawnTime > 3000) {
+                        if (target.element && target.element.parentNode) {
+                            target.element.remove();
+                        }
+                        return false;
+                    }
+                    return true;
+                });
+                
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.textContent = Math.floor(Math.random() * 9) + 1;
+                
+                // Random position within board
+                const maxX = gameBoard.offsetWidth - 50;
+                const maxY = gameBoard.offsetHeight - 50;
+                const x = Math.random() * maxX;
+                const y = Math.random() * maxY;
+                
+                target.style.left = `${x}px`;
+                target.style.top = `${y}px`;
+                
+                const targetObj = {
+                    id: this.targetId++,
+                    element: target,
+                    spawnTime: Date.now(),
+                    clicked: false
+                };
+                
+                target.addEventListener('click', () => {
+                    this.clickTarget(targetObj);
+                });
+                
+                // Auto-remove after 3 seconds if not clicked
+                setTimeout(() => {
+                    if (!targetObj.clicked && target.parentNode) {
+                        target.classList.add('missed');
+                        setTimeout(() => {
+                            if (target.parentNode) {
+                                target.remove();
+                            }
+                        }, 200);
+                    }
+                }, 3000);
+                
+                gameBoard.appendChild(target);
+                this.targets.push(targetObj);
+            }
+            
+            clickTarget(targetObj) {
+                if (targetObj.clicked || !this.gameInProgress) return;
+                
+                targetObj.clicked = true;
+                targetObj.element.classList.add('clicked');
+                
+                const points = parseInt(targetObj.element.textContent);
+                this.score += points;
+                
+                document.getElementById('current-score').textContent = this.score.toLocaleString();
+                
+                // Remove target after animation
+                setTimeout(() => {
+                    if (targetObj.element && targetObj.element.parentNode) {
+                        targetObj.element.remove();
+                    }
+                }, 300);
+                
+                // Update spawn rate based on score
+                if (this.spawnTimer) {
+                    clearInterval(this.spawnTimer);
+                    this.spawnTimer = setInterval(() => {
+                        this.spawnTarget();
+                    }, Math.max(300, 800 - Math.min(this.score * 5, 500)));
+                }
+            }
+            
+            endGame() {
+                this.gameInProgress = false;
+                
+                // Clear timers
+                if (this.gameTimer) {
+                    clearInterval(this.gameTimer);
+                    this.gameTimer = null;
+                }
+                if (this.spawnTimer) {
+                    clearInterval(this.spawnTimer);
+                    this.spawnTimer = null;
+                }
+                
+                // Clear remaining targets
+                this.targets.forEach(target => {
+                    if (target.element && target.element.parentNode) {
+                        target.element.remove();
+                    }
+                });
+                this.targets = [];
+                
+                document.getElementById('status-message').textContent = 'Time\'s up!';
+                
+                // Calculate results
+                this.calculateResults();
+            }
+            
+            calculateResults() {
+                // Calculate multiplier based on score
+                let multiplier = 1.0;
+                if (this.score >= 100) multiplier = 3.0;
+                else if (this.score >= 75) multiplier = 2.5;
+                else if (this.score >= 50) multiplier = 2.0;
+                else if (this.score >= 30) multiplier = 1.5;
+                else if (this.score >= 15) multiplier = 1.2;
+                else if (this.score >= 5) multiplier = 1.0;
+                else multiplier = 0.5;
+                
+                const reward = Math.round(multiplier * this.currentBet);
+                const netResult = reward - this.currentBet;
+                
+                // Update currencies
+                AmbarHeader.updateCurrency('coins', reward);
+                
+                // Update level game stats
+                this.updateGameStats(netResult, this.score);
+                
+                this.showResults(netResult, this.score, multiplier, reward);
+            }
+            
+            updateGameStats(coinsEarned, score) {
+                // Update level games stats for game.html
+                const levelGamesPlayed = parseInt(localStorage.getItem('levelGamesPlayed') || '0') + 1;
+                const levelCoinsEarned = parseInt(localStorage.getItem('levelCoinsEarned') || '0') + coinsEarned;
+                const levelsCrossed = parseInt(localStorage.getItem('levelsCrossed') || '0') + Math.floor(score / 10);
+                
+                localStorage.setItem('levelGamesPlayed', levelGamesPlayed);
+                localStorage.setItem('levelCoinsEarned', levelCoinsEarned);
+                localStorage.setItem('levelsCrossed', levelsCrossed);
+                
+                // Update level stat based on performance
+                const currentLevel = parseInt(localStorage.getItem('level') || '1');
+                const newLevel = Math.max(currentLevel, Math.floor(score / 5) + 1);
+                localStorage.setItem('level', newLevel);
+            }
+            
+            showResults(netResult, score, multiplier, reward) {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                
+                let performanceText = '';
+                if (score >= 100) performanceText = 'Legendary!';
+                else if (score >= 75) performanceText = 'Excellent!';
+                else if (score >= 50) performanceText = 'Great!';
+                else if (score >= 30) performanceText = 'Good!';
+                else if (score >= 15) performanceText = 'Fair';
+                else if (score >= 5) performanceText = 'Try Again';
+                else performanceText = 'Keep Practicing';
+                
+                title.textContent = performanceText;
+                
+                if (netResult > 0) {
+                    amount.textContent = `+${netResult.toLocaleString()} coins`;
+                    amount.className = 'result-amount positive';
+                } else if (netResult < 0) {
+                    amount.textContent = `${netResult.toLocaleString()} coins`;
+                    amount.className = 'result-amount negative';
+                } else {
+                    amount.textContent = `±0 coins`;
+                    amount.className = 'result-amount';
+                }
+                
+                details.innerHTML = `
+                    <p><strong>Score:</strong> ${score} points</p>
+                    <p><strong>Bet:</strong> ${this.currentBet.toLocaleString()} | <strong>Reward:</strong> ${reward.toLocaleString()}</p>
+                    <p><strong>Multiplier:</strong> ${multiplier.toFixed(1)}x</p>
+                    <p><strong>Levels Unlocked:</strong> +${Math.floor(score / 10)}</p>
+                `;
+                
+                popup.style.display = 'flex';
+            }
+            
+            nextGame() {
+                document.getElementById('result-popup').style.display = 'none';
+                document.getElementById('game-area').style.display = 'none';
+                document.getElementById('betting-section').style.display = 'block';
+                
+                // Reset bet selection
+                document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('custom-bet-input').value = '';
+                this.currentBet = 0;
+                this.updateDisplay();
+                this.validateBet();
+                
+                // Check if player has enough coins for minimum bet
+                if (AmbarHeader.getCurrency('coins') < 40) {
+                    this.showGameOverModal();
+                }
+            }
+            
+            showGameOverModal() {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                const nextBtn = document.getElementById('next-game-btn');
+                
+                title.textContent = 'Game Over!';
+                amount.textContent = 'Insufficient Coins';
+                amount.className = 'result-amount negative';
+                details.innerHTML = `
+                    <p>You need at least 40 coins to play.</p>
+                    <p>Visit the store or complete tasks to get more coins!</p>
+                `;
+                nextBtn.textContent = 'Go Back';
+                
+                popup.style.display = 'flex';
+                
+                nextBtn.onclick = () => {
+                    AmbarNavigation.navigateTo('games');
+                };
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize header with back button
+            AmbarHeader.init({
+                showCurrencies: ['coins', 'level'],
+                showSettings: false,
+                showBackButton: true
+            });
+            
+            // Override back button to go to games page
+            AmbarHeader.goBack = () => {
+                AmbarNavigation.navigateTo('games');
+            };
+            
+            AmbarNavigation.setActivePage('games');
+            
+            new SpeedClickerGame();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('result-popup').style.display = 'none';
+            }
+        });
+        
+        // Prevent right-click and text selection
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('selectstart', (e) => e.preventDefault());
+    </script>
+</body>
+</html>

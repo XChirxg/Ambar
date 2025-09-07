@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Your Gifts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style/gift.css">
+
+</head>
+<body>
+    <div class="header-controls">
+        <button class="header-btn back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <button class="header-btn save-button" onclick="saveChanges()">
+            Save Changes
+        </button>
+    </div>
+
+    <div class="character-canvas">
+        <div class="character-display" id="characterDisplay">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <div class="controls-container">
+        <div class="top-controls">
+            <div class="gift-status">
+                <i class="fas fa-gift"></i>
+                <span>Gifts Received</span>
+                <div class="gift-count" id="giftCount">0</div>
+            </div>
+            
+            <div class="category-tabs">
+                <button class="category-tab" id="faceTab" onclick="switchMainCategory('face')">
+                    <i class="fas fa-user"></i>
+                    <span>Face</span>
+                </button>
+                <button class="category-tab active" id="clothsTab" onclick="switchMainCategory('cloths')">
+                    <i class="fas fa-tshirt"></i>
+                    <span>Cloths</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="subcategories-row" id="subcategoriesRow"></div>
+        <div class="items-row" id="itemsRow"></div>
+    </div>
+<script src="config.js"></script>
+<script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, updateDoc, onSnapshot, arrayUnion, serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+        let unsubscribeFromGifts = null;
+
+        const CONFIG = {
+            baseUrl: "https://raw.githubusercontent.com/xchirxg/db/main",
+            cropConfigs: {
+                boy: {
+                    backhair: {x: 255, y: 520, w: 352, h: 358},
+                    bottom: {x: 277, y: 1056, w: 292, h: 466},
+                    fronthair: {x: 275, y: 570, w: 332, h: 294},
+                    full: {x: 251, y: 818, w: 326, h: 706},
+                    shoes: {x: 309, y: 1309, w: 244, h: 216},
+                    skin: {x: 373, y: 659, w: 114, h: 110},
+                    top: {x: 281, y: 842, w: 292, h: 442}
+                },
+                girl: {
+                    backhair: {x: 467, y: 594, w: 454, h: 674},
+                    bottom: {x: 493, y: 1068, w: 374, h: 448},
+                    fronthair: {x: 558, y: 692, w: 278, h: 270},
+                    full: {x: 499, y: 931, w: 388, h: 592},
+                    shoes: {x: 568, y: 1295, w: 232, h: 248},
+                    skin: {x: 638, y: 807, w: 82, h: 78},
+                    top: {x: 513, y: 925, w: 338, h: 456}
+                }
+            },
+            assets: {
+                boy: {
+                    backhair: {maxCount: 100, path: "boy/backhair", crop: true, hasBald: true},
+                    bottom: {maxCount: 100, path: "boy/bottom", crop: true},
+                    fronthair: {maxCount: 100, path: "boy/fronthair", crop: true, hasBald: true},
+                    full: {maxCount: 100, path: "boy/full", crop: true},
+                    shoes: {maxCount: 100, path: "boy/shoes", crop: true},
+                    skin: {maxCount: 100, path: "boy/skin", crop: true},
+                    top: {maxCount: 100, path: "boy/top", crop: true}
+                },
+                girl: {
+                    backhair: {maxCount: 100, path: "girl/backhair", crop: true, hasBald: true},
+                    bottom: {maxCount: 100, path: "girl/bottom", crop: true},
+                    fronthair: {maxCount: 100, path: "girl/fronthair", crop: true, hasBald: true},
+                    full: {maxCount: 100, path: "girl/full", crop: true},
+                    shoes: {maxCount: 100, path: "girl/shoes", crop: true},
+                    skin: {maxCount: 100, path: "girl/skin", crop: true},
+                    top: {maxCount: 100, path: "girl/top", crop: true}
+                }
+            },
+            faceAssets: {
+                boy: {
+                    eyeball: {maxCount: 100, path: "boy/face/eyeball"},
+                    eyebrow: {maxCount: 100, path: "boy/face/eyebrow"},
+                    mouth: {maxCount: 100, path: "boy/face/mouth"}
+                },
+                girl: {
+                    eyeball: {maxCount: 100, path: "girl/face/eyeball"},
+                    eyebrow: {maxCount: 100, path: "girl/face/eyebrow"},
+                    mouth: {maxCount: 100, path: "girl/face/mouth"}
+                }
+            },
+            layerOrder: ["background", "backhair", "skin", "bottom", "shoes", "top", "full", "eyeball", "eyebrow", "mouth", "fronthair"],
+            categories: {
+                face: ['skin', 'fronthair', 'backhair'],
+                cloths: ['top', 'bottom', 'shoes', 'full']
+            }
+        };
+
+        class GiftReceiver {
+            constructor() {
+                this.currentGender = 'boy';
+                this.currentMainCategory = 'cloths';
+                this.currentSubCategory = 'top';
+                this.userCharacter = {};
+                this.receivedGifts = {};
+                this.unlockedItems = {};
+                this.availableCounts = {};
+                this.loadedCategories = new Set();
+                this.imageCache = new Map();
+                this.currentlyLoading = null;
+                this.newGifts = new Set();
+                this.hasUnsavedChanges = false;
+                this.initialLoadComplete = false;
+                
+                this.init();
+            }
+
+            init() {
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        this.loadUserData();
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+
+            async loadUserData() {
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                    if (userDoc.exists()) {
+                        userData = userDoc.data();
+                        
+                        this.currentGender = userData.gender || 'boy';
+                        this.userCharacter = userData.character || this.getDefaultCharacter();
+                        this.receivedGifts = userData.receivedGifts || [];
+                        
+                        this.processReceivedGifts();
+                        this.setupGiftListener();
+                        
+                        this.renderSubCategories();
+                        await this.loadDefaultAssets();
+                        this.renderCharacter();
+                        this.updateGiftCount();
+                        this.initialLoadComplete = true;
+                        
+                    } else {
+                        window.location.href = 'character-design.html';
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            getDefaultCharacter() {
+                return {
+                    skin: 1,
+                    fronthair: 1,
+                    backhair: 1,
+                    top: 1,
+                    bottom: 1,
+                    shoes: 1,
+                    eyeball: 1,
+                    eyebrow: 1,
+                    mouth: 1
+                };
+            }
+
+            processReceivedGifts() {
+                this.unlockedItems = {
+                    skin: [1, 2, 3, 4, 5],
+                    fronthair: [1, 2, 3, 4, 5],
+                    backhair: [1, 2, 3, 4, 5],
+                    top: [1],
+                    bottom: [1],
+                    shoes: [1],
+                    full: [],
+                    eyeball: [1, 2, 3, 4, 5],
+                    eyebrow: [1, 2, 3, 4, 5],
+                    mouth: [1, 2, 3, 4, 5]
+                };
+
+                if (this.receivedGifts && Array.isArray(this.receivedGifts)) {
+                    this.receivedGifts.forEach(gift => {
+                        const category = gift.category;
+                        const itemId = gift.itemId;
+                        
+                        if (!this.unlockedItems[category]) {
+                            this.unlockedItems[category] = [];
+                        }
+                        
+                        if (!this.unlockedItems[category].includes(itemId)) {
+                            this.unlockedItems[category].push(itemId);
+                        }
+                    });
+                }
+            }
+
+            setupGiftListener() {
+                if (unsubscribeFromGifts) {
+                    unsubscribeFromGifts();
+                }
+
+                unsubscribeFromGifts = onSnapshot(doc(db, 'users', currentUser.uid), (doc) => {
+                    if (doc.exists()) {
+                        const newData = doc.data();
+                        const newGifts = newData.receivedGifts || [];
+                        
+                        const currentGiftIds = this.receivedGifts.map(g => `${g.category}-${g.itemId}`);
+                        const newGiftIds = newGifts.map(g => `${g.category}-${g.itemId}`);
+                        
+                        const addedGifts = newGifts.filter(g => 
+                            !currentGiftIds.includes(`${g.category}-${g.itemId}`)
+                        );
+
+                        if (addedGifts.length > 0) {
+                            this.receivedGifts = newGifts;
+                            this.processReceivedGifts();
+                            
+                            addedGifts.forEach(gift => {
+                                this.newGifts.add(`${gift.category}-${gift.itemId}`);
+                                this.showGiftNotification(gift);
+                            });
+                            
+                            this.updateGiftCount();
+                            
+                            if (addedGifts.some(g => g.category === this.currentSubCategory)) {
+                                this.renderItems();
+                            }
+                        }
+                    }
+                });
+            }
+
+            showGiftNotification(gift) {
+                const categoryName = gift.category.charAt(0).toUpperCase() + gift.category.slice(1);
+                const displayName = categoryName === 'Fronthair' ? 'Front Hair' : 
+                                 categoryName === 'Backhair' ? 'Back Hair' : categoryName;
+
+                if (window.AmbarNotifications) {
+                    AmbarNotifications.showToast('gift', 'New Gift Received!', `You received a ${displayName} item!`);
+                }
+            }
+
+            async loadDefaultAssets() {
+                // Load the default 'top' category for cloths on initial load
+                await this.discoverAvailableAssets(this.currentSubCategory);
+                this.loadedCategories.add(this.currentSubCategory);
+                this.renderItems();
+            }
+
+            async discoverAvailableAssets(category) {
+                if (this.availableCounts[category]) return this.availableCounts[category];
+
+                let categoryData = CONFIG.assets[this.currentGender][category];
+                if (!categoryData) return 0;
+
+                let count = await this.binarySearchCount(categoryData.path, categoryData.maxCount);
+                this.availableCounts[category] = count;
+                return count;
+            }
+
+            async binarySearchCount(path, maxCount) {
+                let left = 1;
+                let right = maxCount;
+                let found = 0;
+
+                while (left <= right) {
+                    const mid = Math.floor((left + right) / 2);
+                    const exists = await this.checkImageExists(`${CONFIG.baseUrl}/${path}/${mid}.png`);
+                    
+                    if (exists) {
+                        found = mid;
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+
+                return found;
+            }
+
+            checkImageExists(url) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = url;
+                    setTimeout(() => resolve(false), 3000);
+                });
+            }
+
+            renderSubCategories() {
+                const container = document.getElementById('subcategoriesRow');
+                container.innerHTML = '';
+                
+                const categories = CONFIG.categories[this.currentMainCategory];
+                
+                categories.forEach(category => {
+                    if (CONFIG.assets[this.currentGender][category]) {
+                        const btn = document.createElement('button');
+                        btn.className = `subcategory-btn ${category === this.currentSubCategory ? 'active' : ''}`;
+                        
+                        let displayName = category.charAt(0).toUpperCase() + category.slice(1);
+                        if (category === 'fronthair') displayName = 'Front Hair';
+                        if (category === 'backhair') displayName = 'Back Hair';
+                        
+                        btn.textContent = displayName;
+                        btn.addEventListener('click', async () => {
+                            document.querySelector('.subcategory-btn.active')?.classList.remove('active');
+                            btn.classList.add('active');
+                            this.currentSubCategory = category;
+                            
+                            this.showShimmerPlaceholders(category);
+                            
+                            if (!this.loadedCategories.has(category)) {
+                                await this.discoverAvailableAssets(category);
+                                this.loadedCategories.add(category);
+                            }
+                            
+                            this.renderItems();
+                        });
+                        container.appendChild(btn);
+                    }
+                });
+            }
+
+            showShimmerPlaceholders(category) {
+                const container = document.getElementById('itemsRow');
+                container.innerHTML = '';
+                this.currentlyLoading = category;
+
+                let estimatedCount = this.availableCounts[category] || 8;
+
+                for (let i = 0; i < estimatedCount; i++) {
+                    const shimmer = document.createElement('div');
+                    shimmer.className = 'shimmer-placeholder';
+                    container.appendChild(shimmer);
+                }
+            }
+
+            async renderItems() {
+                if (this.currentlyLoading !== this.currentSubCategory) {
+                    return;
+                }
+
+                const container = document.getElementById('itemsRow');
+                let categoryData = CONFIG.assets[this.currentGender][this.currentSubCategory];
+                let currentSelection = this.userCharacter[this.currentSubCategory];
+                let count = this.availableCounts[this.currentSubCategory] || 0;
+
+                if (!categoryData || count === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                container.innerHTML = '';
+                this.currentlyLoading = null;
+
+                // Add bald option for hair categories
+                if (categoryData.hasBald && (this.currentSubCategory === 'fronthair' || this.currentSubCategory === 'backhair')) {
+                    const baldThumbnail = document.createElement('div');
+                    baldThumbnail.className = `item-thumbnail unlocked ${currentSelection === null ? 'active' : ''}`;
+                    baldThumbnail.innerHTML = '<div class="bald-icon"><i class="fas fa-ban"></i></div>';
+                    baldThumbnail.addEventListener('click', () => {
+                        this.selectItem(null);
+                    });
+                    container.appendChild(baldThumbnail);
+                }
+
+                // Separate unlocked and locked items
+                const unlockedItems = [];
+                const lockedItems = [];
+
+                for (let i = 1; i <= count; i++) {
+                    const isAlwaysUnlocked = ['skin', 'fronthair', 'backhair', 'eyeball', 'eyebrow', 'mouth'].includes(this.currentSubCategory);
+                    const isUnlocked = isAlwaysUnlocked || this.unlockedItems[this.currentSubCategory]?.includes(i) || false;
+                    
+                    if (isUnlocked) {
+                        unlockedItems.push(i);
+                    } else {
+                        lockedItems.push(i);
+                    }
+                }
+
+                // Render unlocked items first, then locked items
+                [...unlockedItems, ...lockedItems].forEach(i => {
+                    const thumbnail = document.createElement('div');
+                    
+                    const isAlwaysUnlocked = ['skin', 'fronthair', 'backhair', 'eyeball', 'eyebrow', 'mouth'].includes(this.currentSubCategory);
+                    const isUnlocked = isAlwaysUnlocked || this.unlockedItems[this.currentSubCategory]?.includes(i) || false;
+                    const isGift = this.receivedGifts.some(g => g.category === this.currentSubCategory && g.itemId === i);
+                    const isNewGift = this.newGifts.has(`${this.currentSubCategory}-${i}`);
+                    const isActive = currentSelection === i;
+                    
+                    let className = 'item-thumbnail';
+                    if (isActive) className += ' active';
+                    if (isUnlocked) className += ' unlocked';
+                    else className += ' locked';
+                    if (isGift && !isAlwaysUnlocked) className += ' gift';
+                    if (isNewGift) className += ' new-gift';
+                    
+                    thumbnail.className = className;
+                    
+                    thumbnail.addEventListener('click', () => {
+                        if (isUnlocked) {
+                            this.selectItem(i);
+                            if (isNewGift) {
+                                this.newGifts.delete(`${this.currentSubCategory}-${i}`);
+                                thumbnail.classList.remove('new-gift');
+                            }
+                        } else {
+                            this.showPartnerGiftRequest(this.currentSubCategory, i);
+                        }
+                    });
+                    
+                    container.appendChild(thumbnail);
+                    
+                    if (categoryData.crop && CONFIG.cropConfigs[this.currentGender][this.currentSubCategory]) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 100;
+                        canvas.height = 100;
+                        thumbnail.appendChild(canvas);
+                        this.createThumbnail(canvas, categoryData.path, i, this.currentSubCategory, !isUnlocked);
+                    } else {
+                        const img = document.createElement('img');
+                        img.onload = () => {
+                            if (!isUnlocked) {
+                                img.style.filter = 'grayscale(100%) brightness(0.3)';
+                            }
+                            img.style.opacity = '0';
+                            img.style.transition = 'opacity 0.3s ease';
+                            setTimeout(() => {
+                                img.style.opacity = '1';
+                            }, 10);
+                        };
+                        img.src = `${CONFIG.baseUrl}/${categoryData.path}/${i}.png`;
+                        thumbnail.appendChild(img);
+                    }
+                });
+            }
+
+            showPartnerGiftRequest(category, itemId) {
+                const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+                const displayName = categoryName === 'Fronthair' ? 'Front Hair' : 
+                                 categoryName === 'Backhair' ? 'Back Hair' : categoryName;
+
+                if (window.AmbarNotifications) {
+                    AmbarNotifications.show({
+                        type: 'gift',
+                        icon: 'fas fa-heart',
+                        title: 'Ask Your Partner',
+                        message: `This ${displayName} item is locked. Would you like to ask your partner to gift it to you?`,
+                        action: {
+                            text: 'Ask Partner',
+                            callback: () => {
+                                this.sendGiftRequest(category, itemId);
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback notification
+                    this.showMessage(`This ${displayName} item is locked. Ask your partner to gift it to you!`, 'info');
+                }
+            }
+
+            async sendGiftRequest(category, itemId) {
+                if (!userData.partnerId) {
+                    this.showMessage('You need to have a partner to request gifts!', 'error');
+                    return;
+                }
+
+                try {
+                    // Add gift request to partner's requests
+                    await updateDoc(doc(db, 'users', userData.partnerId), {
+                        giftRequests: arrayUnion({
+                            fromUserId: currentUser.uid,
+                            fromUserName: userData.name || 'Partner',
+                            category: category,
+                            itemId: itemId,
+                            timestamp: serverTimestamp(),
+                            status: 'pending'
+                        })
+                    });
+
+                    this.showMessage('Gift request sent to your partner!', 'success');
+                } catch (error) {
+                    console.error('Error sending gift request:', error);
+                    this.showMessage('Error sending gift request. Please try again.', 'error');
+                }
+            }
+
+            createThumbnail(canvas, path, id, category, isLocked = false) {
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = () => {
+                    const crop = CONFIG.cropConfigs[this.currentGender][category];
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(
+                        img,
+                        crop.x, crop.y, crop.w, crop.h,
+                        0, 0, canvas.width, canvas.height
+                    );
+                    
+                    if (isLocked) {
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                    
+                    canvas.style.opacity = '0';
+                    canvas.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        canvas.style.opacity = '1';
+                    }, 10);
+                };
+                
+                img.src = `${CONFIG.baseUrl}/${path}/${id}.png`;
+            }
+
+            selectItem(id) {
+                const oldSelection = this.userCharacter[this.currentSubCategory];
+
+                if (this.currentSubCategory === 'full' && id !== null) {
+                    delete this.userCharacter.top;
+                    delete this.userCharacter.bottom;
+                    delete this.userCharacter.shoes;
+                } else if (['top', 'bottom', 'shoes'].includes(this.currentSubCategory) && id !== null) {
+                    if (this.userCharacter.full) {
+                        delete this.userCharacter.full;
+                        ['top', 'bottom', 'shoes'].forEach(item => {
+                            if (item !== this.currentSubCategory && !this.userCharacter[item]) {
+                                this.userCharacter[item] = 1;
+                            }
+                        });
+                    }
+                }
+
+                this.userCharacter[this.currentSubCategory] = id;
+                this.hasUnsavedChanges = true;
+                this.renderItems();
+                this.renderCharacter();
+                this.updateSaveButtonState();
+            }
+
+            updateSaveButtonState() {
+                const saveButton = document.querySelector('.save-button');
+                if (this.hasUnsavedChanges) {
+                    saveButton.style.background = '#ff6b9d';
+                    saveButton.textContent = 'Save Changes';
+                } else {
+                    saveButton.style.background = '#4CAF50';
+                    saveButton.textContent = 'Saved';
+                }
+            }
+
+            async renderCharacter() {
+                const container = document.getElementById('characterDisplay');
+                container.innerHTML = '';
+
+                for (const layer of CONFIG.layerOrder) {
+                    let selection, path;
+
+                    if (layer === 'background') {
+                        selection = 1;
+                        path = 'background';
+                    } else if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                        selection = this.userCharacter[layer];
+                        if (selection) {
+                            path = CONFIG.faceAssets[this.currentGender][layer].path;
+                        }
+                    } else {
+                        selection = this.userCharacter[layer];
+                        if (selection && CONFIG.assets[this.currentGender][layer]) {
+                            path = CONFIG.assets[this.currentGender][layer].path;
+                        }
+                    }
+
+                    if (selection && path) {
+                        const layerDiv = document.createElement('div');
+                        layerDiv.className = 'character-layer';
+                        
+                        const img = document.createElement('img');
+                        img.src = `${CONFIG.baseUrl}/${path}/${selection}.png`;
+                        
+                        layerDiv.appendChild(img);
+                        container.appendChild(layerDiv);
+                    }
+                }
+            }
+
+            updateGiftCount() {
+                const totalGifts = this.receivedGifts ? this.receivedGifts.length : 0;
+                document.getElementById('giftCount').textContent = totalGifts;
+            }
+
+            async saveCharacterToFirebase() {
+                if (!currentUser) return;
+
+                try {
+                    const saveButton = document.querySelector('.save-button');
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Saving...';
+                    saveButton.style.background = '#666';
+
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        character: this.userCharacter,
+                        lastCharacterUpdate: serverTimestamp()
+                    });
+
+                    if (userData.partnerId) {
+                        const partnerRef = doc(db, 'users', userData.partnerId);
+                        
+                        await updateDoc(partnerRef, {
+                            [`partnerData.character`]: this.userCharacter,
+                            lastPartnerUpdate: serverTimestamp()
+                        });
+                    }
+
+                    this.hasUnsavedChanges = false;
+                    this.updateSaveButtonState();
+                    saveButton.disabled = false;
+                    
+                    this.showMessage('Changes saved successfully!', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 1000);
+        
+                } catch (error) {
+                    console.error('Error saving character:', error);
+                    const saveButton = document.querySelector('.save-button');
+                    saveButton.disabled = false;
+                    this.updateSaveButtonState();
+                    this.showMessage('Error saving changes. Please try again.', 'error');
+                }
+            }
+
+            showMessage(text, type = 'info') {
+                const message = document.createElement('div');
+                message.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 15px;
+                    z-index: 1001;
+                    font-size: 14px;
+                    animation: slideInRight 0.3s ease-out;
+                    max-width: 300px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                `;
+                
+                message.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                        <span>${text}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(message);
+                
+                setTimeout(() => {
+                    message.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        if (document.body.contains(message)) {
+                            document.body.removeChild(message);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            cleanup() {
+                if (unsubscribeFromGifts) {
+                    unsubscribeFromGifts();
+                }
+            }
+        }
+
+        window.switchMainCategory = function(category) {
+            if (giftReceiver) {
+                document.querySelector('.category-tab.active')?.classList.remove('active');
+                document.getElementById(category + 'Tab').classList.add('active');
+                
+                giftReceiver.currentMainCategory = category;
+                
+                // Set default subcategory for the main category
+                const defaultSubCategories = {
+                    face: 'skin',
+                    cloths: 'top'
+                };
+                
+                giftReceiver.currentSubCategory = defaultSubCategories[category];
+                giftReceiver.renderSubCategories();
+                
+                // Load and render items for the new category
+                giftReceiver.showShimmerPlaceholders(giftReceiver.currentSubCategory);
+                
+                if (!giftReceiver.loadedCategories.has(giftReceiver.currentSubCategory)) {
+                    giftReceiver.discoverAvailableAssets(giftReceiver.currentSubCategory).then(() => {
+                        giftReceiver.loadedCategories.add(giftReceiver.currentSubCategory);
+                        giftReceiver.renderItems();
+                    });
+                } else {
+                    giftReceiver.renderItems();
+                }
+            }
+        }
+
+        window.goBack = function() {
+            if (giftReceiver && giftReceiver.hasUnsavedChanges) {
+                if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                    window.location.href = 'home.html';
+                }
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        window.saveChanges = function() {
+            if (giftReceiver) {
+                giftReceiver.saveCharacterToFirebase();
+            } else {
+                // If no changes made, still redirect to home
+                window.location.href = 'home.html';
+            }
+        }
+
+        let giftReceiver;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            giftReceiver = new GiftReceiver();
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (giftReceiver) {
+                giftReceiver.cleanup();
+                
+                if (giftReceiver.hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                    return 'You have unsaved changes. Are you sure you want to leave?';
+                }
+            }
+        });
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

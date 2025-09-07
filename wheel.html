@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Spin Game - Ambar</title>
+    <title>Lucky Wheel Game - Ambar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style/tool.css">
-     <link rel="stylesheet" href="style/coin.css">
+
+        <link rel="stylesheet" href="style/tool.css">   
+        <link rel="stylesheet" href="style/wheel.css">
 
 </head>
 <body>
@@ -16,11 +17,11 @@
         <div class="betting-section" id="betting-section">
             <h2 class="betting-title">Place Your Bet</h2>
             <div class="bet-options">
-                <button class="bet-btn" data-bet="10">10</button>
-                <button class="bet-btn" data-bet="25">25</button>
+                <button class="bet-btn" data-bet="20">20</button>
                 <button class="bet-btn" data-bet="50">50</button>
                 <button class="bet-btn" data-bet="100">100</button>
-                <button class="bet-btn" data-bet="250">250</button>
+                <button class="bet-btn" data-bet="200">200</button>
+                <button class="bet-btn" data-bet="500">500</button>
                 <button class="bet-btn" id="all-in-btn">All In</button>
             </div>
             <div class="custom-bet">
@@ -40,27 +41,61 @@
                 </div>
             </div>
             
-            <div class="status-message" id="status-message">Computer is spinning coins...</div>
+            <div class="status-message" id="status-message">Click the button to spin the wheel!</div>
             
-            <div class="coins-section">
-                <h3 class="section-title">Computer's Coins</h3>
-                <div class="coins-container" id="computer-coins">
-                    <div class="coin" id="comp-coin-1">?</div>
-                    <div class="coin" id="comp-coin-2">?</div>
-                    <div class="coin" id="comp-coin-3">?</div>
-                    <div class="coin" id="comp-coin-4">?</div>
-                    <div class="coin" id="comp-coin-5">?</div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-segments">
+                        <div class="segment-label segment-0">5x</div>
+                        <div class="segment-label segment-1">0.5x</div>
+                        <div class="segment-label segment-2">2x</div>
+                        <div class="segment-label segment-3">0x</div>
+                        <div class="segment-label segment-4">10x</div>
+                        <div class="segment-label segment-5">1x</div>
+                        <div class="segment-label segment-6">3x</div>
+                        <div class="segment-label segment-7">0.2x</div>
+                    </div>
+                </div>
+                <div class="wheel-center">
+                    <i class="fas fa-star"></i>
                 </div>
             </div>
             
-            <div class="coins-section">
-                <h3 class="section-title">Your Coins</h3>
-                <div class="coins-container" id="player-coins">
-                    <div class="coin" id="player-coin-1" data-index="0">?</div>
-                    <div class="coin" id="player-coin-2" data-index="1">?</div>
-                    <div class="coin" id="player-coin-3" data-index="2">?</div>
-                    <div class="coin" id="player-coin-4" data-index="3">?</div>
-                    <div class="coin" id="player-coin-5" data-index="4">?</div>
+            <button class="spin-btn" id="spin-btn">SPIN THE WHEEL!</button>
+            
+            <div class="prize-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF4444;"></div>
+                    <div class="legend-text">5x Multiplier</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #44FF44;"></div>
+                    <div class="legend-text">0.5x Multiplier</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4444FF;"></div>
+                    <div class="legend-text">2x Multiplier</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFFF44;"></div>
+                    <div class="legend-text">0x (Lose All)</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF44FF;"></div>
+                    <div class="legend-text">10x Multiplier</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #44FFFF;"></div>
+                    <div class="legend-text">1x (Break Even)</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFA500;"></div>
+                    <div class="legend-text">3x Multiplier</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #A0A0A0;"></div>
+                    <div class="legend-text">0.2x Multiplier</div>
                 </div>
             </div>
         </div>
@@ -77,13 +112,24 @@
     
     <script src="tool.js"></script>
     <script>
-        class CoinSpinGame {
+        class LuckyWheelGame {
             constructor() {
                 this.currentBet = 0;
-                this.computerResults = [];
-                this.playerResults = [];
-                this.currentPlayerIndex = 0;
                 this.gameInProgress = false;
+                this.gamesPlayed = 0;
+                this.gamesWon = 0;
+                this.isSpinning = false;
+                
+                this.segments = [
+                    { multiplier: 5, probability: 0.05 },      // 5%
+                    { multiplier: 0.5, probability: 0.20 },   // 20%
+                    { multiplier: 2, probability: 0.15 },     // 15%
+                    { multiplier: 0, probability: 0.10 },     // 10%
+                    { multiplier: 10, probability: 0.02 },    // 2%
+                    { multiplier: 1, probability: 0.25 },     // 25%
+                    { multiplier: 3, probability: 0.10 },     // 10%
+                    { multiplier: 0.2, probability: 0.13 }    // 13%
+                ];
                 
                 this.initializeEventListeners();
                 this.updateDisplay();
@@ -122,11 +168,9 @@
                     this.startGame();
                 });
                 
-                // Player coins
-                document.querySelectorAll('#player-coins .coin').forEach(coin => {
-                    coin.addEventListener('click', () => {
-                        this.playerCoinClick(coin);
-                    });
+                // Spin button
+                document.getElementById('spin-btn').addEventListener('click', () => {
+                    this.spinWheel();
                 });
                 
                 // Next game button
@@ -170,143 +214,109 @@
                 document.getElementById('current-bet').textContent = this.currentBet.toLocaleString();
                 
                 this.resetGame();
-                this.startComputerSpins();
+                this.updateProgressDisplay();
             }
             
             resetGame() {
-                this.computerResults = [];
-                this.playerResults = [];
-                this.currentPlayerIndex = 0;
-                
-                // Reset coin displays
-                document.querySelectorAll('.coin').forEach(coin => {
-                    coin.textContent = '?';
-                    coin.className = 'coin';
-                });
-                
-                document.getElementById('status-message').textContent = 'Computer is spinning coins...';
-                document.getElementById('win-rate').textContent = '0%';
-                document.getElementById('progress-fill').style.width = '0%';
+                const wheel = document.getElementById('wheel');
+                wheel.style.transform = 'rotate(0deg)';
+                this.isSpinning = false;
+                document.getElementById('spin-btn').disabled = false;
+                document.getElementById('status-message').textContent = 'Click the button to spin the wheel!';
             }
             
-            startComputerSpins() {
-                let coinIndex = 0;
-                
-                const spinNextCoin = () => {
-                    if (coinIndex >= 5) {
-                        this.startPlayerTurn();
-                        return;
-                    }
-                    
-                    const coin = document.getElementById(`comp-coin-${coinIndex + 1}`);
-                    coin.classList.add('computer-spinning');
-                    
-                    setTimeout(() => {
-                        const result = Math.random() < 0.5 ? 'H' : 'T';
-                        this.computerResults.push(result);
-                        coin.textContent = result;
-                        coin.classList.remove('computer-spinning');
-                        
-                        coinIndex++;
-                        setTimeout(spinNextCoin, 200);
-                    }, 300);
-                };
-                
-                spinNextCoin();
-            }
-            
-            startPlayerTurn() {
-                document.getElementById('status-message').textContent = 'Your turn! Click on coins to spin them.';
-                
-                // Enable player coins
-                document.querySelectorAll('#player-coins .coin').forEach((coin, index) => {
-                    if (index < 5) {
-                        coin.style.cursor = 'pointer';
-                        coin.style.opacity = '1';
-                    }
-                });
-            }
-            
-            playerCoinClick(coin) {
-                const index = parseInt(coin.dataset.index);
-                
-                if (index !== this.currentPlayerIndex || this.playerResults[index] !== undefined) return;
-                
-                coin.classList.add('spinning');
-                coin.style.cursor = 'default';
-                
-                setTimeout(() => {
-                    const result = Math.random() < 0.5 ? 'H' : 'T';
-                    this.playerResults[index] = result;
-                    coin.textContent = result;
-                    coin.classList.remove('spinning');
-                    
-                    // Check if it matches computer result
-                    if (result === this.computerResults[index]) {
-                        coin.classList.add('matched');
-                    } else {
-                        coin.classList.add('missed');
-                    }
-                    
-                    this.updateProgress();
-                    this.currentPlayerIndex++;
-                    
-                    if (this.currentPlayerIndex >= 5) {
-                        setTimeout(() => this.endGame(), 1000);
-                    } else {
-                        document.getElementById('status-message').textContent = `Spin coin ${this.currentPlayerIndex + 1}`;
-                    }
-                }, 800);
-            }
-            
-            updateProgress() {
-                const matches = this.playerResults.filter((result, index) => 
-                    result === this.computerResults[index]
-                ).length;
-                
-                const winRate = Math.round((matches / this.playerResults.length) * 100);
+            updateProgressDisplay() {
+                const winRate = this.gamesPlayed > 0 ? Math.round((this.gamesWon / this.gamesPlayed) * 100) : 0;
                 document.getElementById('win-rate').textContent = `${winRate}%`;
                 document.getElementById('progress-fill').style.width = `${winRate}%`;
             }
             
-            endGame() {
-                const matches = this.playerResults.filter((result, index) => 
-                    result === this.computerResults[index]
-                ).length;
+            spinWheel() {
+                if (this.isSpinning) return;
                 
-                const winPercentage = matches / 5;
-                const multiplier = winPercentage * 2;
+                this.isSpinning = true;
+                const spinBtn = document.getElementById('spin-btn');
+                spinBtn.disabled = true;
+                
+                document.getElementById('status-message').textContent = 'Spinning...';
+                
+                // Weighted random selection
+                const selectedSegment = this.getWeightedRandomSegment();
+                
+                // Calculate rotation (each segment is 45 degrees, starting from top)
+                const segmentAngle = 45;
+                const baseRotation = selectedSegment * segmentAngle;
+                
+                // Add extra rotations for effect (3-5 full rotations)
+                const extraRotations = (3 + Math.random() * 2) * 360;
+                const finalRotation = extraRotations + baseRotation;
+                
+                const wheel = document.getElementById('wheel');
+                wheel.style.transform = `rotate(${finalRotation}deg)`;
+                
+                // Wait for animation to complete
+                setTimeout(() => {
+                    this.handleSpinResult(selectedSegment);
+                }, 4000);
+            }
+            
+            getWeightedRandomSegment() {
+                const random = Math.random();
+                let cumulativeProbability = 0;
+                
+                for (let i = 0; i < this.segments.length; i++) {
+                    cumulativeProbability += this.segments[i].probability;
+                    if (random <= cumulativeProbability) {
+                        return i;
+                    }
+                }
+                
+                // Fallback to last segment
+                return this.segments.length - 1;
+            }
+            
+            handleSpinResult(segmentIndex) {
+                const segment = this.segments[segmentIndex];
+                const multiplier = segment.multiplier;
                 const reward = Math.round(multiplier * this.currentBet);
                 const netResult = reward - this.currentBet;
                 
-                // Update currencies through AmbarHeader
+                this.gamesPlayed++;
+                if (netResult >= 0) this.gamesWon++;
+                
+                // Update currencies
                 AmbarHeader.updateCurrency('coins', reward);
                 
-                // Update game stats in localStorage
-                this.updateGameStats(winPercentage * 100, netResult);
+                // Update game stats
+                const winPercentage = netResult >= 0 ? 100 : 0;
+                this.updateGameStats(winPercentage, netResult);
                 
-                this.showResults(netResult, matches, winPercentage, reward);
+                document.getElementById('status-message').textContent = `You landed on ${multiplier}x!`;
+                
+                setTimeout(() => {
+                    this.showResults(netResult, multiplier, reward, segmentIndex);
+                }, 1500);
+                
+                this.isSpinning = false;
                 this.gameInProgress = false;
             }
             
             updateGameStats(winPercentage, coinsEarned) {
-                // Update total win rate
-                const totalGames = parseInt(localStorage.getItem('totalGames') || '0') + 1;
+                // Update localStorage stats for game.html integration
+                const currentGames = parseInt(localStorage.getItem('luckGamesPlayed') || '0') + 1;
+                const currentCoins = parseInt(localStorage.getItem('luckCoinsEarned') || '0') + coinsEarned;
                 const currentWinRate = parseFloat(localStorage.getItem('totalWinRate') || '0');
-                const newWinRate = ((currentWinRate * (totalGames - 1)) + winPercentage) / totalGames;
                 
-                localStorage.setItem('totalGames', totalGames);
+                const newWinRate = currentGames > 0 ? 
+                    ((currentWinRate * (currentGames - 1)) + winPercentage) / currentGames : winPercentage;
+                
+                localStorage.setItem('luckGamesPlayed', currentGames);
+                localStorage.setItem('luckCoinsEarned', currentCoins);
                 localStorage.setItem('totalWinRate', newWinRate);
-                
-                // Update luck games stats for game.html
-                const luckGamesPlayed = parseInt(localStorage.getItem('luckGamesPlayed') || '0') + 1;
-                const luckCoinsEarned = parseInt(localStorage.getItem('luckCoinsEarned') || '0') + coinsEarned;
-                
-                localStorage.setItem('luckGamesPlayed', luckGamesPlayed);
-                localStorage.setItem('luckCoinsEarned', luckCoinsEarned);
+                localStorage.setItem('luck', Math.round(newWinRate));
             }
             
-            showResults(netResult, matches, winPercentage, reward) {
+            showResults(netResult, multiplier, reward, segmentIndex) {
                 const popup = document.getElementById('result-popup');
                 const title = document.getElementById('result-title');
                 const amount = document.getElementById('result-amount');
@@ -326,10 +336,12 @@
                     amount.className = 'result-amount';
                 }
                 
+                const segmentNames = ['5x Red', '0.5x Green', '2x Blue', '0x Yellow', '10x Purple', '1x Cyan', '3x Orange', '0.2x Gray'];
+                
                 details.innerHTML = `
-                    <p><strong>Matches:</strong> ${matches}/5 (${Math.round(winPercentage * 100)}%)</p>
+                    <p><strong>Wheel Result:</strong> ${segmentNames[segmentIndex]}</p>
+                    <p><strong>Multiplier:</strong> ${multiplier}x</p>
                     <p><strong>Bet:</strong> ${this.currentBet.toLocaleString()} | <strong>Reward:</strong> ${reward.toLocaleString()}</p>
-                    <p><strong>Multiplier:</strong> ${(winPercentage * 2).toFixed(2)}x</p>
                 `;
                 
                 popup.style.display = 'flex';
@@ -348,7 +360,7 @@
                 this.validateBet();
                 
                 // Check if player has enough coins for minimum bet
-                if (AmbarHeader.getCurrency('coins') < 10) {
+                if (AmbarHeader.getCurrency('coins') < 20) {
                     this.showGameOverModal();
                 }
             }
@@ -364,8 +376,8 @@
                 amount.textContent = 'Insufficient Coins';
                 amount.className = 'result-amount negative';
                 details.innerHTML = `
-                    <p>You need at least 10 coins to play.</p>
-                    <p>Visit the store to get more coins!</p>
+                    <p>You need at least 20 coins to play Lucky Wheel.</p>
+                    <p>Visit the store or play other games to earn more coins!</p>
                 `;
                 nextBtn.textContent = 'Go Back';
                 
@@ -393,7 +405,7 @@
             
             AmbarNavigation.setActivePage('games');
             
-            new CoinSpinGame();
+            new LuckyWheelGame();
         });
     </script>
 </body>

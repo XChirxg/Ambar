@@ -6,505 +6,19 @@
     <title>Ambar - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/home.css">
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Desktop Background Particles */
-        .bg-particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            display: block;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .particle:nth-child(1) { width: 4px; height: 4px; left: 15%; animation-delay: 0s; }
-        .particle:nth-child(2) { width: 3px; height: 3px; left: 25%; animation-delay: 2s; }
-        .particle:nth-child(3) { width: 5px; height: 5px; left: 65%; animation-delay: 4s; }
-        .particle:nth-child(4) { width: 3px; height: 3px; left: 85%; animation-delay: 6s; }
-        .particle:nth-child(5) { width: 4px; height: 4px; left: 45%; animation-delay: 1s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10%, 90% { opacity: 1; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
-        }
-
-        /* Top Header */
-        .top-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .logo {
-            font-family: 'Dancing Script', cursive;
-            font-size: 36px;
-            font-weight: 700;
-            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
-        }
-
-        .currency-bar {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .currency-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 10px 16px;
-            border-radius: 30px;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.3s ease;
-        }
-
-        .currency-item:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .currency-icon {
-            font-size: 16px;
-        }
-
-        .coins { color: #ffd700; }
-        .stars { color: #ff6b9d; }
-        .hearts { color: #e74c3c; }
-
-        /* Action Buttons - Updated for vertical layout */
-        .top-actions {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 90;
-        }
-
-        .action-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            pointer-events: auto;
-        }
-
-        .action-btn {
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: scale(1.05);
-        }
-
-        .action-btn i {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .timer-btn i { color: #ff6b9d; }
-        .save-btn i { color: #4CAF50; }
-        .line-btn i { color: #64b5f6; }
-        .gift-btn i { color: #ff6b9d; }
-
-        /* Timer Display */
-        .timer-display {
-            position: absolute;
-            top: 50%;
-            left: -120px;
-            transform: translateY(-50%);
-            background: rgba(255, 107, 157, 0.9);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-
-        .timer-btn:hover .timer-display {
-            opacity: 1;
-        }
-
-        /* Characters Display Area - Edge to edge */
-        .characters-container {
-            position: absolute;
-            top: 80px;
-            left: 0;
-            right: 0;
-            bottom: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .character-display {
-            position: relative;
-            width: 300px;
-            height: 533px;
-            transform: scale(0.85);
-            transform-origin: center;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-        }
-
-        .character-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .character-layer img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 120px;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 20px;
-            z-index: 100;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 12px 20px;
-            border-radius: 20px;
-            min-width: 80px;
-        }
-
-        .nav-btn:hover,
-        .nav-btn.active {
-            color: white;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-btn.active {
-            color: #ff6b9d;
-        }
-
-        .nav-btn i {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        .nav-btn span {
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-            body {
-                background: #000;
-            }
-
-            .bg-particles {
-                display: none;
-            }
-
-            .top-header {
-                padding: 0 20px;
-                height: 70px;
-            }
-
-            .logo {
-                font-size: 28px;
-            }
-
-            .currency-bar {
-                gap: 2px;
-            }
-
-            .currency-item {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-
-            .currency-icon {
-                font-size: 14px;
-            }
-
-            .top-actions {
-                left: 15px;
-                right: 15px;
-            }
-
-            .action-btn {
-                width: 36px;
-                height: 36px;
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
-            }
-
-            .action-btn:hover {
-                background: rgba(255, 255, 255, 0.15);
-                transform: scale(1.05);
-            }
-
-            .action-btn i {
-                font-size: 14px;
-            }
-
-            .action-group {
-                gap: 12px;
-            }
-
-            .characters-container {
-                top: 70px;
-                left: 0;
-                right: 0;
-                bottom: 90px;
-                padding: 0;
-            }
-
-            .character-display {
-                transform: scale(1);
-                width: 100vw;
-                height: calc(100vh - 160px);
-                filter: none;
-            }
-
-            .character-layer img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                object-position: center;
-            }
-
-            .bottom-nav {
-                height: 90px;
-                padding: 15px 10px;
-            }
-
-            .nav-btn {
-                padding: 8px 2px;
-                min-width: 60px;
-            }
-
-            .nav-btn i {
-                font-size: 20px;
-            }
-
-            .nav-btn span {
-                font-size: 10px;
-            }
-
-            .timer-display {
-                display: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .top-header {
-                padding: 0 15px;
-            }
-
-            .logo {
-                font-size: 24px;
-            }
-
-            .currency-item {
-                padding: 5px 10px;
-                font-size: 11px;
-                gap: 6px;
-            }
-
-            .currency-icon {
-                font-size: 12px;
-            }
-
-            .top-actions {
-                left: 10px;
-                right: 10px;
-            }
-
-            .action-btn {
-                width: 32px;
-                height: 32px;
-            }
-
-            .action-btn i {
-                font-size: 12px;
-            }
-
-            .action-group {
-                gap: 10px;
-            }
-        }
-
-        /* Premium loading animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .character-display {
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        .nav-btn.active::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: #ff6b9d;
-            border-radius: 50%;
-        }
-
-        /* Subtle glow effect for premium feel */
-        .character-display::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(circle, rgba(255, 107, 157, 0.03) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        @media (min-width: 769px) {
-            .character-display::after {
-                display: block;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .character-display::after {
-                display: none;
-            }
-        }
-    </style>
 </head>
+
 <body>
-    <!-- Background Particles (Desktop Only) -->
-    <div class="bg-particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-
-    <!-- Top Header -->
-    <div class="top-header">
-        <div class="logo">Ambar</div>
-        <div class="currency-bar">
-            <div class="currency-item">
-                <i class="fas fa-coins currency-icon coins"></i>
-                <span>1,250</span>
-            </div>
-            <div class="currency-item">
-                <i class="fas fa-star currency-icon stars"></i>
-                <span>15</span>
-            </div>
-            <div class="currency-item">
-                <i class="fas fa-heart currency-icon hearts"></i>
-                <span>420</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Action Buttons -->
+    <div class="camera-flash" id="cameraFlash"></div>
+    
     <div class="top-actions">
         <div class="action-group">
-            <button class="action-btn timer-btn" onclick="showTimer()">
-                <i class="fas fa-clock"></i>
-                <div class="timer-display">23:42:15</div>
+            <button class="action-btn collect-btn" id="collectBtn" onclick="collectCoins()">
+                <i class="fas fa-coins"></i>
+                <div class="collect-timer" id="collectTimer">6h 00m</div>
             </button>
             <button class="action-btn save-btn" onclick="savePhoto()">
                 <i class="fas fa-camera"></i>
@@ -520,243 +34,872 @@
         </div>
     </div>
 
-    <!-- Characters Display -->
     <div class="characters-container">
         <div class="character-display" id="characterDisplay">
-            <!-- Background Layer -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/background/1.png" alt="Background">
-            </div>
-            
-            <!-- Boy Back Hair -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/backhair/1.png" alt="Boy Back Hair">
-            </div>
-            
-            <!-- Girl Back Hair -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/backhair/1.png" alt="Girl Back Hair">
-            </div>
-            
-            <!-- Boy Skin -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/skin/1.png" alt="Boy Skin">
-            </div>
-            
-            <!-- Girl Skin -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/skin/1.png" alt="Girl Skin">
-            </div>
-            
-            <!-- Boy Bottom -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/bottom/1.png" alt="Boy Bottom">
-            </div>
-            
-            <!-- Girl Bottom -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/bottom/1.png" alt="Girl Bottom">
-            </div>
-            
-            <!-- Boy Shoes -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/shoes/1.png" alt="Boy Shoes">
-            </div>
-            
-            <!-- Girl Shoes -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/shoes/1.png" alt="Girl Shoes">
-            </div>
-            
-            <!-- Boy Top -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/top/1.png" alt="Boy Top">
-            </div>
-            
-            <!-- Girl Top -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/top/1.png" alt="Girl Top">
-            </div>
-            
-            <!-- Boy Face Elements -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/eyeball/1.png" alt="Boy Eyes">
-            </div>
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/eyebrow/1.png" alt="Boy Eyebrows">
-            </div>
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/face/mouth/1.png" alt="Boy Mouth">
-            </div>
-            
-            <!-- Girl Face Elements -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/eyeball/1.png" alt="Girl Eyes">
-            </div>
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/eyebrow/1.png" alt="Girl Eyebrows">
-            </div>
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/face/mouth/1.png" alt="Girl Mouth">
-            </div>
-            
-            <!-- Boy Front Hair -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/boy/fronthair/1.png" alt="Boy Front Hair">
-            </div>
-            
-            <!-- Girl Front Hair -->
-            <div class="character-layer">
-                <img src="https://raw.githubusercontent.com/xchirxg/db/main/girl/fronthair/1.png" alt="Girl Front Hair">
+            <button class="add-partner-btn" id="addPartnerBtn" onclick="addPartner()" style="display: none;">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification-overlay" id="notificationOverlay">
+        <div class="notification-modal" id="notificationModal">
+            <div class="notification-content">
+                <div class="notification-icon" id="notificationIcon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="notification-title" id="notificationTitle">Title</div>
+                <div class="notification-message" id="notificationMessage">Message</div>
+                <div class="notification-reward" id="notificationReward" style="display: none;">
+                    <i class="fas fa-coins"></i>
+                    <span>+1000 Coins</span>
+                </div>
+                <div class="notification-actions">
+                    <button class="notification-btn" id="notificationClose">Close</button>
+                    <button class="notification-btn primary" id="notificationAction">Action</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <button class="nav-btn active" onclick="navigateTo('home')">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('games')">
-            <i class="fas fa-gamepad"></i>
-            <span>Games</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('store')">
-            <i class="fas fa-store"></i>
-            <span>Store</span>
-        </button>
-        <button class="nav-btn" onclick="navigateTo('profile')">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </button>
+    <!-- Photo Success Modal -->
+    <div class="photo-success" id="photoSuccess">
+        <div class="photo-success-modal">
+            <div class="photo-success-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <div class="notification-title">Photo Saved!</div>
+            <div class="notification-message">Your Ambar moment has been captured and saved to your device.</div>
+            <div class="social-share">
+                <div class="social-text">Share your love story!</div>
+                <div class="social-buttons">
+                    <button class="social-btn" onclick="shareToSocial('instagram')">Instagram</button>
+                    <button class="social-btn" onclick="shareToSocial('whatsapp')">WhatsApp</button>
+                    <button class="social-btn" onclick="shareToSocial('facebook')">Facebook</button>
+                </div>
+            </div>
+            <div class="notification-actions">
+                <button class="notification-btn primary" onclick="closePhotoSuccess()">Awesome!</button>
+            </div>
+        </div>
     </div>
 
-<script>
-    // Navigation functions
-    function navigateTo(screen) {
-        // Remove active class from all nav buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        // Add active class to clicked button
-        event.target.closest('.nav-btn').classList.add('active');
+    <div class="toast-container" id="toastContainer"></div>
+<script src="config.js"></script>
+<script src="tool.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { 
+    getFirestore, doc, getDoc, onSnapshot, updateDoc, increment, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-        // Redirect to pages
-        if (screen === 'home') {
-            window.location.href = 'home.html';
-        } else if (screen === 'games') {
-            window.location.href = 'game.html';
-        } else if (screen === 'store') {
-            window.location.href = 'store2.html';
-        } else if (screen === 'profile') {
-            window.location.href = 'profile.html';
+const firebaseConfig = window.CONFIG.firebase;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const CONFIG = { baseUrl: "https://raw.githubusercontent.com/xchirxg/db/main" };
+
+let currentUser = null;
+let userGender = '';
+let userCharacter = {};
+let partnerData = null;
+let hasPartner = false;
+let userDataListener = null;
+let collectTimer = null;
+let isFirstVisit = false;
+let userData = null;
+
+// Notification System
+class NotificationSystem {
+    constructor() {
+        this.overlay = document.getElementById('notificationOverlay');
+        this.modal = document.getElementById('notificationModal');
+        this.icon = document.getElementById('notificationIcon');
+        this.title = document.getElementById('notificationTitle');
+        this.message = document.getElementById('notificationMessage');
+        this.reward = document.getElementById('notificationReward');
+        this.closeBtn = document.getElementById('notificationClose');
+        this.actionBtn = document.getElementById('notificationAction');
+        this.toastContainer = document.getElementById('toastContainer');
+        
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.closeBtn.addEventListener('click', () => this.hide());
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) this.hide();
+        });
+    }
+
+    show(config) {
+        this.modal.className = `notification-modal ${config.type || ''}`;
+        this.icon.className = `notification-icon ${config.iconType || config.type || ''}`;
+        this.icon.innerHTML = `<i class="${config.icon}"></i>`;
+        this.title.textContent = config.title;
+        this.message.textContent = config.message;
+        
+        if (config.reward) {
+            this.reward.style.display = 'flex';
+            this.reward.innerHTML = config.reward;
+            if (config.currencyUpdate) {
+                this.updateUserCurrency(config.currencyUpdate);
+            }
+        } else {
+            this.reward.style.display = 'none';
+        }
+        
+        if (config.action) {
+            this.actionBtn.textContent = config.action.text;
+            this.actionBtn.style.display = 'inline-block';
+            this.actionBtn.onclick = () => {
+                this.hide();
+                if (config.action.callback) config.action.callback();
+                if (config.action.redirect) window.location.href = config.action.redirect;
+            };
+        } else {
+            this.actionBtn.style.display = 'none';
+        }
+        
+        this.overlay.classList.add('show');
+        this.playSound();
+        
+        if (config.markAsShown) {
+            localStorage.setItem(config.markAsShown, 'true');
         }
     }
 
-    // Action button functions
-    function openLineScreen() {
-        alert('Line/Chat screen not yet implemented');
+    hide() {
+        this.overlay.classList.remove('show');
     }
 
-    function openGiftScreen() {
-        window.location.href = 'test3.html';
-    }
-
-    function showTimer() {
-        console.log('Timer clicked - showing countdown details');
-    }
-
-    function savePhoto() {
-        console.log('Saving couple photo');
-        saveAsImage();
-    }
-
-
-
-
-        // Save functionality
-        async function saveAsImage() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 300;
-            canvas.height = 533;
-
-            const characterDisplay = document.getElementById('characterDisplay');
-            const images = characterDisplay.querySelectorAll('img');
+    async updateUserCurrency(updates) {
+        if (!currentUser) return;
+        
+        try {
+            const updateData = {};
             
-            let loadedCount = 0;
-            const totalImages = images.length;
-            
-            images.forEach((img, index) => {
-                if (img.complete) {
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    loadedCount++;
-                    
-                    if (loadedCount === totalImages) {
-                        downloadImage(canvas);
-                    }
-                } else {
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        loadedCount++;
-                        
-                        if (loadedCount === totalImages) {
-                            downloadImage(canvas);
-                        }
-                    };
+            if (updates.coins) {
+                updateData['gameStats.coins'] = increment(updates.coins);
+                const currentCoins = parseInt(localStorage.getItem('coins') || '0');
+                const newCoins = currentCoins + updates.coins;
+                localStorage.setItem('coins', newCoins.toString());
+                if (window.AmbarHeader?.setCurrency) {
+                    window.AmbarHeader.setCurrency('coins', newCoins);
                 }
-            });
-        }
-
-        function downloadImage(canvas) {
-            canvas.toBlob(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `ambar-couple-${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            });
-        }
-
-        // Timer countdown functionality
-        function updateTimer() {
-            const now = new Date();
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
+            }
             
-            const timeLeft = tomorrow - now;
+            if (updates.stars) {
+                updateData['gameStats.stars'] = increment(updates.stars);
+                const currentStars = parseInt(localStorage.getItem('stars') || '0');
+                const newStars = currentStars + updates.stars;
+                localStorage.setItem('stars', newStars.toString());
+                if (window.AmbarHeader?.setCurrency) {
+                    window.AmbarHeader.setCurrency('stars', newStars);
+                }
+            }
             
+            if (updates.hearts) {
+                updateData['gameStats.hearts'] = increment(updates.hearts);
+                const currentHearts = parseInt(localStorage.getItem('hearts') || '0');
+                const newHearts = currentHearts + updates.hearts;
+                localStorage.setItem('hearts', newHearts.toString());
+                if (window.AmbarHeader?.setCurrency) {
+                    window.AmbarHeader.setCurrency('hearts', newHearts);
+                }
+            }
+            
+            if (Object.keys(updateData).length > 0) {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    ...updateData,
+                    lastCurrencyUpdate: serverTimestamp()
+                });
+            }
+        } catch (error) {
+            console.error('Error updating currency:', error);
+        }
+    }
+
+    playSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (error) {
+            console.log('Audio not available');
+        }
+    }
+
+    showToast(type, title, message, duration = 3000, clickHandler = null) {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        
+        const iconMap = {
+            coins: 'fas fa-coins',
+            gift: 'fas fa-gift',
+            message: 'fas fa-comment-dots'
+        };
+        
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="${iconMap[type] || 'fas fa-bell'}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        
+        if (clickHandler) {
+            toast.addEventListener('click', clickHandler);
+            toast.style.cursor = 'pointer';
+        }
+        
+        this.toastContainer.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => this.removeToast(toast), duration);
+        
+        return toast;
+    }
+
+    removeToast(toast) {
+        if (toast && toast.parentNode) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 400);
+        }
+    }
+
+    showWelcomeBonus() {
+        this.show({
+            type: 'welcome',
+            iconType: 'coins',
+            icon: 'fas fa-gift',
+            title: 'Welcome to Ambar!',
+            message: 'Your love journey begins now! Here\'s your starter bonus to help you get started.',
+            reward: '<i class="fas fa-coins"></i> <span>+1000 Coins</span>',
+            currencyUpdate: { coins: 1000 },
+            action: {
+                text: 'Start Playing',
+                redirect: 'game.html'
+            },
+            markAsShown: 'welcome-bonus-shown'
+        });
+    }
+
+    showCollectBonus() {
+        this.show({
+            type: 'coins',
+            iconType: 'coins',
+            icon: 'fas fa-coins',
+            title: 'Coins Collected!',
+            message: 'You collected your 6-hour coin bonus! Come back in 6 hours for more.',
+            reward: '<i class="fas fa-coins"></i> <span>+500 Coins</span>',
+            currencyUpdate: { coins: 500 },
+            action: {
+                text: 'Continue',
+                callback: () => {}
+            }
+        });
+    }
+
+    showGiftNotification(gift) {
+        this.showToast('gift', 'New Gift!', `You received: ${gift.category}`, 5000, () => {
+            window.location.href = 'line.html';
+        });
+    }
+
+    showMessageNotification(messageText) {
+        this.showToast('message', 'New Message!', messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText, 5000, () => {
+            window.location.href = 'line.html';
+        });
+    }
+}
+
+const notifications = new NotificationSystem();
+
+// Collect Coins System
+class CollectSystem {
+    constructor() {
+        this.collectBtn = document.getElementById('collectBtn');
+        this.collectTimer = document.getElementById('collectTimer');
+        this.COLLECT_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+        this.COLLECT_AMOUNT = 500;
+        this.timer = null;
+    }
+
+    init() {
+        this.updateCollectButton();
+        this.startTimer();
+    }
+
+    updateCollectButton() {
+        const lastCollect = parseInt(localStorage.getItem('lastCollectTime') || '0');
+        const now = Date.now();
+        const timeLeft = this.COLLECT_INTERVAL - (now - lastCollect);
+
+        if (timeLeft <= 0) {
+            this.collectTimer.textContent = 'Ready!';
+            this.collectTimer.classList.add('show');
+            this.collectBtn.classList.add('collect-ready');
+        } else {
             const hours = Math.floor(timeLeft / (1000 * 60 * 60));
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            
-            const timerDisplay = document.querySelector('.timer-display');
-            if (timerDisplay) {
-                timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
+            this.collectTimer.textContent = `${hours}h ${minutes}m`;
+            this.collectTimer.classList.add('show');
+            this.collectBtn.classList.remove('collect-ready');
         }
+    }
 
-        // Update timer every second
-        setInterval(updateTimer, 1000);
-        updateTimer();
+    startTimer() {
+        if (this.timer) clearInterval(this.timer);
+        this.timer = setInterval(() => {
+            this.updateCollectButton();
+        }, 60000); // Update every minute
+    }
 
-        // Premium loading animation
-        document.addEventListener('DOMContentLoaded', function() {
-            const currencyItems = document.querySelectorAll('.currency-item');
-            currencyItems.forEach((item, index) => {
-                item.style.opacity = '0';
-                item.style.transform = 'translateY(-10px)';
+    collect() {
+        const lastCollect = parseInt(localStorage.getItem('lastCollectTime') || '0');
+        const now = Date.now();
+
+        if (now - lastCollect >= this.COLLECT_INTERVAL) {
+            localStorage.setItem('lastCollectTime', now.toString());
+            
+            // Show animation
+            const animation = document.createElement('div');
+            animation.className = 'collect-animation';
+            animation.textContent = '+500 Coins!';
+            this.collectBtn.appendChild(animation);
+            
+            setTimeout(() => {
+                if (animation.parentNode) {
+                    animation.parentNode.removeChild(animation);
+                }
+            }, 1000);
+
+            // Show notification and update display
+            notifications.showCollectBonus();
+            notifications.showToast('coins', 'Coins Collected!', '+500 coins added to your wallet');
+            this.updateCollectButton();
+        } else {
+            notifications.showToast('coins', 'Not Ready', 'Come back later to collect more coins');
+        }
+    }
+}
+
+const collectSystem = new CollectSystem();
+
+// Page initialization
+document.addEventListener('DOMContentLoaded', function() {
+    AmbarHeader.init({
+        showCurrencies: ['coins', 'stars', 'hearts'],
+        showSettings: false,
+        showBackButton: false
+    });
+    
+    AmbarNavigation.setActivePage('home');
+    initializeCurrenciesFromLocalStorage();
+    collectSystem.init();
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        loadUserData();
+        setupUserDataListener();
+        checkFirstVisit();
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+function initializeCurrenciesFromLocalStorage() {
+    const currencies = {
+        coins: parseInt(localStorage.getItem('coins')) || 0,
+        stars: parseInt(localStorage.getItem('stars')) || 0,
+        hearts: parseInt(localStorage.getItem('hearts')) || 0
+    };
+    
+    updateCurrencyDisplay();
+}
+
+function checkFirstVisit() {
+    const hasVisited = localStorage.getItem('hasVisitedHome');
+    const welcomeShown = localStorage.getItem('welcome-bonus-shown');
+    
+    if (!hasVisited && !welcomeShown) {
+        isFirstVisit = true;
+        localStorage.setItem('hasVisitedHome', 'true');
+        setTimeout(() => {
+            notifications.showWelcomeBonus();
+        }, 2000);
+    }
+}
+
+function setupUserDataListener() {
+    if (userDataListener) userDataListener();
+    
+    const userRef = doc(db, 'users', currentUser.uid);
+    userDataListener = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const newUserData = docSnap.data();
+            const oldGiftCount = userData?.receivedGifts?.length || 0;
+            const newGiftCount = newUserData?.receivedGifts?.length || 0;
+            
+            userData = newUserData;
+            userGender = userData.gender || 'boy';
+            userCharacter = userData.character || getDefaultCharacter();
+            hasPartner = userData.partnerId && userData.partnerData ? true : false;
+            partnerData = userData.partnerData || null;
+            
+            // Check for new gifts
+            if (newGiftCount > oldGiftCount) {
+                const latestGift = newUserData.receivedGifts[newGiftCount - 1];
+                notifications.showGiftNotification(latestGift);
+            }
+            
+            // Check for new messages
+            if (userData.lastMessageTime && userData.lastReadTime && 
+                userData.lastMessageTime.toMillis() > (userData.lastReadTime?.toMillis() || 0)) {
+                const lastMessage = userData.lastMessage || "New message received";
+                notifications.showMessageNotification(lastMessage);
+            }
+            
+            renderCharacters();
+        }
+    });
+}
+
+async function loadUserData() {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+            userData = userDoc.data();
+            
+            userGender = userData.gender || 'boy';
+            userCharacter = userData.character || getDefaultCharacter();
+            hasPartner = userData.partnerId && userData.partnerData ? true : false;
+            partnerData = userData.partnerData || null;
+            
+            // Sync currencies from Firebase if needed
+            if (userData.gameStats) {
+                if (!localStorage.getItem('coins') || localStorage.getItem('coins') === '0') {
+                    localStorage.setItem('coins', (userData.gameStats.coins || 0).toString());
+                }
+                if (!localStorage.getItem('stars') || localStorage.getItem('stars') === '0') {
+                    localStorage.setItem('stars', (userData.gameStats.stars || 0).toString());
+                }
+                if (!localStorage.getItem('hearts') || localStorage.getItem('hearts') === '0') {
+                    localStorage.setItem('hearts', (userData.gameStats.hearts || 0).toString());
+                }
+            }
+            
+            renderCharacters();
+            updateCurrencyDisplay();
+        } else {
+            window.location.href = 'character.html';
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+    }
+}
+
+function getDefaultCharacter() {
+    return {
+        skin: 1,
+        fronthair: 1,
+        backhair: 1,
+        top: 1,
+        bottom: 1,
+        shoes: 1,
+        eyeball: 1,
+        eyebrow: 1,
+        mouth: 1
+    };
+}
+
+function renderCharacters() {
+    const container = document.getElementById('characterDisplay');
+    const addPartnerBtn = document.getElementById('addPartnerBtn');
+    
+    if (!container) return;
+    
+    container.className = `character-display ${userGender}-user`;
+    container.querySelectorAll('.character-layer').forEach(el => el.remove());
+    
+    if (hasPartner) {
+        addPartnerBtn.style.display = 'none';
+    } else {
+        addPartnerBtn.style.display = 'flex';
+    }
+
+    const layerOrder = [
+        'background',
+        'boy-backhair',
+        'girl-backhair', 
+        'boy-skin',
+        'girl-skin',
+        'boy-bottom',
+        'girl-bottom',
+        'boy-shoes',
+        'girl-shoes',
+        'boy-top',
+        'girl-top',
+        'boy-face-eyeball',
+        'boy-face-eyebrow',
+        'boy-face-mouth',
+        'girl-face-eyeball',
+        'girl-face-eyebrow',
+        'girl-face-mouth',
+        'boy-fronthair',
+        'girl-fronthair'
+    ];
+
+    layerOrder.forEach(layerId => {
+        const layer = document.createElement('div');
+        layer.className = 'character-layer';
+        layer.id = layerId;
+        container.appendChild(layer);
+        
+        loadCharacterLayer(layerId, layer);
+    });
+}
+
+function loadCharacterLayer(layerId, layerElement) {
+    const img = document.createElement('img');
+    let imagePath = '';
+
+    if (layerId === 'background') {
+        imagePath = `${CONFIG.baseUrl}/background/1.png`;
+    } else if (layerId.startsWith('boy-')) {
+        if (userGender === 'boy') {
+            imagePath = getBoyImagePath(layerId.replace('boy-', ''), userCharacter);
+        } else if (hasPartner && partnerData.gender === 'boy') {
+            imagePath = getBoyImagePath(layerId.replace('boy-', ''), partnerData.character || {});
+        } else {
+            return;
+        }
+    } else if (layerId.startsWith('girl-')) {
+        if (userGender === 'girl') {
+            imagePath = getGirlImagePath(layerId.replace('girl-', ''), userCharacter);
+        } else if (hasPartner && partnerData.gender === 'girl') {
+            imagePath = getGirlImagePath(layerId.replace('girl-', ''), partnerData.character || {});
+        } else {
+            return;
+        }
+    }
+
+    if (imagePath) {
+        layerElement.classList.add('loading');
+        
+        img.onload = function() {
+            layerElement.classList.remove('loading');
+        };
+        
+        img.onerror = function() {
+            layerElement.classList.remove('loading');
+        };
+        
+        img.src = imagePath;
+        layerElement.appendChild(img);
+    }
+}
+
+function getBoyImagePath(part, character) {
+    const basePath = `${CONFIG.baseUrl}/boy`;
+    
+    switch(part) {
+        case 'skin':
+            return `${basePath}/skin/${character.skin || 1}.png`;
+        case 'fronthair':
+            return character.fronthair ? `${basePath}/fronthair/${character.fronthair}.png` : '';
+        case 'backhair':
+            return character.backhair ? `${basePath}/backhair/${character.backhair}.png` : '';
+        case 'top':
+            return character.full ? `${basePath}/full/${character.full}.png` : `${basePath}/top/${character.top || 1}.png`;
+        case 'bottom':
+            return character.full ? '' : `${basePath}/bottom/${character.bottom || 1}.png`;
+        case 'shoes':
+            return character.full ? '' : `${basePath}/shoes/${character.shoes || 1}.png`;
+        case 'face-eyeball':
+            return `${basePath}/face/eyeball/${character.eyeball || 1}.png`;
+        case 'face-eyebrow':
+            return `${basePath}/face/eyebrow/${character.eyebrow || 1}.png`;
+        case 'face-mouth':
+            return `${basePath}/face/mouth/${character.mouth || 1}.png`;
+        default:
+            return '';
+    }
+}
+
+function getGirlImagePath(part, character) {
+    const basePath = `${CONFIG.baseUrl}/girl`;
+    
+    switch(part) {
+        case 'skin':
+            return `${basePath}/skin/${character.skin || 1}.png`;
+        case 'fronthair':
+            return character.fronthair ? `${basePath}/fronthair/${character.fronthair}.png` : '';
+        case 'backhair':
+            return character.backhair ? `${basePath}/backhair/${character.backhair}.png` : '';
+        case 'top':
+            return character.full ? `${basePath}/full/${character.full}.png` : `${basePath}/top/${character.top || 1}.png`;
+        case 'bottom':
+            return character.full ? '' : `${basePath}/bottom/${character.bottom || 1}.png`;
+        case 'shoes':
+            return character.full ? '' : `${basePath}/shoes/${character.shoes || 1}.png`;
+        case 'face-eyeball':
+            return `${basePath}/face/eyeball/${character.eyeball || 1}.png`;
+        case 'face-eyebrow':
+            return `${basePath}/face/eyebrow/${character.eyebrow || 1}.png`;
+        case 'face-mouth':
+            return `${basePath}/face/mouth/${character.mouth || 1}.png`;
+        default:
+            return '';
+    }
+}
+
+function updateCurrencyDisplay() {
+    const currencies = {
+        coins: parseInt(localStorage.getItem('coins')) || 0,
+        stars: parseInt(localStorage.getItem('stars')) || 0,
+        hearts: parseInt(localStorage.getItem('hearts')) || 0
+    };
+    
+    if (window.AmbarHeader?.setCurrency) {
+        window.AmbarHeader.setCurrency('coins', currencies.coins);
+        window.AmbarHeader.setCurrency('stars', currencies.stars);
+        window.AmbarHeader.setCurrency('hearts', currencies.hearts);
+    }
+}
+
+// Photo capture system
+async function captureCharacterDisplay() {
+    const characterDisplay = document.getElementById('characterDisplay');
+    
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = 400;
+        canvas.height = 600;
+        
+        // Fill with black background
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let loadedImages = 0;
+        const totalImages = characterDisplay.querySelectorAll('.character-layer img').length;
+        
+        if (totalImages === 0) {
+            resolve(canvas);
+            return;
+        }
+        
+        // Draw each character layer
+        characterDisplay.querySelectorAll('.character-layer img').forEach(img => {
+            const tempImg = new Image();
+            tempImg.crossOrigin = 'anonymous';
+            
+            tempImg.onload = function() {
+                ctx.drawImage(tempImg, 0, 0, canvas.width, canvas.height);
+                loadedImages++;
                 
-                setTimeout(() => {
-                    item.style.transition = 'all 0.4s ease';
-                    item.style.opacity = '1';
-                    item.style.transform = 'translateY(0)';
-                }, index * 150);
-            });
+                if (loadedImages === totalImages) {
+                    // Add watermark
+                    addWatermark(ctx, canvas.width, canvas.height);
+                    resolve(canvas);
+                }
+            };
+            
+            tempImg.onerror = function() {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                    addWatermark(ctx, canvas.width, canvas.height);
+                    resolve(canvas);
+                }
+            };
+            
+            tempImg.src = img.src;
         });
-    </script>
+    });
+}
+
+function addWatermark(ctx, width, height) {
+    // Create gradient for watermark background
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
+    gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.5)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+    
+    // Draw background for watermark
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 20, width, 60);
+    
+    // Add main logo text
+    ctx.font = 'bold 32px "Dancing Script", cursive';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    ctx.fillText('AMBAR', width / 2, 55);
+    
+    // Add subtitle
+    ctx.font = '14px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.shadowBlur = 2;
+    ctx.fillText('Love Journey', width / 2, 75);
+    
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+}
+
+// Global functions
+window.addPartner = function() {
+    window.location.href = 'add.html';
+}
+
+window.openLineScreen = function() {
+    if (!hasPartner) {
+        notifications.showToast('message', 'Need Partner', 'Find a partner first to start chatting!');
+        return;
+    }
+    window.location.href = 'line.html';
+}
+
+window.openGiftScreen = function() {
+    if (!hasPartner) {
+        notifications.showToast('gift', 'Need Partner', 'Find a partner first to send gifts!');
+        return;
+    }
+    window.location.href = 'gift.html';
+}
+
+window.collectCoins = function() {
+    collectSystem.collect();
+}
+
+window.savePhoto = async function() {
+    try {
+        // Show flash effect
+        const flash = document.getElementById('cameraFlash');
+        flash.classList.add('active');
+        
+        setTimeout(() => {
+            flash.classList.remove('active');
+        }, 300);
+        
+        // Add small delay for better UX
+        setTimeout(async () => {
+            try {
+                const canvas = await captureCharacterDisplay();
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `ambar-love-story-${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL('image/png', 0.9);
+                
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show success modal
+                document.getElementById('photoSuccess').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error saving photo:', error);
+                notifications.showToast('error', 'Photo Error', 'Unable to capture photo. Please try again.');
+            }
+        }, 150);
+        
+    } catch (error) {
+        console.error('Error in savePhoto:', error);
+        notifications.showToast('error', 'Photo Error', 'Unable to capture photo. Please try again.');
+    }
+}
+
+window.closePhotoSuccess = function() {
+    document.getElementById('photoSuccess').classList.remove('show');
+}
+
+window.shareToSocial = function(platform) {
+    const messages = {
+        instagram: "Check out my Ambar love story! 💕 #AmbarApp #LoveStory",
+        whatsapp: "Look at our love journey on Ambar! 💕 Download the app and start your own love story!",
+        facebook: "Sharing my beautiful love story from Ambar! 💕 #AmbarApp #Love"
+    };
+    
+    const urls = {
+        instagram: "https://www.instagram.com/",
+        whatsapp: `https://wa.me/?text=${encodeURIComponent(messages.whatsapp)}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}&quote=${encodeURIComponent(messages.facebook)}`
+    };
+    
+    if (platform === 'instagram') {
+        notifications.showToast('info', 'Instagram', 'Please save the photo and share it on your Instagram story!');
+    } else {
+        window.open(urls[platform], '_blank');
+    }
+    
+    closePhotoSuccess();
+}
+
+// Cleanup
+window.addEventListener('beforeunload', () => {
+    if (userDataListener) userDataListener();
+    if (collectSystem.timer) clearInterval(collectSystem.timer);
+});
+
+// Currency API for external components
+window.CurrencyAPI = {
+    addCoins: (amount) => {
+        const current = parseInt(localStorage.getItem('coins')) || 0;
+        localStorage.setItem('coins', (current + amount).toString());
+        updateCurrencyDisplay();
+    },
+    addStars: (amount) => {
+        const current = parseInt(localStorage.getItem('stars')) || 0;
+        localStorage.setItem('stars', (current + amount).toString());
+        updateCurrencyDisplay();
+    },
+    addHearts: (amount) => {
+        const current = parseInt(localStorage.getItem('hearts')) || 0;
+        localStorage.setItem('hearts', (current + amount).toString());
+        updateCurrencyDisplay();
+    },
+    getCoins: () => parseInt(localStorage.getItem('coins')) || 0,
+    getStars: () => parseInt(localStorage.getItem('stars')) || 0,
+    getHearts: () => parseInt(localStorage.getItem('hearts')) || 0
+};
+
+// Global notification API
+window.AmbarNotifications = notifications;
+</script>
 </body>
 </html>

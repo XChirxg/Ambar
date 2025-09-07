@@ -1,0 +1,279 @@
+
+        * { 
+            user-select: none; 
+            -webkit-user-select: none; 
+            -webkit-touch-callout: none; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        .main-content {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 20px 15px;
+            z-index: 10;
+        }
+
+        .achievements-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .achievements-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .achievements-count {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+
+        .total-count {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: inline-block;
+            color: #f8b500;
+            font-weight: 600;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .achievement-card.unlocked {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .achievement-trophy {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .trophy-common {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+        }
+
+        .trophy-rare {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+            color: white;
+        }
+
+        .trophy-epic {
+            background: linear-gradient(135deg, #f39c12, #f4d03f);
+            color: white;
+        }
+
+        .trophy-legendary {
+            background: linear-gradient(135deg, #e74c3c, #ec7063);
+            color: white;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .achievement-desc {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .achievement-progress {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .achievement-reward {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ffd700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .achievement-status {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .status-unlocked {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .status-locked {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9e9e9e;
+            border: 1px solid rgba(158, 158, 158, 0.3);
+        }
+
+        .coins-store {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .store-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f8b500;
+        }
+
+        .coin-packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .coin-package {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .package-coins {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .package-price {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .package-discount {
+            font-size: 0.7rem;
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 2px 6px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 15px;
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show { transform: translateX(0); }
+
+        @media (max-width: 768px) {
+            .main-content {
+                top: 70px;
+                padding: 15px 10px;
+            }
+            
+            .achievements-title {
+                font-size: 1.5rem;
+            }
+            
+            .achievement-card {
+                padding: 15px;
+                gap: 12px;
+            }
+            
+            .achievement-trophy {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .achievement-name {
+                font-size: 1rem;
+            }
+            
+            .coin-packages {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }

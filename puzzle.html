@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Master - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/puzzel.css">
+
+</head>
+<body>
+    
+    <div class="game-container">
+        <div class="betting-section" id="betting-section">
+            <h2 class="betting-title">Choose Difficulty</h2>
+            <div class="difficulty-options">
+                <div class="difficulty-btn" data-size="3" data-reward="30">
+                    <div>
+                        <div style="font-weight: 600;">Easy</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">3x3 Grid</div>
+                    </div>
+                </div>
+                <div class="difficulty-btn" data-size="4" data-reward="80">
+                    <div>
+                        <div style="font-weight: 600;">Medium</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">4x4 Grid</div>
+                    </div>
+                </div>
+                <div class="difficulty-btn" data-size="5" data-reward="150">
+                    <div>
+                        <div style="font-weight: 600;">Hard</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">5x5 Grid</div>
+                    </div>
+                </div>
+            </div>
+            <div class="difficulty-info" id="difficulty-info">
+                <div>Select a difficulty to see rewards and requirements</div>
+            </div>
+            <button class="start-game-btn" id="start-game-btn" disabled>Select Difficulty</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="info-value" id="moves-count">0</span>
+                    <span class="info-label">Moves</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-value" id="time-elapsed">00:00</span>
+                    <span class="info-label">Time</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-value" id="reward-value">0</span>
+                    <span class="info-label">Reward</span>
+                </div>
+                <div class="info-item">
+                    <div class="progress-ring">
+                        <svg>
+                            <circle class="bg" cx="50" cy="50" r="40"></circle>
+                            <circle class="progress" cx="50" cy="50" r="40" id="progress-circle"></circle>
+                        </svg>
+                        <div class="progress-text" id="progress-text">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="puzzle-container">
+                <div class="puzzle-board" id="puzzle-board">
+                    <!-- Tiles will be generated here -->
+                </div>
+            </div>
+            
+            <div class="game-controls">
+                <button class="control-btn" id="shuffle-btn">
+                    <i class="fas fa-random"></i>
+                    Shuffle
+                </button>
+                <button class="control-btn primary" id="hint-btn">
+                    <i class="fas fa-lightbulb"></i>
+                    Hint (-10 coins)
+                </button>
+                <button class="control-btn" id="give-up-btn">
+                    <i class="fas fa-flag"></i>
+                    Give Up
+                </button>
+            </div>
+        </div>
+        
+        <div class="result-popup" id="result-popup">
+            <div class="popup-content">
+                <h2 class="result-title" id="result-title">Puzzle Complete!</h2>
+                <div class="result-amount" id="result-amount">+0 coins</div>
+                <div class="result-details" id="result-details"></div>
+                <button class="next-game-btn" id="next-game-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="tool.js"></script>
+    <script>
+        class PuzzleMasterGame {
+            constructor() {
+                this.boardSize = 3;
+                this.maxReward = 30;
+                this.board = [];
+                this.emptyPos = { row: 0, col: 0 };
+                this.moves = 0;
+                this.startTime = null;
+                this.gameTimer = null;
+                this.gameInProgress = false;
+                this.hintsUsed = 0;
+                
+                this.initializeEventListeners();
+            }
+            
+            initializeEventListeners() {
+                // Difficulty buttons
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        this.boardSize = parseInt(btn.dataset.size);
+                        this.maxReward = parseInt(btn.dataset.reward);
+                        this.updateDifficultyInfo();
+                        
+                        document.getElementById('start-game-btn').disabled = false;
+                        document.getElementById('start-game-btn').textContent = 'Start Game';
+                    });
+                });
+                
+                // Start game button
+                document.getElementById('start-game-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Control buttons
+                document.getElementById('shuffle-btn').addEventListener('click', () => {
+                    this.shuffleBoard();
+                });
+                
+                document.getElementById('hint-btn').addEventListener('click', () => {
+                    this.showHint();
+                });
+                
+                document.getElementById('give-up-btn').addEventListener('click', () => {
+                    this.giveUp();
+                });
+                
+                // Next game button
+                document.getElementById('next-game-btn').addEventListener('click', () => {
+                    this.nextGame();
+                });
+                
+                // Close popup on outside click
+                document.getElementById('result-popup').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.nextGame();
+                    }
+                });
+            }
+            
+            updateDifficultyInfo() {
+                const info = document.getElementById('difficulty-info');
+                const difficultyNames = { 3: 'Easy', 4: 'Medium', 5: 'Hard' };
+                const timeBonus = { 3: '2 min', 4: '5 min', 5: '10 min' };
+                
+                info.innerHTML = `
+                    <div><strong>${difficultyNames[this.boardSize]} Mode</strong> - ${this.boardSize}x${this.boardSize} Grid</div>
+                    <div>Base Reward: ${this.maxReward} coins | Time Bonus: ${timeBonus[this.boardSize]}</div>
+                    <div>Fewer moves = Higher reward!</div>
+                `;
+            }
+            
+            startGame() {
+                if (this.gameInProgress) return;
+                
+                this.gameInProgress = true;
+                this.moves = 0;
+                this.hintsUsed = 0;
+                this.startTime = Date.now();
+                
+                document.getElementById('betting-section').style.display = 'none';
+                document.getElementById('game-area').style.display = 'block';
+                
+                this.initializeBoard();
+                this.shuffleBoard();
+                this.startTimer();
+                this.updateUI();
+            }
+            
+            initializeBoard() {
+                const board = document.getElementById('puzzle-board');
+                board.className = `puzzle-board size-${this.boardSize}`;
+                board.innerHTML = '';
+                
+                this.board = [];
+                for (let i = 0; i < this.boardSize; i++) {
+                    this.board[i] = [];
+                    for (let j = 0; j < this.boardSize; j++) {
+                        const value = i * this.boardSize + j + 1;
+                        this.board[i][j] = value <= this.boardSize * this.boardSize - 1 ? value : 0;
+                    }
+                }
+                
+                this.emptyPos = { row: this.boardSize - 1, col: this.boardSize - 1 };
+                this.renderBoard();
+            }
+            
+            renderBoard() {
+                const board = document.getElementById('puzzle-board');
+                board.innerHTML = '';
+                
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'puzzle-tile';
+                        tile.dataset.row = i;
+                        tile.dataset.col = j;
+                        
+                        if (this.board[i][j] === 0) {
+                            tile.className += ' empty';
+                            tile.textContent = '';
+                        } else {
+                            tile.textContent = this.board[i][j];
+                            tile.addEventListener('click', () => this.tileClick(i, j));
+                            
+                            // Check if tile is in correct position
+                            const correctValue = i * this.boardSize + j + 1;
+                            if (this.board[i][j] === correctValue) {
+                                tile.classList.add('correct');
+                            }
+                        }
+                        
+                        board.appendChild(tile);
+                    }
+                }
+            }
+            
+            tileClick(row, col) {
+                if (!this.gameInProgress || !this.canMove(row, col)) return;
+                
+                this.moveTile(row, col);
+                this.moves++;
+                this.updateUI();
+                
+                if (this.isSolved()) {
+                    this.endGame(true);
+                }
+            }
+            
+            canMove(row, col) {
+                const emptyRow = this.emptyPos.row;
+                const emptyCol = this.emptyPos.col;
+                
+                return (Math.abs(row - emptyRow) === 1 && col === emptyCol) ||
+                       (Math.abs(col - emptyCol) === 1 && row === emptyRow);
+            }
+            
+            moveTile(row, col) {
+                const emptyRow = this.emptyPos.row;
+                const emptyCol = this.emptyPos.col;
+                
+                this.board[emptyRow][emptyCol] = this.board[row][col];
+                this.board[row][col] = 0;
+                this.emptyPos = { row, col };
+                
+                this.renderBoard();
+            }
+            
+            shuffleBoard() {
+                // Perform random valid moves to shuffle
+                const shuffleMoves = this.boardSize * this.boardSize * 10;
+                
+                for (let i = 0; i < shuffleMoves; i++) {
+                    const possibleMoves = this.getPossibleMoves();
+                    if (possibleMoves.length > 0) {
+                        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                        this.board[this.emptyPos.row][this.emptyPos.col] = this.board[randomMove.row][randomMove.col];
+                        this.board[randomMove.row][randomMove.col] = 0;
+                        this.emptyPos = randomMove;
+                    }
+                }
+                
+                this.renderBoard();
+                
+                // Make sure puzzle is not already solved
+                if (this.isSolved()) {
+                    this.shuffleBoard();
+                }
+            }
+            
+            getPossibleMoves() {
+                const moves = [];
+                const { row, col } = this.emptyPos;
+                
+                const directions = [
+                    { row: row - 1, col },
+                    { row: row + 1, col },
+                    { row, col: col - 1 },
+                    { row, col: col + 1 }
+                ];
+                
+                directions.forEach(pos => {
+                    if (pos.row >= 0 && pos.row < this.boardSize && pos.col >= 0 && pos.col < this.boardSize) {
+                        moves.push(pos);
+                    }
+                });
+                
+                return moves;
+            }
+            
+            isSolved() {
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        if (i === this.boardSize - 1 && j === this.boardSize - 1) {
+                            if (this.board[i][j] !== 0) return false;
+                        } else {
+                            const correctValue = i * this.boardSize + j + 1;
+                            if (this.board[i][j] !== correctValue) return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            
+            showHint() {
+                if (AmbarHeader.getCurrency('coins') < 10) {
+                    this.showNotification('Not enough coins for hint!', 'error');
+                    return;
+                }
+                
+                AmbarHeader.updateCurrency('coins', -10);
+                this.hintsUsed++;
+                
+                // Find a tile that's not in correct position and highlight it
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        const correctValue = i * this.boardSize + j + 1;
+                        if (this.board[i][j] !== correctValue && this.board[i][j] !== 0) {
+                            const tile = document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                            tile.style.boxShadow = '0 0 20px #FFD700, 0 0 30px #FFD700';
+                            setTimeout(() => {
+                                tile.style.boxShadow = '';
+                            }, 2000);
+                            break;
+                        }
+                    }
+                }
+                
+                this.showNotification('Check the highlighted tile!', 'success');
+            }
+            
+            startTimer() {
+                this.gameTimer = setInterval(() => {
+                    if (this.gameInProgress) {
+                        this.updateTimer();
+                    }
+                }, 1000);
+            }
+            
+            updateTimer() {
+                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('time-elapsed').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            updateUI() {
+                document.getElementById('moves-count').textContent = this.moves;
+                document.getElementById('reward-value').textContent = this.calculateReward();
+                
+                // Update progress
+                const totalTiles = this.boardSize * this.boardSize - 1;
+                let correctTiles = 0;
+                
+                for (let i = 0; i < this.boardSize; i++) {
+                    for (let j = 0; j < this.boardSize; j++) {
+                        if (i === this.boardSize - 1 && j === this.boardSize - 1) continue;
+                        const correctValue = i * this.boardSize + j + 1;
+                        if (this.board[i][j] === correctValue) correctTiles++;
+                    }
+                }
+                
+                const progress = (correctTiles / totalTiles) * 100;
+                document.getElementById('progress-text').textContent = `${Math.round(progress)}%`;
+                
+                const circle = document.getElementById('progress-circle');
+                const radius = 40;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (progress / 100) * circumference;
+                circle.style.strokeDasharray = circumference;
+                circle.style.strokeDashoffset = offset;
+            }
+            
+            calculateReward() {
+                const timeElapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                const timeBonusThreshold = { 3: 120, 4: 300, 5: 600 }; // seconds
+                
+                let reward = this.maxReward;
+                
+                // Time bonus
+                if (timeElapsed < timeBonusThreshold[this.boardSize]) {
+                    const timeBonus = Math.floor((timeBonusThreshold[this.boardSize] - timeElapsed) / 10);
+                    reward += timeBonus;
+                }
+                
+                // Move penalty
+                const optimalMoves = this.boardSize * this.boardSize;
+                if (this.moves > optimalMoves) {
+                    const movePenalty = Math.floor((this.moves - optimalMoves) * 2);
+                    reward = Math.max(10, reward - movePenalty);
+                }
+                
+                // Hint penalty
+                reward -= this.hintsUsed * 5;
+                
+                return Math.max(10, reward);
+            }
+            
+            giveUp() {
+                this.endGame(false);
+            }
+            
+            endGame(completed) {
+                this.gameInProgress = false;
+                if (this.gameTimer) {
+                    clearInterval(this.gameTimer);
+                }
+                
+                const reward = completed ? this.calculateReward() : 0;
+                const timeElapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                
+                if (completed) {
+                    AmbarHeader.updateCurrency('coins', reward);
+                    this.updateGameStats(reward, timeElapsed, this.moves);
+                }
+                
+                this.showResults(completed, reward, timeElapsed);
+            }
+            
+            updateGameStats(coinsEarned, timeElapsed, moves) {
+                // Update level games stats for game.html
+                const levelsCrossed = parseInt(localStorage.getItem('levelsCrossed') || '0') + 1;
+                const levelGamesPlayed = parseInt(localStorage.getItem('levelGamesPlayed') || '0') + 1;
+                const levelCoinsEarned = parseInt(localStorage.getItem('levelCoinsEarned') || '0') + coinsEarned;
+                
+                localStorage.setItem('levelsCrossed', levelsCrossed);
+                localStorage.setItem('levelGamesPlayed', levelGamesPlayed);
+                localStorage.setItem('levelCoinsEarned', levelCoinsEarned);
+                
+                // Update current level based on performance
+                const currentLevel = parseInt(localStorage.getItem('level') || '1');
+                if (moves <= this.boardSize * this.boardSize && timeElapsed < 300) {
+                    localStorage.setItem('level', (currentLevel + 1).toString());
+                }
+            }
+            
+            showResults(completed, reward, timeElapsed) {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                
+                if (completed) {
+                    title.textContent = 'Puzzle Solved!';
+                    amount.textContent = `+${reward.toLocaleString()} coins`;
+                    amount.className = 'result-amount';
+                    
+                    const minutes = Math.floor(timeElapsed / 60);
+                    const seconds = timeElapsed % 60;
+                    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    const difficultyNames = { 3: 'Easy', 4: 'Medium', 5: 'Hard' };
+                    
+                    details.innerHTML = `
+                        <p><strong>Difficulty:</strong> ${difficultyNames[this.boardSize]} (${this.boardSize}x${this.boardSize})</p>
+                        <p><strong>Time:</strong> ${timeStr} | <strong>Moves:</strong> ${this.moves}</p>
+                        <p><strong>Hints Used:</strong> ${this.hintsUsed} | <strong>Base Reward:</strong> ${this.maxReward}</p>
+                        ${this.moves <= this.boardSize * this.boardSize ? '<p style="color: #4CAF50;">⭐ Optimal Solution Bonus!</p>' : ''}
+                    `;
+                } else {
+                    title.textContent = 'Game Over';
+                    amount.textContent = 'No reward';
+                    amount.className = 'result-amount';
+                    amount.style.color = '#ff6b9d';
+                    
+                    details.innerHTML = `
+                        <p>Don't give up! Try again with a different strategy.</p>
+                        <p><strong>Moves Made:</strong> ${this.moves}</p>
+                        <p><strong>Hints Used:</strong> ${this.hintsUsed}</p>
+                    `;
+                }
+                
+                popup.style.display = 'flex';
+            }
+            
+            nextGame() {
+                document.getElementById('result-popup').style.display = 'none';
+                document.getElementById('game-area').style.display = 'none';
+                document.getElementById('betting-section').style.display = 'block';
+                
+                // Reset selections
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('start-game-btn').disabled = true;
+                document.getElementById('start-game-btn').textContent = 'Select Difficulty';
+                document.getElementById('difficulty-info').innerHTML = 'Select a difficulty to see rewards and requirements';
+                
+                this.gameInProgress = false;
+                this.moves = 0;
+                this.hintsUsed = 0;
+            }
+            
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 90px;
+                    right: 15px;
+                    background: ${type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 'rgba(76, 175, 80, 0.9)'};
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    z-index: 1001;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                    max-width: 300px;
+                `;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize header with back button
+            if (typeof AmbarHeader !== 'undefined') {
+                AmbarHeader.init({
+                    showCurrencies: ['coins', 'level'],
+                    showSettings: false,
+                    showBackButton: true
+                });
+                
+                // Override back button to go to games page
+                AmbarHeader.goBack = () => {
+                    if (typeof AmbarNavigation !== 'undefined') {
+                        AmbarNavigation.navigateTo('games');
+                    } else {
+                        window.location.href = 'game.html';
+                    }
+                };
+            }
+            
+            if (typeof AmbarNavigation !== 'undefined') {
+                AmbarNavigation.setActivePage('games');
+            }
+            
+            new PuzzleMasterGame();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const popup = document.getElementById('result-popup');
+                if (popup.style.display === 'flex') {
+                    document.getElementById('next-game-btn').click();
+                }
+            }
+            
+            // Arrow keys for tile movement when game is active
+            if (document.getElementById('game-area').style.display === 'block') {
+                const emptyTile = document.querySelector('.puzzle-tile.empty');
+                if (emptyTile) {
+                    const row = parseInt(emptyTile.dataset.row);
+                    const col = parseInt(emptyTile.dataset.col);
+                    let targetRow = row, targetCol = col;
+                    
+                    switch(e.key) {
+                        case 'ArrowUp':
+                            targetRow = row + 1;
+                            break;
+                        case 'ArrowDown':
+                            targetRow = row - 1;
+                            break;
+                        case 'ArrowLeft':
+                            targetCol = col + 1;
+                            break;
+                        case 'ArrowRight':
+                            targetCol = col - 1;
+                            break;
+                    }
+                    
+                    const targetTile = document.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]:not(.empty)`);
+                    if (targetTile) {
+                        targetTile.click();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+/* Ambar Tool CSS - Header and Navigation Components */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Background Particles */
+.bg-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    animation: float 8s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { width: 4px; height: 4px; left: 15%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 3px; height: 3px; left: 25%; animation-delay: 2s; }
+.particle:nth-child(3) { width: 5px; height: 5px; left: 65%; animation-delay: 4s; }
+.particle:nth-child(4) { width: 3px; height: 3px; left: 85%; animation-delay: 6s; }
+.particle:nth-child(5) { width: 4px; height: 4px; left: 45%; animation-delay: 1s; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10%, 90% { opacity: 1; }
+    50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+}
+
+/* Top Header */
+.ambar-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.4s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-10px);
+    border: none;
+}
+
+.back-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateX(-3px);
+}
+
+.back-btn i {
+    font-size: 18px;
+}
+
+.ambar-logo {
+    font-family: 'Dancing Script', cursive;
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ff6b9d, #c44569, #f8b500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    /* Fixed: Remove the default shift, logo starts at original position */
+    transform: translateX(0);
+}
+
+/* Only shift when back button is shown */
+.ambar-logo.shifted {
+    transform: translateX(60px);
+}
+
+.ambar-logo:hover {
+    transform: scale(1.05) translateX(0);
+}
+
+.ambar-logo.shifted:hover {
+    transform: scale(1.05) translateX(60px);
+}
+
+.currency-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.currency-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 10px 16px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    /* Start hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+}
+
+.currency-item.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.currency-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.currency-item:hover::before {
+    left: 100%;
+}
+
+.currency-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.currency-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.currency-item:hover .currency-icon {
+    transform: scale(1.2);
+}
+
+/* Currency specific colors */
+.currency-coins { color: #ffd700; }
+.currency-stars { color: #ff6b9d; }
+.currency-hearts { color: #e74c3c; }
+.currency-luck { color: #4CAF50; }
+.currency-level { color: #2196F3; }
+.currency-marks { color: #9C27B0; }
+
+.settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 15px;
+    border: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+}
+
+.settings-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: rotate(90deg) scale(1);
+}
+
+.settings-btn i {
+    font-size: 18px;
+}
+
+/* Update animation */
+.currency-item.updated {
+    animation: currencyPulse 0.8s ease-out;
+}
+
+@keyframes currencyPulse {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.1) translateY(-3px); }
+    50% { 
+        background: rgba(255, 215, 0, 0.2); 
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+    100% { transform: scale(1); }
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+    z-index: 100;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+    border-radius: 20px;
+    min-width: 80px;
+    position: relative;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-btn.active {
+    color: #ff6b9d;
+}
+
+.nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #ff6b9d;
+    border-radius: 50%;
+}
+
+.nav-btn i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.nav-btn span {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .ambar-header {
+        padding: 0 20px;
+        height: 70px;
+    }
+
+    .header-left {
+        gap: 10px;
+    }
+
+    .back-btn {
+        width: 35px;
+        height: 35px;
+    }
+
+    .back-btn i {
+        font-size: 14px;
+    }
+
+    .ambar-logo {
+        font-size: 28px;
+    }
+
+    .ambar-logo.shifted {
+        transform: translateX(45px);
+    }
+
+    .ambar-logo.shifted:hover {
+        transform: scale(1.05) translateX(45px);
+    }
+
+    .currency-bar {
+        gap: 10px;
+    }
+
+    .currency-item {
+        padding: 6px 12px;
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .currency-icon {
+        font-size: 14px;
+    }
+
+    .settings-btn {
+        width: 35px;
+        height: 35px;
+        margin-left: 10px;
+    }
+
+    .settings-btn i {
+        font-size: 14px;
+    }
+
+    .bottom-nav {
+        height: 90px;
+        padding: 15px 10px;
+    }
+
+    .nav-btn {
+        padding: 8px 2px;
+        min-width: 60px;
+    }
+
+    .nav-btn i {
+        font-size: 20px;
+    }
+
+    .nav-btn span {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ambar-logo.shifted {
+        transform: translateX(40px);
+    }
+
+    .ambar-logo.shifted:hover {
+        transform: scale(1.05) translateX(40px);
+    }
+
+    .currency-bar {
+        gap: 8px;
+    }
+
+    .currency-item {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .currency-icon {
+        font-size: 12px;
+    }
+}
+
+/* Main Content Area Helper */
+.main-content {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 120px;
+    overflow-y: auto;
+    padding: 30px;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        top: 70px;
+        bottom: 90px;
+        padding: 20px 15px;
+    }
+}
+
+/* Loading animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}

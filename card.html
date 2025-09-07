@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Draw Game - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+<link rel="stylesheet" href="style/card.css">
+</head>
+<body>
+    
+    <div class="game-container">
+        <div class="betting-section" id="betting-section">
+            <h2 class="betting-title">Card Draw Challenge</h2>
+            <div class="game-rules">
+                <h4 style="margin-bottom: 10px; color: #FFD700;">How to Play:</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>Both you and the dealer draw 3 cards from a standard deck</li>
+                    <li>Card values: A=1, J/Q/K=10, others=face value</li>
+                    <li>Closest to 21 without going over wins</li>
+                    <li>If both bust (over 21), dealer wins</li>
+                    <li>Winning multiplies your bet by 2x</li>
+                </ul>
+            </div>
+            <div class="bet-options">
+                <button class="bet-btn" data-bet="15">15</button>
+                <button class="bet-btn" data-bet="30">30</button>
+                <button class="bet-btn" data-bet="75">75</button>
+                <button class="bet-btn" data-bet="150">150</button>
+                <button class="bet-btn" data-bet="400">400</button>
+                <button class="bet-btn" id="all-in-btn">All In</button>
+            </div>
+            <div class="custom-bet">
+                <input type="number" id="custom-bet-input" placeholder="Custom amount" min="1">
+            </div>
+            <button class="start-game-btn" id="start-game-btn">Deal Cards</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="round-info">
+                <div class="bet-display">Current Bet: <span id="current-bet">0</span> coins</div>
+                <div class="score-section">
+                    <div class="score-item">
+                        <div class="score-label">Your Score</div>
+                        <div class="score-value player-score" id="player-score">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Dealer Score</div>
+                        <div class="score-value dealer-score" id="dealer-score">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-message" id="status-message">Cards are being dealt...</div>
+            
+            <div class="cards-section">
+                <h3 class="section-title">Dealer's Cards</h3>
+                <div class="cards-container" id="dealer-cards">
+                    <!-- Cards will be added dynamically -->
+                </div>
+            </div>
+            
+            <div class="cards-section">
+                <h3 class="section-title">Your Cards</h3>
+                <div class="cards-container" id="player-cards">
+                    <!-- Cards will be added dynamically -->
+                </div>
+            </div>
+            
+            <div class="game-controls" id="game-controls" style="display: none;">
+                <button class="control-btn primary" id="hit-btn">Hit (Draw Card)</button>
+                <button class="control-btn danger" id="stand-btn">Stand (Keep Cards)</button>
+            </div>
+        </div>
+        
+        <div class="result-popup" id="result-popup">
+            <div class="popup-content">
+                <h2 class="result-title" id="result-title">Round Complete!</h2>
+                <div class="result-amount" id="result-amount">+0 coins</div>
+                <div class="result-details" id="result-details"></div>
+                <button class="next-game-btn" id="next-game-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="tool.js"></script>
+    <script>
+        class CardDrawGame {
+            constructor() {
+                this.currentBet = 0;
+                this.playerCards = [];
+                this.dealerCards = [];
+                this.gameInProgress = false;
+                this.playerScore = 0;
+                this.dealerScore = 0;
+                this.deck = [];
+                
+                this.initializeDeck();
+                this.initializeEventListeners();
+                this.updateDisplay();
+            }
+            
+            initializeDeck() {
+                const suits = ['♠', '♥', '♦', '♣'];
+                const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                
+                this.deck = [];
+                for (let suit of suits) {
+                    for (let rank of ranks) {
+                        this.deck.push({
+                            rank: rank,
+                            suit: suit,
+                            value: this.getCardValue(rank),
+                            color: (suit === '♥' || suit === '♦') ? 'red' : 'black'
+                        });
+                    }
+                }
+            }
+            
+            getCardValue(rank) {
+                if (rank === 'A') return 1;
+                if (['J', 'Q', 'K'].includes(rank)) return 10;
+                return parseInt(rank);
+            }
+            
+            shuffleDeck() {
+                for (let i = this.deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+                }
+            }
+            
+            drawCard() {
+                if (this.deck.length === 0) {
+                    this.initializeDeck();
+                    this.shuffleDeck();
+                }
+                return this.deck.pop();
+            }
+            
+            calculateScore(cards) {
+                let score = 0;
+                let aces = 0;
+                
+                for (let card of cards) {
+                    if (card.rank === 'A') {
+                        aces++;
+                        score += 11;
+                    } else {
+                        score += card.value;
+                    }
+                }
+                
+                // Adjust for Aces
+                while (score > 21 && aces > 0) {
+                    score -= 10;
+                    aces--;
+                }
+                
+                return score;
+            }
+            
+            initializeEventListeners() {
+                // Bet buttons
+                document.querySelectorAll('.bet-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        
+                        if (btn.id === 'all-in-btn') {
+                            this.currentBet = AmbarHeader.getCurrency('coins');
+                            document.getElementById('custom-bet-input').value = this.currentBet;
+                        } else {
+                            this.currentBet = parseInt(btn.dataset.bet);
+                            document.getElementById('custom-bet-input').value = this.currentBet;
+                        }
+                        
+                        this.validateBet();
+                    });
+                });
+                
+                // Custom bet input
+                const customBetInput = document.getElementById('custom-bet-input');
+                customBetInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    this.currentBet = value;
+                    document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                    this.validateBet();
+                });
+                
+                // Start game button
+                document.getElementById('start-game-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Game control buttons
+                document.getElementById('hit-btn').addEventListener('click', () => {
+                    this.playerHit();
+                });
+                
+                document.getElementById('stand-btn').addEventListener('click', () => {
+                    this.playerStand();
+                });
+                
+                // Next game button
+                document.getElementById('next-game-btn').addEventListener('click', () => {
+                    this.nextGame();
+                });
+                
+                // Close popup on outside click
+                document.getElementById('result-popup').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.nextGame();
+                    }
+                });
+            }
+            
+            updateDisplay() {
+                const allInBtn = document.getElementById('all-in-btn');
+                if (allInBtn) {
+                    allInBtn.textContent = `All In (${AmbarHeader.getCurrency('coins')})`;
+                }
+            }
+            
+            validateBet() {
+                const startBtn = document.getElementById('start-game-btn');
+                const playerCoins = AmbarHeader.getCurrency('coins');
+                const isValid = this.currentBet > 0 && this.currentBet <= playerCoins;
+                
+                startBtn.disabled = !isValid;
+                startBtn.textContent = isValid ? 'Deal Cards' : 
+                    (this.currentBet > playerCoins ? 'Insufficient Coins' : 'Enter Bet Amount');
+            }
+            
+            startGame() {
+                if (this.currentBet <= 0 || this.currentBet > AmbarHeader.getCurrency('coins') || this.gameInProgress) return;
+                
+                this.gameInProgress = true;
+                AmbarHeader.updateCurrency('coins', -this.currentBet);
+                
+                document.getElementById('betting-section').style.display = 'none';
+                document.getElementById('game-area').style.display = 'block';
+                document.getElementById('current-bet').textContent = this.currentBet.toLocaleString();
+                
+                this.resetGame();
+                this.dealInitialCards();
+            }
+            
+            resetGame() {
+                this.playerCards = [];
+                this.dealerCards = [];
+                this.playerScore = 0;
+                this.dealerScore = 0;
+                
+                this.shuffleDeck();
+                
+                document.getElementById('player-cards').innerHTML = '';
+                document.getElementById('dealer-cards').innerHTML = '';
+                document.getElementById('player-score').textContent = '0';
+                document.getElementById('dealer-score').textContent = '0';
+                document.getElementById('game-controls').style.display = 'none';
+                document.getElementById('status-message').textContent = 'Cards are being dealt...';
+            }
+            
+            dealInitialCards() {
+                // Deal 2 cards to each player initially
+                let cardIndex = 0;
+                
+                const dealNextCard = () => {
+                    if (cardIndex >= 4) {
+                        this.startPlayerTurn();
+                        return;
+                    }
+                    
+                    const isPlayer = cardIndex % 2 === 0;
+                    const card = this.drawCard();
+                    
+                    if (isPlayer) {
+                        this.playerCards.push(card);
+                        this.addCardToContainer('player-cards', card, true);
+                    } else {
+                        this.dealerCards.push(card);
+                        this.addCardToContainer('dealer-cards', card, cardIndex === 1); // Hide first dealer card
+                    }
+                    
+                    cardIndex++;
+                    setTimeout(dealNextCard, 500);
+                };
+                
+                dealNextCard();
+            }
+            
+            addCardToContainer(containerId, card, showCard = true) {
+                const container = document.getElementById(containerId);
+                const cardElement = document.createElement('div');
+                cardElement.className = `card ${showCard ? card.color : 'back'} flipping`;
+                
+                if (showCard) {
+                    cardElement.innerHTML = `
+                        <div style="font-size: 0.8rem; margin-bottom: 5px;">${card.rank}</div>
+                        <div style="font-size: 1.5rem;">${card.suit}</div>
+                    `;
+                } else {
+                    cardElement.innerHTML = '<i class="fas fa-question"></i>';
+                }
+                
+                container.appendChild(cardElement);
+                
+                setTimeout(() => {
+                    cardElement.classList.remove('flipping');
+                }, 600);
+            }
+            
+            startPlayerTurn() {
+                this.updateScores();
+                document.getElementById('status-message').textContent = 'Your turn! Hit or Stand?';
+                document.getElementById('game-controls').style.display = 'block';
+                
+                // Check for immediate win conditions
+                if (this.playerScore === 21) {
+                    setTimeout(() => this.playerStand(), 1000);
+                }
+            }
+            
+            playerHit() {
+                const card = this.drawCard();
+                this.playerCards.push(card);
+                this.addCardToContainer('player-cards', card, true);
+                
+                setTimeout(() => {
+                    this.updateScores();
+                    
+                    if (this.playerScore > 21) {
+                        document.getElementById('status-message').textContent = 'Bust! You went over 21.';
+                        document.getElementById('game-controls').style.display = 'none';
+                        setTimeout(() => this.endGame(), 2000);
+                    } else if (this.playerScore === 21) {
+                        document.getElementById('status-message').textContent = '21! Perfect score.';
+                        setTimeout(() => this.playerStand(), 1000);
+                    }
+                }, 600);
+            }
+            
+            playerStand() {
+                document.getElementById('game-controls').style.display = 'none';
+                document.getElementById('status-message').textContent = 'Dealer\'s turn...';
+                
+                // Reveal dealer's hidden card
+                const dealerContainer = document.getElementById('dealer-cards');
+                const firstCard = dealerContainer.children[0];
+                if (firstCard.classList.contains('back')) {
+                    const card = this.dealerCards[0];
+                    firstCard.className = `card ${card.color} flipping`;
+                    firstCard.innerHTML = `
+                        <div style="font-size: 0.8rem; margin-bottom: 5px;">${card.rank}</div>
+                        <div style="font-size: 1.5rem;">${card.suit}</div>
+                    `;
+                    
+                    setTimeout(() => {
+                        firstCard.classList.remove('flipping');
+                        this.dealerPlay();
+                    }, 600);
+                } else {
+                    this.dealerPlay();
+                }
+            }
+            
+            dealerPlay() {
+                this.updateScores();
+                
+                const dealerHit = () => {
+                    if (this.dealerScore < 17) {
+                        const card = this.drawCard();
+                        this.dealerCards.push(card);
+                        this.addCardToContainer('dealer-cards', card, true);
+                        
+                        setTimeout(() => {
+                            this.updateScores();
+                            setTimeout(dealerHit, 1000);
+                        }, 600);
+                    } else {
+                        setTimeout(() => this.endGame(), 1000);
+                    }
+                };
+                
+                setTimeout(dealerHit, 1000);
+            }
+            
+            updateScores() {
+                this.playerScore = this.calculateScore(this.playerCards);
+                this.dealerScore = this.calculateScore(this.dealerCards);
+                
+                document.getElementById('player-score').textContent = this.playerScore;
+                document.getElementById('dealer-score').textContent = this.dealerScore;
+            }
+            
+            endGame() {
+                let result, netResult, winPercentage;
+                
+                if (this.playerScore > 21) {
+                    result = 'You Bust!';
+                    netResult = -this.currentBet;
+                    winPercentage = 0;
+                } else if (this.dealerScore > 21) {
+                    result = 'Dealer Busts!';
+                    netResult = this.currentBet;
+                    winPercentage = 100;
+                } else if (this.playerScore > this.dealerScore) {
+                    result = 'You Win!';
+                    netResult = this.currentBet;
+                    winPercentage = 100;
+                } else if (this.dealerScore > this.playerScore) {
+                    result = 'Dealer Wins';
+                    netResult = -this.currentBet;
+                    winPercentage = 0;
+                } else {
+                    result = 'Push (Tie)';
+                    netResult = 0;
+                    winPercentage = 50;
+                }
+                
+                // Award coins if won
+                if (netResult > 0) {
+                    AmbarHeader.updateCurrency('coins', this.currentBet * 2);
+                }
+                
+                // Update game stats
+                this.updateGameStats(winPercentage, netResult);
+                
+                this.showResults(result, netResult, winPercentage);
+                this.gameInProgress = false;
+            }
+            
+            updateGameStats(winPercentage, coinsEarned) {
+                // Update total win rate
+                const totalGames = parseInt(localStorage.getItem('totalGames') || '0') + 1;
+                const currentWinRate = parseFloat(localStorage.getItem('totalWinRate') || '0');
+                const newWinRate = ((currentWinRate * (totalGames - 1)) + winPercentage) / totalGames;
+                
+                localStorage.setItem('totalGames', totalGames);
+                localStorage.setItem('totalWinRate', newWinRate);
+                
+                // Update luck games stats for game.html
+                const luckGamesPlayed = parseInt(localStorage.getItem('luckGamesPlayed') || '0') + 1;
+                const luckCoinsEarned = parseInt(localStorage.getItem('luckCoinsEarned') || '0') + coinsEarned;
+                
+                localStorage.setItem('luckGamesPlayed', luckGamesPlayed);
+                localStorage.setItem('luckCoinsEarned', luckCoinsEarned);
+            }
+            
+            showResults(result, netResult, winPercentage) {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                
+                title.textContent = result;
+                
+                if (netResult > 0) {
+                    amount.textContent = `+${netResult.toLocaleString()} coins`;
+                    amount.className = 'result-amount positive';
+                } else if (netResult < 0) {
+                    amount.textContent = `${netResult.toLocaleString()} coins`;
+                    amount.className = 'result-amount negative';
+                } else {
+                    amount.textContent = `±0 coins`;
+                    amount.className = 'result-amount';
+                }
+                
+                details.innerHTML = `
+                    <p><strong>Your Score:</strong> ${this.playerScore} | <strong>Dealer Score:</strong> ${this.dealerScore}</p>
+                    <p><strong>Your Cards:</strong> ${this.playerCards.length} | <strong>Dealer Cards:</strong> ${this.dealerCards.length}</p>
+                    <p><strong>Bet:</strong> ${this.currentBet.toLocaleString()} coins</p>
+                `;
+                
+                popup.style.display = 'flex';
+            }
+            
+            nextGame() {
+                document.getElementById('result-popup').style.display = 'none';
+                document.getElementById('game-area').style.display = 'none';
+                document.getElementById('betting-section').style.display = 'block';
+                
+                // Reset bet selection
+                document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('custom-bet-input').value = '';
+                this.currentBet = 0;
+                this.updateDisplay();
+                this.validateBet();
+                
+                // Check if player has enough coins for minimum bet
+                if (AmbarHeader.getCurrency('coins') < 15) {
+                    this.showGameOverModal();
+                }
+            }
+            
+            showGameOverModal() {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                const nextBtn = document.getElementById('next-game-btn');
+                
+                title.textContent = 'Game Over!';
+                amount.textContent = 'Insufficient Coins';
+                amount.className = 'result-amount negative';
+                details.innerHTML = `
+                    <p>You need at least 15 coins to play Card Draw.</p>
+                    <p>Visit the store or play other games to earn more coins!</p>
+                `;
+                nextBtn.textContent = 'Go Back';
+                
+                popup.style.display = 'flex';
+                
+                nextBtn.onclick = () => {
+                    AmbarNavigation.navigateTo('games');
+                };
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize header with back button
+            AmbarHeader.init({
+                showCurrencies: ['coins', 'luck'],
+                showSettings: false,
+                showBackButton: true
+            });
+            
+            // Override back button to go to games page
+            AmbarHeader.goBack = () => {
+                AmbarNavigation.navigateTo('games');
+            };
+            
+            AmbarNavigation.setActivePage('games');
+            
+            new CardDrawGame();
+        });
+    </script>
+</body>
+</html>

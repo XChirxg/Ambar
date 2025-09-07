@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Achievements</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/Achievement.css">
+</head>
+<body>
+    <div class="main-content">
+        <div class="achievements-header">
+            <h1 class="achievements-title">Achievements</h1>
+            <div class="achievements-count">
+                <span class="total-count" id="achievementCount">0 / 35 Unlocked</span>
+            </div>
+        </div>
+
+        <div class="achievements-grid" id="achievementsGrid">
+            <!-- Achievements will be populated by JavaScript -->
+        </div>
+
+        <div class="coins-store">
+            <h2 class="store-title">Coin Packages</h2>
+            <div class="coin-packages">
+                <div class="coin-package" onclick="buyCoins(1000, 10)">
+                    <div class="package-coins">
+                        <i class="fas fa-coins"></i>
+                        1,000
+                    </div>
+                    <div class="package-price">Rs 10</div>
+                    <div class="package-discount">Basic Pack</div>
+                </div>
+                <div class="coin-package" onclick="buyCoins(5000, 200)">
+                    <div class="package-coins">
+                        <i class="fas fa-coins"></i>
+                        50,000
+                    </div>
+                    <div class="package-price">Rs 200</div>
+                    <div class="package-discount">25% Extra</div>
+                </div>
+                <div class="coin-package" onclick="buyCoins(100000, 500)">
+                    <div class="package-coins">
+                        <i class="fas fa-coins"></i>
+                        100,000
+                    </div>
+                    <div class="package-price">Rs 500</div>
+                    <div class="package-discount">50% Bonus</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="tool.js"></script>
+    <script>
+        const achievements = [
+            // Beginner Achievements (Common)
+            { id: 'first_game', name: 'First Steps', desc: 'Play your first game', icon: 'fas fa-baby', trophy: 'common', reward: 50, progress: 0, target: 1, category: 'beginner' },
+            { id: 'first_partner', name: 'Partnership Begins', desc: 'Add your first partner', icon: 'fas fa-handshake', trophy: 'common', reward: 100, progress: 0, target: 1, category: 'social' },
+            { id: 'first_gift', name: 'First Gift', desc: 'Send your first gift to partner', icon: 'fas fa-gift', trophy: 'common', reward: 75, progress: 0, target: 1, category: 'social' },
+            { id: 'coins_collector', name: 'Coin Collector', desc: 'Collect 1,000 coins', icon: 'fas fa-coins', trophy: 'common', reward: 200, progress: 0, target: 1000, category: 'currency' },
+            { id: 'lucky_start', name: 'Lucky Start', desc: 'Win your first luck game', icon: 'fas fa-dice', trophy: 'common', reward: 100, progress: 0, target: 1, category: 'luck' },
+
+            // Currency Achievements (Common to Rare)
+            { id: 'coin_hoarder', name: 'Coin Hoarder', desc: 'Accumulate 10,000 coins', icon: 'fas fa-piggy-bank', trophy: 'rare', reward: 500, progress: 0, target: 10000, category: 'currency' },
+            { id: 'wealthy', name: 'Wealthy', desc: 'Reach 50,000 coins', icon: 'fas fa-money-bill-wave', trophy: 'epic', reward: 2000, progress: 0, target: 50000, category: 'currency' },
+            { id: 'millionaire', name: 'Coin Millionaire', desc: 'Accumulate 1,000,000 coins', icon: 'fas fa-crown', trophy: 'legendary', reward: 10000, progress: 0, target: 1000000, category: 'currency' },
+            { id: 'heart_collector', name: 'Heart Collector', desc: 'Receive 100 hearts from gifts', icon: 'fas fa-heart', trophy: 'rare', reward: 300, progress: 0, target: 100, category: 'currency' },
+            { id: 'beloved', name: 'Beloved', desc: 'Receive 1,000 hearts', icon: 'fas fa-heart-circle-check', trophy: 'epic', reward: 1500, progress: 0, target: 1000, category: 'currency' },
+
+            // Luck Game Achievements
+            { id: 'lucky_charm', name: 'Lucky Charm', desc: 'Maintain 70% win rate in luck games', icon: 'fas fa-four-leaf-clover', trophy: 'rare', reward: 400, progress: 0, target: 70, category: 'luck' },
+            { id: 'risk_taker', name: 'Risk Taker', desc: 'Play 100 luck games', icon: 'fas fa-dice-six', trophy: 'rare', reward: 600, progress: 0, target: 100, category: 'luck' },
+            { id: 'gambling_master', name: 'Fortune Master', desc: 'Win 50 luck games in a row', icon: 'fas fa-medal', trophy: 'epic', reward: 2500, progress: 0, target: 50, category: 'luck' },
+            { id: 'luck_legend', name: 'Luck Legend', desc: 'Maintain 90% win rate with 200+ games', icon: 'fas fa-magic', trophy: 'legendary', reward: 5000, progress: 0, target: 90, category: 'luck' },
+
+            // Level Game Achievements
+            { id: 'level_starter', name: 'Level Starter', desc: 'Cross your first 5 levels', icon: 'fas fa-flag', trophy: 'common', reward: 150, progress: 0, target: 5, category: 'level' },
+            { id: 'adventurer', name: 'Adventurer', desc: 'Cross 50 levels', icon: 'fas fa-mountain', trophy: 'rare', reward: 800, progress: 0, target: 50, category: 'level' },
+            { id: 'explorer', name: 'Explorer', desc: 'Cross 200 levels', icon: 'fas fa-compass', trophy: 'epic', reward: 2000, progress: 0, target: 200, category: 'level' },
+            { id: 'level_legend', name: 'Level Legend', desc: 'Cross 1000 levels', icon: 'fas fa-trophy', trophy: 'legendary', reward: 8000, progress: 0, target: 1000, category: 'level' },
+
+            // Knowledge Game Achievements
+            { id: 'first_correct', name: 'First Correct', desc: 'Answer your first question correctly', icon: 'fas fa-check-circle', trophy: 'common', reward: 50, progress: 0, target: 1, category: 'knowledge' },
+            { id: 'smart_cookie', name: 'Smart Cookie', desc: 'Earn 100 marks in knowledge games', icon: 'fas fa-brain', trophy: 'rare', reward: 350, progress: 0, target: 100, category: 'knowledge' },
+            { id: 'scholar', name: 'Scholar', desc: 'Earn 500 marks', icon: 'fas fa-graduation-cap', trophy: 'epic', reward: 1200, progress: 0, target: 500, category: 'knowledge' },
+            { id: 'genius', name: 'Genius', desc: 'Earn 2000 marks', icon: 'fas fa-user-graduate', trophy: 'legendary', reward: 4000, progress: 0, target: 2000, category: 'knowledge' },
+
+            // Social Achievements
+            { id: 'gift_giver', name: 'Gift Giver', desc: 'Send 10 gifts to partners', icon: 'fas fa-gifts', trophy: 'common', reward: 250, progress: 0, target: 10, category: 'social' },
+            { id: 'generous', name: 'Generous Soul', desc: 'Send 50 gifts', icon: 'fas fa-hand-holding-heart', trophy: 'rare', reward: 750, progress: 0, target: 50, category: 'social' },
+            { id: 'santa', name: 'Gift Master', desc: 'Send 200 gifts', icon: 'fas fa-sleigh', trophy: 'epic', reward: 3000, progress: 0, target: 200, category: 'social' },
+
+            // Streak Achievements
+            { id: 'streak_starter', name: 'Streak Starter', desc: 'Maintain a 3-day streak', icon: 'fas fa-fire', trophy: 'common', reward: 200, progress: 0, target: 3, category: 'streak' },
+            { id: 'consistent', name: 'Consistent', desc: 'Maintain a 7-day streak', icon: 'fas fa-calendar-check', trophy: 'rare', reward: 500, progress: 0, target: 7, category: 'streak' },
+            { id: 'dedicated', name: 'Dedicated', desc: 'Maintain a 15-day streak', icon: 'fas fa-star', trophy: 'epic', reward: 1000, progress: 0, target: 15, category: 'streak' },
+            { id: 'commitment', name: 'True Commitment', desc: 'Reach the 30-day streak goal', icon: 'fas fa-certificate', trophy: 'legendary', reward: 5000, progress: 0, target: 30, category: 'streak' },
+
+            // Special Achievements
+            { id: 'early_bird', name: 'Early Bird', desc: 'Play games before 8 AM', icon: 'fas fa-sun', trophy: 'rare', reward: 300, progress: 0, target: 1, category: 'special' },
+            { id: 'night_owl', name: 'Night Owl', desc: 'Play games after 11 PM', icon: 'fas fa-moon', trophy: 'rare', reward: 300, progress: 0, target: 1, category: 'special' },
+            { id: 'weekend_warrior', name: 'Weekend Warrior', desc: 'Play 20 games on weekends', icon: 'fas fa-calendar-weekend', trophy: 'rare', reward: 400, progress: 0, target: 20, category: 'special' },
+            { id: 'perfectionist', name: 'Perfectionist', desc: 'Get 10 perfect scores in knowledge games', icon: 'fas fa-bullseye', trophy: 'epic', reward: 1500, progress: 0, target: 10, category: 'knowledge' },
+
+            // Game Mastery
+            { id: 'game_master', name: 'Game Master', desc: 'Play all three types of games', icon: 'fas fa-gamepad', trophy: 'rare', reward: 600, progress: 0, target: 3, category: 'mastery' },
+            { id: 'all_rounder', name: 'All Rounder', desc: 'Excel in all game categories', icon: 'fas fa-star-of-life', trophy: 'epic', reward: 2500, progress: 0, target: 1, category: 'mastery' },
+            { id: 'ultimate_player', name: 'Ultimate Player', desc: 'Master every aspect of the game', icon: 'fas fa-chess-king', trophy: 'legendary', reward: 10000, progress: 0, target: 1, category: 'mastery' }
+        ];
+
+        let currentUser = null;
+        let userData = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.AmbarHeader) {
+                window.AmbarHeader.init({
+                    showCurrencies: false,
+                    showSettings: true,
+                    showBackButton: true
+                });
+            }
+            
+            loadAchievements();
+            updateProgress();
+        });
+
+        function loadAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            let unlockedCount = 0;
+
+            achievements.forEach(achievement => {
+                const isUnlocked = checkAchievementUnlocked(achievement);
+                if (isUnlocked) unlockedCount++;
+
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isUnlocked ? 'unlocked' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="achievement-trophy trophy-${achievement.trophy}">
+                        <i class="${achievement.icon}"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-desc">${achievement.desc}</div>
+                        <div class="achievement-progress">${getProgressText(achievement)}</div>
+                    </div>
+                    <div class="achievement-reward">
+                        <i class="fas fa-coins"></i>
+                        ${achievement.reward}
+                    </div>
+                    <div class="achievement-status ${isUnlocked ? 'status-unlocked' : 'status-locked'}">
+                        ${isUnlocked ? 'Unlocked' : 'Locked'}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+
+            document.getElementById('achievementCount').textContent = `${unlockedCount} / ${achievements.length} Unlocked`;
+        }
+
+        function checkAchievementUnlocked(achievement) {
+            const stats = getLiveStats();
+            
+            switch(achievement.id) {
+                case 'first_game':
+                    return (stats.luckGamesPlayed + stats.levelGamesPlayed + stats.knowledgeGamesPlayed) >= 1;
+                case 'first_partner':
+                    return localStorage.getItem('hasPartner') === 'true';
+                case 'first_gift':
+                    return parseInt(localStorage.getItem('giftsSent') || '0') >= 1;
+                case 'coins_collector':
+                    return stats.coins >= 1000;
+                case 'lucky_start':
+                    return stats.luckGamesPlayed >= 1 && stats.luck > 0;
+                case 'coin_hoarder':
+                    return stats.coins >= 10000;
+                case 'wealthy':
+                    return stats.coins >= 50000;
+                case 'millionaire':
+                    return stats.coins >= 1000000;
+                case 'heart_collector':
+                    return stats.hearts >= 100;
+                case 'beloved':
+                    return stats.hearts >= 1000;
+                case 'lucky_charm':
+                    return stats.luck >= 70 && stats.luckGamesPlayed >= 10;
+                case 'risk_taker':
+                    return stats.luckGamesPlayed >= 100;
+                case 'gambling_master':
+                    return parseInt(localStorage.getItem('maxWinStreak') || '0') >= 50;
+                case 'luck_legend':
+                    return stats.luck >= 90 && stats.luckGamesPlayed >= 200;
+                case 'level_starter':
+                    return stats.levelsCrossed >= 5;
+                case 'adventurer':
+                    return stats.levelsCrossed >= 50;
+                case 'explorer':
+                    return stats.levelsCrossed >= 200;
+                case 'level_legend':
+                    return stats.levelsCrossed >= 1000;
+                case 'first_correct':
+                    return stats.knowledgeMarks >= 4;
+                case 'smart_cookie':
+                    return stats.knowledgeMarks >= 100;
+                case 'scholar':
+                    return stats.knowledgeMarks >= 500;
+                case 'genius':
+                    return stats.knowledgeMarks >= 2000;
+                case 'gift_giver':
+                    return parseInt(localStorage.getItem('giftsSent') || '0') >= 10;
+                case 'generous':
+                    return parseInt(localStorage.getItem('giftsSent') || '0') >= 50;
+                case 'santa':
+                    return parseInt(localStorage.getItem('giftsSent') || '0') >= 200;
+                case 'streak_starter':
+                    return stats.stars >= 3;
+                case 'consistent':
+                    return stats.stars >= 7;
+                case 'dedicated':
+                    return stats.stars >= 15;
+                case 'commitment':
+                    return stats.stars >= 30;
+                case 'early_bird':
+                    return localStorage.getItem('playedEarlyBird') === 'true';
+                case 'night_owl':
+                    return localStorage.getItem('playedNightOwl') === 'true';
+                case 'weekend_warrior':
+                    return parseInt(localStorage.getItem('weekendGames') || '0') >= 20;
+                case 'perfectionist':
+                    return parseInt(localStorage.getItem('perfectScores') || '0') >= 10;
+                case 'game_master':
+                    return stats.luckGamesPlayed >= 1 && stats.levelGamesPlayed >= 1 && stats.knowledgeGamesPlayed >= 1;
+                case 'all_rounder':
+                    return stats.luck >= 60 && stats.levelsCrossed >= 20 && stats.knowledgeMarks >= 100;
+                case 'ultimate_player':
+                    return stats.coins >= 100000 && stats.hearts >= 500 && stats.stars >= 20 && stats.luck >= 75;
+                default:
+                    return false;
+            }
+        }
+
+        function getProgressText(achievement) {
+            const stats = getLiveStats();
+            let current = 0;
+            let target = achievement.target;
+
+            switch(achievement.category) {
+                case 'currency':
+                    if (achievement.id.includes('coin')) current = stats.coins;
+                    if (achievement.id.includes('heart')) current = stats.hearts;
+                    break;
+                case 'luck':
+                    if (achievement.id === 'lucky_start') current = stats.luckGamesPlayed > 0 ? 1 : 0;
+                    else if (achievement.id === 'risk_taker') current = stats.luckGamesPlayed;
+                    else if (achievement.id.includes('rate')) current = stats.luck;
+                    break;
+                case 'level':
+                    current = stats.levelsCrossed;
+                    break;
+                case 'knowledge':
+                    current = stats.knowledgeMarks;
+                    break;
+                case 'social':
+                    current = parseInt(localStorage.getItem('giftsSent') || '0');
+                    break;
+                case 'streak':
+                    current = stats.stars;
+                    break;
+                default:
+                    current = 0;
+            }
+
+            if (current >= target) return 'Completed';
+            return `${Math.min(current, target).toLocaleString()} / ${target.toLocaleString()}`;
+        }
+
+        function getLiveStats() {
+            return {
+                coins: parseInt(localStorage.getItem('coins')) || 0,
+                stars: parseInt(localStorage.getItem('stars')) || 0,
+                hearts: parseInt(localStorage.getItem('hearts')) || 0,
+                luck: parseInt(localStorage.getItem('luck')) || 0,
+                level: parseInt(localStorage.getItem('level')) || 1,
+                luckGamesPlayed: parseInt(localStorage.getItem('luckGamesPlayed')) || 0,
+                levelGamesPlayed: parseInt(localStorage.getItem('levelGamesPlayed')) || 0,
+                knowledgeGamesPlayed: parseInt(localStorage.getItem('knowledgeGamesPlayed')) || 0,
+                levelsCrossed: parseInt(localStorage.getItem('levelsCrossed')) || 0,
+                knowledgeMarks: parseInt(localStorage.getItem('knowledgeMarks')) || 0
+            };
+        }
+
+        function updateProgress() {
+            // This would be called periodically to update progress
+            setTimeout(() => {
+                loadAchievements();
+                updateProgress();
+            }, 5000);
+        }
+
+        function buyCoins(coins, price) {
+            showNotification('Money cannot buy everything');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification show';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Global function
+        window.buyCoins = buyCoins;
+    </script>
+</body>
+</html>

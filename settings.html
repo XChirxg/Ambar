@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/settings.css">
+
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="profile.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back
+        </a>
+        <div class="header-title">Settings</div>
+        <div class="header-spacer"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="settings-container">
+            <!-- Developer Credit -->
+            <div class="developer-credit" onclick="openDeveloperLink()">
+                <div class="heart-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="developer-text">Developed by Chinurag</div>
+                <div class="developer-subtext">Tap to learn more about the developer</div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="settings-card">
+                <div class="card-title">
+                    <i class="fas fa-cog card-icon"></i>
+                    Account Settings
+                </div>
+
+                <!-- User Info -->
+                <div class="user-info">
+                    <div class="user-email" id="userEmail">Loading...</div>
+                    <div class="user-id" id="userId">User ID: Loading...</div>
+                </div>
+
+                <!-- Change Name Form -->
+                <form id="nameChangeForm">
+                    <div class="form-group">
+                        <label class="form-label" for="newName">Display Name</label>
+                        <input 
+                            type="text" 
+                            id="newName" 
+                            class="form-input" 
+                            placeholder="Enter your new name"
+                            maxlength="50"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="saveNameBtn">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </form>
+
+                <!-- Logout Button -->
+                <button class="btn btn-danger" id="logoutBtn" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            updateDoc,
+            serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        // Firebase configuration
+const firebaseConfig = window.CONFIG.firebase;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global variables
+        let currentUser = null;
+        let userData = null;
+
+        // Authentication state observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    displayUserInfo();
+                } else {
+                    showNotification('User data not found', 'error');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('Error loading user data', 'error');
+            }
+        }
+
+        // Display user information
+        function displayUserInfo() {
+            document.getElementById('userEmail').textContent = userData.email || currentUser.email;
+            document.getElementById('userId').textContent = `User ID: ${currentUser.uid}`;
+            document.getElementById('newName').value = userData.name || '';
+        }
+
+        // Handle name change form submission
+        document.getElementById('nameChangeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newName = document.getElementById('newName').value.trim();
+            if (!newName) {
+                showNotification('Please enter a valid name', 'error');
+                return;
+            }
+
+            if (newName === userData.name) {
+                showNotification('Name is already up to date', 'error');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveNameBtn');
+            const originalContent = saveBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                saveBtn.innerHTML = '<div class="spinner"></div> Saving...';
+                saveBtn.disabled = true;
+
+                // Update Firestore
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    name: newName,
+                    lastUpdated: serverTimestamp()
+                });
+
+                // Update local data
+                userData.name = newName;
+                localStorage.setItem('userName', newName);
+
+                showNotification('Name updated successfully!');
+                
+            } catch (error) {
+                console.error('Error updating name:', error);
+                showNotification('Failed to update name. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                saveBtn.innerHTML = originalContent;
+                saveBtn.disabled = false;
+            }
+        });
+
+        // Logout functionality
+        window.confirmLogout = function() {
+            if (confirm('Are you sure you want to logout? You will need to sign in again.')) {
+                logout();
+            }
+        };
+
+        async function logout() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            const originalContent = logoutBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                logoutBtn.innerHTML = '<div class="spinner"></div> Signing out...';
+                logoutBtn.disabled = true;
+
+                // Clear localStorage
+                localStorage.clear();
+
+                // Sign out from Firebase
+                await signOut(auth);
+
+                showNotification('Logged out successfully');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error signing out:', error);
+                showNotification('Error signing out. Please try again.', 'error');
+                
+                // Restore button state
+                logoutBtn.innerHTML = originalContent;
+                logoutBtn.disabled = false;
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Open developer link
+        window.openDeveloperLink = function() {
+            window.open('https://www.google.com/search?q=Chinurag&oq=Chinurag&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhAMgwIAhAuGAoYsQMYgAQyCQgDEAAYChiABDIJCAQQABgKGIAEMgkIBRAAGAoYgAQyCQgGEAAYChiABDIJCAcQABgKGIAE0gEIMjU5N2owajeoAgiwAgHxBRpW2rf59kV1&sourceid=chrome&ie=UTF-8', '_blank');
+        };
+
+        // Export functions for debugging
+        window.SettingsAPI = {
+            currentUser: () => currentUser,
+            userData: () => userData,
+            loadUserData: loadUserData
+        };
+    </script>
+</body>
+</html>

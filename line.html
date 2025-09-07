@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style/line.css">
+
+</head>
+<body>
+    <div class="heart-currency" id="heartCurrency">
+        <i class="fas fa-heart"></i>
+        <span class="heart-count" id="heartCount">0</span>
+    </div>
+
+    <div class="chat-header">
+        <button class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <div class="partner-info">
+            <div class="partner-avatar" id="partnerAvatar">
+                <div class="character-layers"></div>
+            </div>
+            <div class="partner-details">
+                <h3 id="partnerName">Loading...</h3>
+                <div class="partner-status">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="partnerStatus">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="loading-message">
+            <div class="loading-spinner"></div>
+            <p>Loading chat...</p>
+        </div>
+    </div>
+
+    <div class="chat-input-container">
+        <button class="shayari-button" onclick="showShayariModal()">
+            <i class="fas fa-feather-alt"></i>
+            <span>Poetry</span>
+        </button>
+        
+        <input type="text" 
+               class="message-input" 
+               id="messageInput" 
+               placeholder="Type a message..." 
+               maxlength="500">
+        
+        <button class="send-button" id="sendButton" onclick="sendMessage()" disabled>
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <div class="shayari-modal" id="shayariModal">
+        <div class="shayari-header">
+            <div class="shayari-title">Shayari</div>
+            <button class="close-shayari" onclick="hideShayariModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="shayari-content">
+            <div class="coming-soon-icon">
+                <i class="fas fa-magic"></i>
+            </div>
+            <div class="coming-soon-text">Coming Soon!</div>
+            <div class="coming-soon-subtext">Express your feelings with romantic poetry.</div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            limit, 
+            onSnapshot,
+            serverTimestamp,
+            where,
+            deleteDoc,
+            getDocs,
+            arrayUnion,
+            updateDoc,
+            increment
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+        let partnerData = null;
+        let chatId = null;
+        let messagesListener = null;
+        let messageHistory = [];
+
+        const CROP_CONFIG = {
+            boy: {
+                fronthair: { x: 198, y: 512, w: 484, h: 484 },
+                eyeball: { x: 198, y: 512, w: 484, h: 484 },
+                eyebrow: { x: 198, y: 512, w: 484, h: 484 },
+                mouth: { x: 198, y: 512, w: 484, h: 484 },
+                skin: { x: 198, y: 512, w: 484, h: 484 },
+                bottom: { x: 198, y: 512, w: 484, h: 484 },
+                shoes: { x: 198, y: 512, w: 484, h: 484 },
+                top: { x: 198, y: 512, w: 484, h: 484 },
+                backhair: { x: 198, y: 512, w: 484, h: 484 }
+            },
+            girl: {
+                fronthair: { x: 470, y: 623, w: 466, h: 474 },
+                eyeball: { x: 470, y: 623, w: 466, h: 474 },
+                eyebrow: { x: 470, y: 623, w: 466, h: 474 },
+                mouth: { x: 470, y: 623, w: 466, h: 474 },
+                skin: { x: 470, y: 623, w: 466, h: 474 },
+                bottom: { x: 470, y: 623, w: 466, h: 474 },
+                shoes: { x: 470, y: 623, w: 466, h: 474 },
+                top: { x: 470, y: 623, w: 466, h: 474 },
+                backhair: { x: 470, y: 623, w: 466, h: 474 }
+            }
+        };
+
+        const STORE_CONFIG = {
+            cropConfigs: {
+                boy: {
+                    bottom: {x: 277, y: 1056, w: 292, h: 466},
+                    full: {x: 251, y: 818, w: 326, h: 706},
+                    shoes: {x: 309, y: 1309, w: 244, h: 216},
+                    top: {x: 281, y: 842, w: 292, h: 442}
+                },
+                girl: {
+                    bottom: {x: 493, y: 1068, w: 374, h: 448},
+                    full: {x: 499, y: 931, w: 388, h: 592},
+                    shoes: {x: 568, y: 1295, w: 232, h: 248},
+                    top: {x: 513, y: 925, w: 338, h: 456}
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            messageInput.addEventListener('input', updateSendButtonState);
+            loadHeartCurrency();
+        });
+
+        function loadHeartCurrency() {
+            const heartCount = parseInt(localStorage.getItem('hearts')) || 0;
+            updateHeartDisplay(heartCount);
+        }
+
+        function updateHeartDisplay(count, animate = false) {
+            const heartCountEl = document.getElementById('heartCount');
+            heartCountEl.textContent = count;
+            
+            if (animate) {
+                heartCountEl.style.animation = 'heartCountBump 0.6s ease-out';
+                setTimeout(() => {
+                    heartCountEl.style.animation = '';
+                }, 600);
+            }
+        }
+
+        async function addHearts(amount) {
+            const currentHearts = parseInt(localStorage.getItem('hearts')) || 0;
+            const newHearts = currentHearts + amount;
+            
+            localStorage.setItem('hearts', newHearts.toString());
+            updateHeartDisplay(newHearts, true);
+            
+            if (currentUser) {
+                try {
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        'gameStats.hearts': increment(amount)
+                    });
+                } catch (error) {
+                    console.error('Error updating hearts:', error);
+                }
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                try {
+                    await loadUserData();
+                    await loadChatHistory();
+                } catch (error) {
+                    console.error('Error during initialization:', error);
+                    showError('Failed to load chat data. Please try again.');
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadUserData() {
+            try {
+                showLoading('Loading user data...');
+                
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (!userDoc.exists()) {
+                    window.location.href = 'character-design.html';
+                    return;
+                }
+
+                userData = userDoc.data();
+                
+                if (userData.gameStats?.hearts) {
+                    localStorage.setItem('hearts', userData.gameStats.hearts.toString());
+                    updateHeartDisplay(userData.gameStats.hearts);
+                }
+                
+                if (!userData.partnerId) {
+                    window.location.href = 'add.html';
+                    return;
+                }
+
+                const partnerDoc = await getDoc(doc(db, 'users', userData.partnerId));
+                if (partnerDoc.exists()) {
+                    partnerData = partnerDoc.data();
+                } else {
+                    partnerData = {
+                        name: 'Partner',
+                        isBot: true,
+                        gender: 'boy',
+                        character: {
+                            skin: 1,
+                            fronthair: 1,
+                            backhair: 1,
+                            top: 1,
+                            bottom: 1,
+                            shoes: 1,
+                            eyeball: 1,
+                            eyebrow: 1,
+                            mouth: 1
+                        }
+                    };
+                }
+
+                updatePartnerUI();
+                chatId = [currentUser.uid, userData.partnerId].sort().join('_');
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                throw new Error('Failed to load user data');
+            }
+        }
+
+        function generateCharacterAvatar(container, characterData, gender) {
+            if (!container || !characterData || !gender) return;
+            
+            const layersContainer = container.querySelector('.character-layers');
+            if (!layersContainer) return;
+            
+            layersContainer.innerHTML = '';
+
+            const layers = ['backhair', 'skin', 'eyeball', 'eyebrow', 'mouth', 'bottom', 'shoes', 'top', 'full', 'fronthair'];
+
+            layers.forEach((layer, index) => {
+                if (characterData[layer]) {
+                    const canvas = document.createElement('canvas');
+                    const size = getComputedStyle(container).getPropertyValue('--partner-size').replace('px', '');
+                    canvas.width = parseInt(size) + 5;
+                    canvas.height = parseInt(size) + 5;
+                    canvas.className = 'avatar-layer';
+                    canvas.style.zIndex = index + 2;
+                    layersContainer.appendChild(canvas);
+                    
+                    cropCharacterPart(canvas, gender, layer, characterData[layer]);
+                }
+            });
+        }
+
+        function cropCharacterPart(canvas, gender, layer, id) {
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                const crop = CROP_CONFIG[gender][layer] || CROP_CONFIG[gender].backhair;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const scale = 1;
+                const scaledWidth = canvas.width * scale;
+                const scaledHeight = canvas.height * scale;
+                const offsetX = (canvas.width - scaledWidth) / 2;
+                const offsetY = (canvas.height - scaledHeight) / 2;
+                
+                ctx.drawImage(
+                    img,
+                    crop.x, crop.y, crop.w, crop.h,
+                    offsetX, offsetY, scaledWidth, scaledHeight
+                );
+            };
+            
+            img.onerror = () => {
+                createFallbackAvatar(ctx, gender === 'boy' ? '#4285f4' : '#ea4335');
+            };
+            
+            let imagePath;
+            if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/face/${layer}/${id}.png`;
+            } else {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/${layer}/${id}.png`;
+            }
+            
+            img.src = imagePath;
+        }
+
+        function createFallbackAvatar(ctx, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2 - 5, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2 + 8, 12, 0, Math.PI);
+            ctx.fill();
+        }
+
+        function createGiftThumbnail(canvas, gender, category, itemId) {
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                const crop = STORE_CONFIG.cropConfigs[gender][category];
+                if (crop) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(
+                        img,
+                        crop.x, crop.y, crop.w, crop.h,
+                        0, 0, canvas.width, canvas.height
+                    );
+                } else {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                }
+            };
+            
+            img.onerror = () => {
+                ctx.fillStyle = '#ff6b9d';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('?', canvas.width / 2, canvas.height / 2 + 4);
+            };
+            
+            let imagePath;
+            if (['eyeball', 'eyebrow', 'mouth'].includes(category)) {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/face/${category}/${itemId}.png`;
+            } else {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/${category}/${itemId}.png`;
+            }
+            
+            img.src = imagePath;
+        }
+
+        function updatePartnerUI() {
+            if (!partnerData) return;
+
+            const partnerName = document.getElementById('partnerName');
+            const partnerAvatar = document.getElementById('partnerAvatar');
+            const partnerStatus = document.getElementById('partnerStatus');
+
+            const nameHtml = partnerData.name || 'Partner';
+            const botIndicator = partnerData.isBot ? '<span class="bot-indicator">Bot</span>' : '';
+            partnerName.innerHTML = nameHtml + botIndicator;
+            
+            const statusText = partnerData.isBot ? 'AI Partner' : 'Online';
+            partnerStatus.textContent = statusText;
+
+            setTimeout(() => {
+                generateCharacterAvatar(partnerAvatar, partnerData.character, partnerData.gender);
+            }, 100);
+        }
+
+        async function loadChatHistory() {
+            try {
+                showLoading('Loading messages...');
+                
+                const messagesRef = collection(db, 'chats', chatId, 'messages');
+                const q = query(messagesRef, orderBy('timestamp', 'desc'), limit(100));
+                
+                messagesListener = onSnapshot(q, (snapshot) => {
+                    const messages = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        messages.unshift({ 
+                            id: doc.id, 
+                            ...data,
+                            timestamp: data.timestamp?.toDate() || new Date()
+                        });
+                    });
+                    
+                    messageHistory = messages;
+                    displayChatHistory(messages);
+                }, (error) => {
+                    console.error('Error listening to messages:', error);
+                    showError('Failed to load messages. Please check your connection.');
+                });
+                
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                showError('Failed to load chat history. Please try again.');
+            }
+        }
+
+        function displayChatHistory(messages) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            if (messages.length === 0) {
+                showNoMessages();
+                return;
+            }
+
+            let html = '';
+            messages.forEach(message => {
+                html += generateMessageHTML(message, message.senderId === currentUser.uid);
+            });
+            
+            chatMessages.innerHTML = html;
+            scrollToBottom();
+            
+            setTimeout(() => {
+                initializeGiftThumbnails();
+            }, 100);
+        }
+
+        function initializeGiftThumbnails() {
+            const giftCards = document.querySelectorAll('.gift-card');
+            giftCards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                const itemId = card.getAttribute('data-item-id');
+                const gender = card.getAttribute('data-gender');
+                const isOpened = card.getAttribute('data-opened') === 'true';
+                
+                if (isOpened && category && itemId && gender) {
+                    const canvas = card.querySelector('canvas');
+                    if (canvas) {
+                        createGiftThumbnail(canvas, gender, category, parseInt(itemId));
+                    }
+                }
+            });
+        }
+
+        function generateMessageHTML(message, isOwn) {
+            const senderGender = isOwn ? userData.gender : partnerData.gender;
+            const messageClass = isOwn ? `own ${senderGender}` : `partner ${senderGender}`;
+            const time = formatTime(message.timestamp);
+            
+            if (message.type === 'gift') {
+                return generateGiftCardHTML(message, messageClass, time, isOwn);
+            }
+            
+            return `
+                <div class="message ${messageClass}">
+                    <div class="message-bubble">
+                        ${escapeHtml(message.text || message.content || '')}
+                        <div class="message-time">${time}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateGiftCardHTML(message, messageClass, time, isOwn) {
+            const giftData = message.giftData;
+            const isOpened = message.opened || false;
+            const canOpen = !isOwn && !isOpened; // Only recipient can open unopened gifts
+            
+            let categoryDisplay = giftData.category.charAt(0).toUpperCase() + giftData.category.slice(1);
+            if (categoryDisplay === 'Fronthair') categoryDisplay = 'Front Hair';
+            if (categoryDisplay === 'Backhair') categoryDisplay = 'Back Hair';
+            
+            const giftCardId = `gift_${message.id}`;
+            
+            return `
+                <div class="message ${messageClass}">
+                    <div class="message-bubble gift-card" 
+                         data-category="${giftData.category}"
+                         data-item-id="${giftData.itemId}"
+                         data-gender="${giftData.recipientGender}"
+                         data-opened="${isOpened}"
+                         data-message-id="${message.id}">
+                        
+                        ${isOpened ? '<div class="opened-badge">Opened</div>' : ''}
+                        
+                        <div class="gift-content">
+                            <div class="gift-thumbnail">
+                                ${isOpened ? 
+                                    `<canvas width="60" height="60"></canvas>` : 
+                                    ''
+                                }
+                            </div>
+                            
+                            <div class="gift-info">
+                                <div class="gift-category">${categoryDisplay}</div>
+                                <div class="gift-status">
+                                    ${isOpened ? 'Gift Opened' : canOpen ? 'Tap to open gift' : 'Gift sent'}
+                                </div>
+                                
+                                <div class="gift-actions">
+                                    ${canOpen ? `<button class="gift-btn open-btn" onclick="openGift('${message.id}', '${giftData.category}', ${giftData.itemId}, '${giftData.recipientGender}')">Open</button>` : ''}
+                                    ${isOpened && !isOwn ? `<button class="gift-btn apply-btn" onclick="applyGiftToCharacter('${giftData.category}', ${giftData.itemId})">Apply</button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="message-time">${time}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.openGift = async function(messageId, category, itemId, recipientGender) {
+            const giftCard = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!giftCard || giftCard.getAttribute('data-opened') === 'true') return;
+            
+            try {
+                const giftPrices = { top: 400, bottom: 600, shoes: 800, full: 1200 };
+                const giftValue = giftPrices[category] || 400;
+                const heartsEarned = Math.floor(giftValue / 10);
+                
+                // Create celebration effect at gift location
+                createGiftCelebration(giftCard, heartsEarned);
+                
+                // Update gift as opened
+                giftCard.setAttribute('data-opened', 'true');
+                const badge = document.createElement('div');
+                badge.className = 'opened-badge';
+                badge.textContent = 'Opened';
+                giftCard.appendChild(badge);
+                
+                // Update thumbnail
+                const canvas = giftCard.querySelector('canvas') || document.createElement('canvas');
+                canvas.width = 60;
+                canvas.height = 60;
+                if (!canvas.parentElement) {
+                    giftCard.querySelector('.gift-thumbnail').appendChild(canvas);
+                }
+                createGiftThumbnail(canvas, recipientGender, category, itemId);
+                
+                // Update UI
+                const giftStatus = giftCard.querySelector('.gift-status');
+                const giftActions = giftCard.querySelector('.gift-actions');
+                
+                giftStatus.textContent = 'Gift Opened';
+                giftActions.innerHTML = `<button class="gift-btn apply-btn" onclick="applyGiftToCharacter('${category}', ${itemId})">Apply</button>`;
+                
+                // Reveal animation
+                canvas.style.animation = 'giftReveal 0.8s ease-out';
+                
+                // Update Firebase
+                if (messageId) {
+                    await updateDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+                        opened: true,
+                        openedAt: serverTimestamp()
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error opening gift:', error);
+            }
+        }
+
+        function createGiftCelebration(giftCard, heartsEarned) {
+            const rect = giftCard.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Create heart burst at gift location
+            const burst = document.createElement('div');
+            burst.className = 'heart-burst';
+            burst.style.left = centerX + 'px';
+            burst.style.top = centerY + 'px';
+            
+            // Create multiple heart particles
+            for (let i = 0; i < 8; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-particle';
+                heart.innerHTML = '❤️';
+                
+                const angle = (i / 8) * Math.PI * 2;
+                const distance = 50 + Math.random() * 30;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                heart.style.left = x + 'px';
+                heart.style.top = y + 'px';
+                heart.style.animation = 'heartBurst 1s ease-out forwards';
+                heart.style.animationDelay = (i * 0.1) + 's';
+                
+                burst.appendChild(heart);
+            }
+            
+            document.body.appendChild(burst);
+            
+            // Create flying hearts to currency
+            setTimeout(() => {
+                createFlyingHearts(centerX, centerY, heartsEarned);
+            }, 500);
+            
+            // Cleanup burst
+            setTimeout(() => {
+                if (document.body.contains(burst)) {
+                    document.body.removeChild(burst);
+                }
+            }, 2000);
+        }
+
+        function createFlyingHearts(startX, startY, heartsCount) {
+            const heartCurrency = document.getElementById('heartCurrency');
+            const currencyRect = heartCurrency.getBoundingClientRect();
+            const targetX = currencyRect.left + currencyRect.width / 2;
+            const targetY = currencyRect.top + currencyRect.height / 2;
+            
+            for (let i = 0; i < Math.min(heartsCount, 8); i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'flying-heart';
+                    heart.innerHTML = '❤️';
+                    
+                    heart.style.left = startX + 'px';
+                    heart.style.top = startY + 'px';
+                    
+                    const deltaX = targetX - startX;
+                    const deltaY = targetY - startY;
+                    const randomOffset = (Math.random() - 0.5) * 100;
+                    
+                    heart.style.transition = 'all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    heart.style.animation = 'heartFly 1.5s ease-out forwards';
+                    
+                    document.body.appendChild(heart);
+                    
+                    setTimeout(() => {
+                        heart.style.transform = `translate(${deltaX + randomOffset}px, ${deltaY}px) scale(0.3)`;
+                        heart.style.opacity = '0';
+                    }, 50);
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(heart)) {
+                            document.body.removeChild(heart);
+                        }
+                        
+                        if (i === Math.min(heartsCount, 8) - 1) {
+                            addHearts(heartsEarned);
+                            playSuccessSound();
+                        }
+                    }, 1600);
+                }, i * 150);
+            }
+        }
+
+        window.applyGiftToCharacter = async function(category, itemId) {
+            if (!currentUser) return;
+            
+            try {
+                const updatedCharacter = { ...userData.character };
+                
+                if (category === 'full') {
+                    delete updatedCharacter.top;
+                    delete updatedCharacter.bottom;
+                    delete updatedCharacter.shoes;
+                } else if (['top', 'bottom', 'shoes'].includes(category)) {
+                    if (updatedCharacter.full) {
+                        delete updatedCharacter.full;
+                        ['top', 'bottom', 'shoes'].forEach(item => {
+                            if (item !== category && !updatedCharacter[item]) {
+                                updatedCharacter[item] = 1;
+                            }
+                        });
+                    }
+                }
+                
+                updatedCharacter[category] = itemId;
+                
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    character: updatedCharacter,
+                    lastCharacterUpdate: serverTimestamp()
+                });
+                
+                userData.character = updatedCharacter;
+                
+                showMessage('Item applied to your character!', 'success');
+                
+            } catch (error) {
+                console.error('Error applying gift:', error);
+                showMessage('Failed to apply item. Try again.', 'error');
+            }
+        }
+
+        function playSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const frequencies = [523.25, 659.25, 783.99];
+                
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }, index * 100);
+                });
+            } catch (error) {
+                console.log('Audio not available');
+            }
+        }
+
+        function showMessage(text, type = 'info') {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                z-index: 1001;
+                font-size: 13px;
+                animation: slideInRight 0.3s ease-out;
+                max-width: 250px;
+            `;
+            
+            message.textContent = text;
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.animation = 'slideOutRight 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 300);
+            }, 2500);
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Now';
+            
+            const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffHours = diffMs / (1000 * 60 * 60);
+            
+            if (diffHours < 24) {
+                return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNoMessages() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="no-messages">
+                    <i class="fas fa-comments"></i>
+                    <h3>Start Your Conversation</h3>
+                    <p>Send your first message to ${escapeHtml(partnerData?.name || 'your partner')} and begin your chat!</p>
+                </div>
+            `;
+        }
+
+        function showLoading(message = 'Loading...') {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="loading-message">
+                    <div class="loading-spinner"></div>
+                    <p>${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                    <div class="error-text">${escapeHtml(message)}</div>
+                    <button class="retry-button" onclick="retryConnection()">Retry</button>
+                </div>
+            `;
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            
+            if (!messageText || !currentUser || !chatId) return;
+            
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            
+            try {
+                const message = {
+                    text: messageText,
+                    senderId: currentUser.uid,
+                    senderName: userData?.name || 'User',
+                    timestamp: serverTimestamp(),
+                    type: 'text'
+                };
+                
+                const messagesRef = collection(db, 'chats', chatId, 'messages');
+                await addDoc(messagesRef, message);
+                
+                messageInput.value = '';
+                updateSendButtonState();
+                
+                if (partnerData?.isBot) {
+                    setTimeout(() => {
+                        sendBotResponse(messageText);
+                    }, 1000 + Math.random() * 2000);
+                }
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showMessage('Failed to send message. Try again.', 'error');
+            } finally {
+                sendButton.disabled = false;
+            }
+        }
+
+        async function sendBotResponse(userMessage) {
+            if (!partnerData?.isBot) return;
+            
+            if (Math.random() < 0.4) {
+                await sendBotGift();
+                return;
+            }
+            
+            const responses = [
+                "That's interesting! Tell me more.",
+                "I understand how you feel.",
+                "Thanks for sharing that with me.",
+                "What do you think about that?",
+                "That sounds wonderful!",
+                "I'm here to listen.",
+                "How was your day?",
+                "I appreciate you telling me this.",
+                "That's really thoughtful of you."
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            try {
+                const botMessage = {
+                    text: randomResponse,
+                    senderId: userData.partnerId,
+                    senderName: partnerData.name || 'Partner',
+                    timestamp: serverTimestamp(),
+                    type: 'text'
+                };
+                
+                const messagesRef = collection(db, 'chats', chatId, 'messages');
+                await addDoc(messagesRef, botMessage);
+                
+            } catch (error) {
+                console.error('Error sending bot response:', error);
+            }
+        }
+
+        async function sendBotGift() {
+            const giftCategories = ['top', 'bottom', 'shoes', 'full'];
+            const randomCategory = giftCategories[Math.floor(Math.random() * giftCategories.length)];
+            const randomItemId = Math.floor(Math.random() * 10) + 1;
+            
+            try {
+                const giftMessage = {
+                    text: `I sent you a ${randomCategory} gift!`,
+                    senderId: userData.partnerId,
+                    senderName: partnerData.name || 'Partner',
+                    timestamp: serverTimestamp(),
+                    type: 'gift',
+                    giftData: {
+                        category: randomCategory,
+                        itemId: randomItemId,
+                        recipientGender: userData.gender
+                    },
+                    opened: false
+                };
+                
+                const messagesRef = collection(db, 'chats', chatId, 'messages');
+                await addDoc(messagesRef, giftMessage);
+                
+            } catch (error) {
+                console.error('Error sending bot gift:', error);
+            }
+        }
+
+        function updateSendButtonState() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            sendButton.disabled = !messageInput.value.trim();
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+
+        window.showShayariModal = function() {
+            document.getElementById('shayariModal').classList.add('show');
+        }
+
+        window.hideShayariModal = function() {
+            document.getElementById('shayariModal').classList.remove('show');
+        }
+
+        window.goBack = function() {
+            if (messagesListener) {
+                messagesListener();
+            }
+            window.location.href = 'home.html';
+        }
+
+        window.sendMessage = sendMessage;
+        window.retryConnection = async function() {
+            try {
+                showLoading('Retrying connection...');
+                await loadChatHistory();
+            } catch (error) {
+                showError('Connection failed. Please check your internet and try again.');
+            }
+        }
+
+        const additionalStyles = document.createElement('style');
+        additionalStyles.textContent = `
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(100%); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            
+            @keyframes slideOutRight {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(100%); }
+            }
+        `;
+        document.head.appendChild(additionalStyles);
+
+        window.addEventListener('beforeunload', () => {
+            if (messagesListener) {
+                messagesListener();
+            }
+        });
+    </script>
+</body>
+</html>

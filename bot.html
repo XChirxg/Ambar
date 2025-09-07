@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Find Partner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/bot.css">
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Ambar</div>
+        <div>
+            <a href="add.html" class="nav-btn"><i class="fas fa-user-plus"></i> Add Friends</a>
+            <a href="home.html" class="nav-btn"><i class="fas fa-home"></i> Home</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="search-container">
+            <div class="search-option" onclick="showRandomMatchTerms()">
+                <div class="option-header">
+                    <div class="option-icon"><i class="fas fa-random"></i></div>
+                    <div>
+                        <div class="option-title">Find Random Partner</div>
+                        <div class="option-subtitle">Connect with someone new</div>
+                    </div>
+                </div>
+                <div class="option-description">
+                    We'll try to connect you with a random person of the opposite gender. Start your journey with someone new and build a meaningful connection through games, gifts, and daily interactions.
+                </div>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-heart feature-icon"></i>
+                        <span>Daily interactions</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gamepad feature-icon"></i>
+                        <span>Play games together</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-fire feature-icon"></i>
+                        <span>Maintain streaks</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gift feature-icon"></i>
+                        <span>Exchange gifts</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-comments feature-icon"></i>
+                        <span>Chat anytime</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-certificate feature-icon"></i>
+                        <span>Earn certificates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('termsModal')"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <div class="modal-title">Random Partner Matching</div>
+                <div class="modal-subtitle">Terms & Conditions</div>
+            </div>
+            
+            <div class="terms-content">
+                <div class="terms-section">
+                    <h3>How Random Matching Works</h3>
+                    <p>When you click "Accept", we'll attempt to find and connect you with a random person of the opposite gender who is also looking for a partner.</p>
+                    <ul class="terms-list">
+                        <li>Matching is based on gender compatibility and availability</li>
+                        <li>You'll be connected instantly when a suitable match is found</li>
+                        <li>If no one is available, you may need to wait or try again later</li>
+                        <li>All connections are made randomly to ensure fairness</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h3>Partnership Features</h3>
+                    <ul class="terms-list">
+                        <li>Send and receive messages with your partner</li>
+                        <li>Exchange gifts purchased with game coins</li>
+                        <li>Play various games to earn coins and improve stats</li>
+                        <li>Maintain daily interaction streaks for rewards</li>
+                        <li>Build relationship scores through consistent engagement</li>
+                        <li>Earn compatibility certificates after 30 days</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h3>Rules & Guidelines</h3>
+                    <ul class="terms-list">
+                        <li>Treat your partner with respect and kindness</li>
+                        <li>Maintain regular communication to keep streaks active</li>
+                        <li>Exchange gifts within time limits to maintain streaks</li>
+                        <li>No inappropriate or offensive content in messages</li>
+                        <li>Report any issues or concerns to support</li>
+                        <li>Partnership ends if either user requests disconnection</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h3>Privacy & Safety</h3>
+                    <ul class="terms-list">
+                        <li>Only your chosen name and age are shared with partners</li>
+                        <li>Personal information like email remains private</li>
+                        <li>You can end partnerships at any time</li>
+                        <li>Report inappropriate behavior immediately</li>
+                        <li>Block feature available for safety concerns</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section">
+                    <h3>Important Notes</h3>
+                    <ul class="terms-list">
+                        <li>Random matching may not always find immediate connections</li>
+                        <li>Be patient if matching takes time</li>
+                        <li>Quality connections are more important than speed</li>
+                        <li>You can try other connection methods if random matching doesn't work</li>
+                        <li>Platform guidelines and community standards apply</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="checkbox-container">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="termsAccept">
+                    <span class="checkmark"></span>
+                </div>
+                <label for="termsAccept" class="checkbox-label">
+                    I have read and agree to the Terms & Conditions for random partner matching. I understand how the platform works and agree to follow all guidelines for respectful interactions.
+                </label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('termsModal')">Cancel</button>
+                <button class="modal-btn primary" id="acceptBtn" onclick="acceptRandomMatch()" disabled>
+                    <i class="fas fa-check"></i> Accept & Find Partner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Finding your perfect match...</div>
+            <div class="loading-subtext">Please wait while we connect you</div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion,
+            collection, query, where, getDocs, orderBy, limit, serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        const INDIAN_NAMES = {
+            male: [
+                'Aarav Kumar', 'Vivaan Sharma', 'Aditya Patel', 'Vihaan Singh', 'Arjun Gupta',
+                'Sai Krishna', 'Arnav Reddy', 'Ayaan Khan', 'Krishna Rao', 'Ishaan Verma',
+                'Shaurya Joshi', 'Atharv Mehta', 'Kabir Agarwal', 'Rudra Pandey', 'Aryan Malhotra',
+                'Dev Patel', 'Rehan Ali', 'Karan Singh', 'Rohan Gupta', 'Aadit Sharma'
+            ],
+            female: [
+                'Saanvi Sharma', 'Aditi Patel', 'Ananya Gupta', 'Pari Singh', 'Fatima Khan',
+                'Aarohi Kumar', 'Kavya Reddy', 'Myra Verma', 'Aanya Joshi', 'Navya Mehta',
+                'Kiara Agarwal', 'Diya Sinha', 'Pihu Pandey', 'Avni Malhotra', 'Zara Ali',
+                'Isha Patel', 'Riya Singh', 'Tara Gupta', 'Nisha Sharma', 'Priya Reddy'
+            ]
+        };
+
+        const CASUAL_RESPONSES = [
+            'ok', 'yes', 'no', 'sure', 'maybe', 'i see', 'hmm', 'nice', 'cool', 'great',
+            'alright', 'sounds good', 'i think so', 'not really', 'of course', 'exactly',
+            'true', 'right', 'got it', 'makes sense', 'i agree', 'same here', 'definitely',
+            'probably', 'lets see', 'why not', 'good idea', 'thank you', 'thanks',
+            'please', 'sorry', 'my bad', 'no worries', 'all good', 'take care',
+            'have fun', 'good luck', 'well done', 'awesome', 'perfect', 'amazing'
+        ];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Terms checkbox handling
+        document.getElementById('termsAccept').addEventListener('change', function() {
+            const acceptBtn = document.getElementById('acceptBtn');
+            acceptBtn.disabled = !this.checked;
+        });
+
+        function generateBotId() {
+            return 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function getRandomIndianName(gender) {
+            const names = gender === 'girl' ? INDIAN_NAMES.female : INDIAN_NAMES.male;
+            return names[Math.floor(Math.random() * names.length)];
+        }
+
+        function generateRandomCharacter(gender) {
+            return {
+                skin: Math.floor(Math.random() * 3) + 1,
+                fronthair: Math.floor(Math.random() * 5) + 1,
+                backhair: Math.floor(Math.random() * 3) + 1,
+                eyeball: Math.floor(Math.random() * 3) + 1,
+                eyebrow: Math.floor(Math.random() * 3) + 1,
+                mouth: Math.floor(Math.random() * 3) + 1,
+                top: Math.floor(Math.random() * 5) + 1,
+                bottom: Math.floor(Math.random() * 5) + 1,
+                shoes: Math.floor(Math.random() * 5) + 1
+            };
+        }
+
+        function generateGameStats() {
+            // Stats that seem realistic for a human player
+            const luck = 35 + Math.floor(Math.random() * 30); // 35-65% luck to stay around 50%
+            const level = Math.floor(Math.random() * 5) + 5; // Level 5-10
+            const coins = Math.floor(Math.random() * 800) + 500; // 500-1300 coins
+            
+            return {
+                coins: coins,
+                hearts: Math.floor(Math.random() * 150) + 50,
+                currentStreak: Math.floor(Math.random() * 10) + 1,
+                luck: luck,
+                level: level,
+                luckGamesPlayed: Math.floor(Math.random() * 50) + 20,
+                luckCoinsEarned: Math.floor(coins * 0.3),
+                levelsCrossed: level + Math.floor(Math.random() * 15),
+                levelGamesPlayed: Math.floor(Math.random() * 30) + 10,
+                levelCoinsEarned: Math.floor(coins * 0.4),
+                knowledgeMarks: Math.floor(Math.random() * 400) + 300,
+                knowledgeGamesPlayed: Math.floor(Math.random() * 25) + 15,
+                knowledgeCoinsEarned: Math.floor(coins * 0.3)
+            };
+        }
+
+        function getRandomResponse() {
+            return CASUAL_RESPONSES[Math.floor(Math.random() * CASUAL_RESPONSES.length)];
+        }
+
+        window.showRandomMatchTerms = function() {
+            document.getElementById('termsModal').classList.add('show');
+        }
+
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            // Reset checkbox when closing
+            if (modalId === 'termsModal') {
+                document.getElementById('termsAccept').checked = false;
+                document.getElementById('acceptBtn').disabled = true;
+            }
+        }
+
+        window.acceptRandomMatch = async function() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('show');
+            closeModal('termsModal');
+            
+            if (!currentUser) return;
+
+            try {
+                const currentUserDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                const currentUserData = currentUserDoc.data();
+
+                // Check if user already has a partner (excluding bot partners)
+                if (currentUserData.partnerId && currentUserData.partnerData && !currentUserData.partnerData.isBot) {
+                    loadingScreen.classList.remove('show');
+                    showNotification('You already have a partner. End current partnership first.', 'error');
+                    return;
+                }
+
+                // First, try to find a real user looking for a partner
+                const oppositeGender = currentUserData.gender === 'boy' ? 'girl' : 'boy';
+                const minAge = Math.max(18, currentUserData.age - 3);
+                const maxAge = currentUserData.age + 3;
+
+                // Look for users who have bot partners (they're available for real connections)
+                const availableUsersQuery = query(
+                    collection(db, 'users'),
+                    where('gender', '==', oppositeGender),
+                    where('age', '>=', minAge),
+                    where('age', '<=', maxAge),
+                    orderBy('age'),
+                    limit(10)
+                );
+
+                const querySnapshot = await getDocs(availableUsersQuery);
+                let realPartnerFound = false;
+
+                for (const userDoc of querySnapshot.docs) {
+                    if (userDoc.id === currentUser.uid) continue;
+                    
+                    const userData = userDoc.data();
+                    
+                    // Check if this user has a bot partner or no partner at all
+                    if (!userData.partnerId || (userData.partnerData && userData.partnerData.isBot)) {
+                        // Remove their bot partner if they have one
+                        if (userData.partnerId && userData.partnerData && userData.partnerData.isBot) {
+                            await deleteDoc(doc(db, 'users', userData.partnerId));
+                        }
+
+                        // Remove current user's bot partner if they have one
+                        if (currentUserData.partnerId && currentUserData.partnerData && currentUserData.partnerData.isBot) {
+                            await deleteDoc(doc(db, 'users', currentUserData.partnerId));
+                        }
+
+                        // Connect the two real users
+                        await updateDoc(doc(db, 'users', currentUser.uid), {
+                            partnerId: userDoc.id,
+                            partnerData: {
+                                id: userDoc.id,
+                                name: userData.name,
+                                gender: userData.gender,
+                                age: userData.age,
+                                character: userData.character,
+                                isBot: false
+                            },
+                            partnershipStarted: serverTimestamp()
+                        });
+
+                        await updateDoc(doc(db, 'users', userDoc.id), {
+                            partnerId: currentUser.uid,
+                            partnerData: {
+                                id: currentUser.uid,
+                                name: currentUserData.name,
+                                gender: currentUserData.gender,
+                                age: currentUserData.age,
+                                character: currentUserData.character,
+                                isBot: false
+                            },
+                            partnershipStarted: serverTimestamp()
+                        });
+
+                        realPartnerFound = true;
+                        
+                        setTimeout(() => {
+                            loadingScreen.classList.remove('show');
+                            showNotification(`Great! You're now connected with ${userData.name}!`);
+                            setTimeout(() => {
+                                window.location.href = 'home.html';
+                            }, 1500);
+                        }, 2000); // Show loading for 2 seconds
+
+                        return;
+                    }
+                }
+
+                // If no real partner found, create a bot partner
+                if (!realPartnerFound) {
+                    // Add extra loading time to make it seem like we're searching
+                    setTimeout(async () => {
+                        await createBotPartner(currentUserData);
+                    }, 3000);
+                }
+
+            } catch (error) {
+                console.error('Error during matching:', error);
+                loadingScreen.classList.remove('show');
+                showNotification('Error finding partner. Please try again.', 'error');
+            }
+        }
+
+        async function createBotPartner(currentUserData) {
+            try {
+                const oppositeGender = currentUserData.gender === 'boy' ? 'girl' : 'boy';
+                
+                // Create bot partner with human-like characteristics
+                const botPartner = {
+                    id: generateBotId(),
+                    name: getRandomIndianName(oppositeGender),
+                    gender: oppositeGender,
+                    age: currentUserData.age + (Math.floor(Math.random() * 3) - 1), // ±1 year
+                    isBot: true,
+                    character: generateRandomCharacter(oppositeGender),
+                    gameStats: generateGameStats(),
+                    lastActive: new Date().toISOString(),
+                    activityPattern: generateActivityPattern()
+                };
+
+                // Create bot user document
+                await setDoc(doc(db, 'users', botPartner.id), {
+                    uid: botPartner.id,
+                    name: botPartner.name,
+                    email: `${botPartner.id}@ambar.user`,
+                    gender: botPartner.gender,
+                    age: botPartner.age,
+                    isBot: true,
+                    character: botPartner.character,
+                    gameStats: botPartner.gameStats,
+                    partnerId: currentUser.uid,
+                    partnerData: {
+                        id: currentUser.uid,
+                        name: currentUserData.name,
+                        gender: currentUserData.gender,
+                        age: currentUserData.age,
+                        character: currentUserData.character,
+                        isBot: false
+                    },
+                    createdAt: serverTimestamp(),
+                    lastActive: serverTimestamp(),
+                    partnershipStarted: serverTimestamp(),
+                    activityPattern: botPartner.activityPattern,
+                    responseStyle: 'casual'
+                });
+
+                // Update current user with bot partner
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    partnerId: botPartner.id,
+                    partnerData: {
+                        id: botPartner.id,
+                        name: botPartner.name,
+                        gender: botPartner.gender,
+                        age: botPartner.age,
+                        character: botPartner.character,
+                        isBot: true // We mark it as bot internally for system management
+                    },
+                    partnershipStarted: serverTimestamp()
+                });
+
+                // Set up bot behaviors
+                setupBotBehaviors(botPartner.id, currentUser.uid, botPartner.name);
+
+                // Send auto requests to compatible real users
+                await sendAutoConnectionRequests(currentUserData);
+
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.classList.remove('show');
+                showNotification(`Great! You're now connected with ${botPartner.name}!`);
+                
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error creating partner:', error);
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.classList.remove('show');
+                showNotification('Error finding partner. Please try again.', 'error');
+            }
+        }
+
+        function generateActivityPattern() {
+            // Generate realistic activity times
+            const morningStart = 7 + Math.floor(Math.random() * 3); // 7-9 AM
+            const eveningStart = 18 + Math.floor(Math.random() * 4); // 6-9 PM
+            const nightEnd = 23 + Math.floor(Math.random() * 2); // 11 PM - 12 AM
+            
+            return {
+                morningActive: { start: morningStart, duration: 2 + Math.random() * 2 },
+                eveningActive: { start: eveningStart, duration: 2 + Math.random() * 3 },
+                nightEnd: nightEnd,
+                randomMessages: Math.floor(Math.random() * 3) + 2, // 2-4 random messages per day
+                giftFrequency: 18 + Math.floor(Math.random() * 12) // 18-30 hours between gifts
+            };
+        }
+
+        async function setupBotBehaviors(botId, userId, botName) {
+            // Set up periodic bot activities
+            
+            // Random message sender
+            setTimeout(() => {
+                sendBotMessage(botId, userId, 'greeting');
+            }, Math.random() * 300000 + 60000); // 1-6 minutes after connection
+            
+            // Set up gift sending
+            const giftInterval = Math.random() * 43200000 + 64800000; // 18-30 hours
+            setTimeout(() => {
+                sendBotGift(botId, userId);
+            }, giftInterval);
+            
+            // Set up periodic messages
+            setInterval(() => {
+                if (Math.random() < 0.3) { // 30% chance per interval
+                    sendBotMessage(botId, userId, 'random');
+                }
+            }, 3600000); // Check every hour
+        }
+
+        async function sendBotMessage(botId, userId, type = 'random') {
+            try {
+                const messages = {
+                    greeting: ['hey', 'hi there', 'hello', 'hey how are you'],
+                    random: ['what are you up to', 'how was your day', 'thinking of you', 'hope you are doing well', 'miss talking to you'],
+                    response: CASUAL_RESPONSES
+                };
+                
+                const messageList = messages[type] || messages.random;
+                const message = messageList[Math.floor(Math.random() * messageList.length)];
+                
+                const chatId = [userId, botId].sort().join('_');
+                const messageId = Date.now().toString();
+                
+                await setDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+                    text: message,
+                    senderId: botId,
+                    senderName: (await getDoc(doc(db, 'users', botId))).data().name,
+                    timestamp: serverTimestamp(),
+                    type: 'text'
+                });
+                
+            } catch (error) {
+                console.error('Error sending bot message:', error);
+            }
+        }
+
+        async function sendBotGift(botId, userId) {
+            try {
+                const giftCategories = ['top', 'bottom', 'shoes', 'accessories'];
+                const category = giftCategories[Math.floor(Math.random() * giftCategories.length)];
+                const itemId = Math.floor(Math.random() * 5) + 1;
+                
+                const botDoc = await getDoc(doc(db, 'users', botId));
+                const botData = botDoc.data();
+                
+                if (botData.gameStats.coins >= 50) {
+                    // Deduct coins from bot
+                    await updateDoc(doc(db, 'users', botId), {
+                        'gameStats.coins': botData.gameStats.coins - 50
+                    });
+                    
+                    // Send gift message
+                    const chatId = [userId, botId].sort().join('_');
+                    const messageId = Date.now().toString();
+                    
+                    await setDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+                        text: `Sent you a gift!`,
+                        senderId: botId,
+                        senderName: botData.name,
+                        timestamp: serverTimestamp(),
+                        type: 'gift',
+                        giftData: {
+                            category: category,
+                            itemId: itemId,
+                            recipientGender: (await getDoc(doc(db, 'users', userId))).data().gender
+                        },
+                        opened: false
+                    });
+                    
+                    // Schedule next gift
+                    const nextGiftTime = Math.random() * 43200000 + 64800000; // 18-30 hours
+                    setTimeout(() => {
+                        sendBotGift(botId, userId);
+                    }, nextGiftTime);
+                }
+                
+            } catch (error) {
+                console.error('Error sending bot gift:', error);
+            }
+        }
+
+        async function sendAutoConnectionRequests(currentUserData) {
+            try {
+                // Find compatible users (same logic as before)
+                const oppositeGender = currentUserData.gender === 'boy' ? 'girl' : 'boy';
+                const minAge = Math.max(18, currentUserData.age - 2);
+                const maxAge = currentUserData.age + 2;
+
+                const compatibleUsersQuery = query(
+                    collection(db, 'users'),
+                    where('gender', '==', oppositeGender),
+                    where('age', '>=', minAge),
+                    where('age', '<=', maxAge),
+                    where('isBot', '!=', true), // Exclude bot users
+                    orderBy('isBot'),
+                    orderBy('createdAt', 'desc'),
+                    limit(10)
+                );
+
+                const querySnapshot = await getDocs(compatibleUsersQuery);
+                let requestsSent = 0;
+                const maxRequests = 5;
+
+                for (const targetDoc of querySnapshot.docs) {
+                    if (requestsSent >= maxRequests) break;
+                    if (targetDoc.id === currentUser.uid) continue;
+
+                    const targetData = targetDoc.data();
+                    
+                    // Only send to users without real partners
+                    if (targetData.partnerId && targetData.partnerData && !targetData.partnerData.isBot) continue;
+                    
+                    // Check if request already exists
+                    const existingRequests = targetData.incomingRequests || [];
+                    if (existingRequests.some(req => req.fromUserId === currentUser.uid)) continue;
+
+                    // Send auto request
+                    const autoRequest = {
+                        fromUserId: currentUser.uid,
+                        name: currentUserData.name,
+                        email: currentUserData.email,
+                        gender: currentUserData.gender,
+                        age: currentUserData.age,
+                        character: currentUserData.character,
+                        isAutoRequest: true,
+                        sentAt: new Date().toISOString()
+                    };
+
+                    await updateDoc(doc(db, 'users', targetDoc.id), {
+                        incomingRequests: arrayUnion(autoRequest)
+                    });
+
+                    requestsSent++;
+                }
+
+                console.log(`Sent ${requestsSent} auto connection requests`);
+            } catch (error) {
+                console.error('Error sending auto requests:', error);
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+                // Reset checkbox when closing
+                if (e.target.id === 'termsModal') {
+                    document.getElementById('termsAccept').checked = false;
+                    document.getElementById('acceptBtn').disabled = true;
+                }
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(modal => {
+                    modal.classList.remove('show');
+                    // Reset checkbox when closing with escape
+                    if (modal.id === 'termsModal') {
+                        document.getElementById('termsAccept').checked = false;
+                        document.getElementById('acceptBtn').disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

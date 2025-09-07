@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Certificate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/star.css">
+
+</head>
+<body>
+    <div class="main-content">
+        <div class="certificate-container">
+            <!-- Streak Progress Card -->
+            <div class="streak-progress-card">
+                <div class="streak-title">Love Streak Progress</div>
+                <div class="streak-subtitle">Build your connection through daily gift exchanges</div>
+                
+                <div class="progress-ring">
+                    <svg>
+                        <circle class="progress-ring-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="progress-ring-progress" cx="100" cy="100" r="90" id="progressCircle"></circle>
+                    </svg>
+                    <div class="progress-text">
+                        <div class="current-stars" id="currentStars">0</div>
+                        <div class="total-stars">/ 30 Stars</div>
+                    </div>
+                </div>
+
+                <div class="streak-status" id="streakStatus">
+                    Start sending gifts to begin your streak!
+                </div>
+
+                <div class="gift-timer" id="giftTimer">
+                    <div class="timer-segment">
+                        <span class="timer-number" id="hoursLeft">24</span>
+                        <span class="timer-label">Hours</span>
+                    </div>
+                    <div class="timer-segment">
+                        <span class="timer-number" id="minutesLeft">00</span>
+                        <span class="timer-label">Minutes</span>
+                    </div>
+                    <div class="timer-segment">
+                        <span class="timer-number" id="secondsLeft">00</span>
+                        <span class="timer-label">Seconds</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificate Preview -->
+            <div class="certificate-preview" id="certificatePreview">
+                <div class="certificate-icon">🏆</div>
+                <div class="certificate-title">Love Certificate</div>
+                <div class="certificate-description">
+                    Complete your 30-day love streak to unlock your personalized relationship certificate with AI-powered compatibility analysis.
+                </div>
+                <button class="generate-btn" id="generateBtn" onclick="generateCertificate()">
+                    Generate Certificate
+                </button>
+            </div>
+
+            <!-- Streak Rules -->
+            <div class="rules-card">
+                <div class="rules-title">Streak Rules</div>
+                
+                <div class="rule-item">
+                    <div class="rule-icon">⭐</div>
+                    <div class="rule-text">
+                        <strong>Earn Stars:</strong> Both partners must send at least one gift every 24 hours to earn a star.
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-icon">⏰</div>
+                    <div class="rule-text">
+                        <strong>Time Window:</strong> You have 18-48 hours from the last gift to maintain your streak.
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-icon">🚫</div>
+                    <div class="rule-text">
+                        <strong>One Per Day:</strong> Sending multiple gifts in 24 hours won't count as extra stars.
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-icon">💔</div>
+                    <div class="rule-text">
+                        <strong>Streak Break:</strong> Missing the 48-hour window resets all stars to zero.
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-icon">🏆</div>
+                    <div class="rule-text">
+                        <strong>Certificate:</strong> Reach 30 stars to unlock your personalized love certificate.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div class="certificate-modal" id="certificateModal">
+        <div class="certificate-document" id="certificateDocument">
+            <button class="close-modal-btn" onclick="closeCertificateModal()">✕</button>
+            
+            <div class="certificate-header">
+                <h1 style="margin: 0; font-size: 32px; font-weight: 700;">Love Certificate</h1>
+                <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 16px;">Celebrating Your 30-Day Journey</p>
+            </div>
+            
+            <div class="certificate-body">
+                <div class="couple-display">
+                    <div>
+                        <div class="certificate-character" style="color: #667eea;" id="userChar">👨</div>
+                        <h3 id="userName">User</h3>
+                    </div>
+                    <div style="font-size: 48px; color: #ff6b9d;">💕</div>
+                    <div>
+                        <div class="certificate-character" style="color: #ff6b9d;" id="partnerChar">👩</div>
+                        <h3 id="partnerName">Partner</h3>
+                    </div>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="cert-stat">
+                        <div class="cert-stat-value" id="totalDays">30</div>
+                        <div class="cert-stat-label">Days Together</div>
+                    </div>
+                    <div class="cert-stat">
+                        <div class="cert-stat-value" id="totalGifts">60+</div>
+                        <div class="cert-stat-label">Gifts Exchanged</div>
+                    </div>
+                    <div class="cert-stat">
+                        <div class="cert-stat-value" id="compatibilityScore">95%</div>
+                        <div class="cert-stat-label">Compatibility</div>
+                    </div>
+                </div>
+
+                <div class="ai-analysis-section">
+                    <h3 style="color: #ff6b9d; margin-bottom: 15px;">💝 AI Relationship Analysis</h3>
+                    <p id="aiAnalysisText" style="line-height: 1.6; color: #555;">
+                        Your 30-day journey shows exceptional compatibility! Both partners demonstrated commitment through consistent gift-giving and maintained excellent communication. Your gaming preferences align well, and the variety of gifts exchanged shows thoughtful consideration for each other's tastes.
+                    </p>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ffd700;">
+                    <p style="color: #666; font-style: italic; margin: 0;">
+                        "Love is not about how many days, months, or years you've been together. It's about how much you love each other every day."
+                    </p>
+                </div>
+
+                <button class="download-certificate-btn" onclick="downloadCertificate()">
+                    📄 Download Certificate
+                </button>
+            </div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script src="tool.js"></script>
+    <script type="module">
+        // Firebase imports and configuration
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, updateDoc, serverTimestamp, onSnapshot 
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+        let streakData = null;
+        let timerInterval = null;
+        let userDataListener = null;
+
+        // Streak Management System
+        class StreakManager {
+            constructor() {
+                this.currentStreak = 0;
+                this.lastGiftSentTime = null;
+                this.lastGiftReceivedTime = null;
+                this.streakStartTime = null;
+                this.dailyGiftsSent = 0;
+                this.dailyGiftsReceived = 0;
+                this.lastDailyReset = null;
+                this.totalGiftsExchanged = 0;
+            }
+
+            // Initialize from Firebase data
+            initFromData(data) {
+                this.currentStreak = data.currentStreak || 0;
+                this.lastGiftSentTime = data.lastGiftSentTime ? data.lastGiftSentTime.toDate() : null;
+                this.lastGiftReceivedTime = data.lastGiftReceivedTime ? data.lastGiftReceivedTime.toDate() : null;
+                this.streakStartTime = data.streakStartTime ? data.streakStartTime.toDate() : null;
+                this.dailyGiftsSent = data.dailyGiftsSent || 0;
+                this.dailyGiftsReceived = data.dailyGiftsReceived || 0;
+                this.lastDailyReset = data.lastDailyReset ? data.lastDailyReset.toDate() : null;
+                this.totalGiftsExchanged = data.totalGiftsExchanged || 0;
+            }
+
+            // Check if we need to reset daily counters
+            checkDailyReset() {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                if (!this.lastDailyReset || this.lastDailyReset < today) {
+                    this.dailyGiftsSent = 0;
+                    this.dailyGiftsReceived = 0;
+                    this.lastDailyReset = now;
+                    return true;
+                }
+                return false;
+            }
+
+            // Record a gift sent
+            recordGiftSent() {
+                const now = new Date();
+                this.checkDailyReset();
+                
+                this.lastGiftSentTime = now;
+                this.dailyGiftsSent++;
+                
+                if (!this.streakStartTime) {
+                    this.streakStartTime = now;
+                }
+                
+                this.checkStreakProgress();
+            }
+
+            // Record a gift received
+            recordGiftReceived() {
+                const now = new Date();
+                this.checkDailyReset();
+                
+                this.lastGiftReceivedTime = now;
+                this.dailyGiftsReceived++;
+                
+                this.checkStreakProgress();
+            }
+
+            // Check if streak should increment
+            checkStreakProgress() {
+                // Both partners must have sent at least one gift today
+                if (this.dailyGiftsSent >= 1 && this.dailyGiftsReceived >= 1) {
+                    // Check if we haven't already counted today's streak
+                    if (this.canIncrementStreak()) {
+                        this.currentStreak++;
+                        this.totalGiftsExchanged += 2; // One from each partner
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Check if we can increment streak (once per day)
+            canIncrementStreak() {
+                if (!this.lastGiftSentTime || !this.lastGiftReceivedTime) return false;
+                
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                // Check if both gifts were sent/received in the valid time window
+                const sentToday = this.lastGiftSentTime >= today;
+                const receivedToday = this.lastGiftReceivedTime >= today;
+                
+                return sentToday && receivedToday;
+            }
+
+            // Check if streak is broken (48+ hours without both partners sending gifts)
+            checkStreakBroken() {
+                const now = new Date();
+                const maxGap = 48 * 60 * 60 * 1000; // 48 hours in milliseconds
+                
+                if (this.lastGiftSentTime && this.lastGiftReceivedTime) {
+                    const lastActivity = Math.max(this.lastGiftSentTime.getTime(), this.lastGiftReceivedTime.getTime());
+                    const timeSinceLastActivity = now.getTime() - lastActivity;
+                    
+                    if (timeSinceLastActivity > maxGap) {
+                        this.resetStreak();
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+
+            // Reset streak to zero
+            resetStreak() {
+                this.currentStreak = 0;
+                this.streakStartTime = null;
+                this.dailyGiftsSent = 0;
+                this.dailyGiftsReceived = 0;
+                this.totalGiftsExchanged = 0;
+            }
+
+            // Get status for UI
+            getStatus() {
+                const now = new Date();
+                
+                if (this.currentStreak === 0) {
+                    return {
+                        type: 'inactive',
+                        message: 'Start sending gifts to begin your streak!',
+                        timeLeft: null
+                    };
+                }
+                
+                if (this.checkStreakBroken()) {
+                    return {
+                        type: 'broken',
+                        message: 'Streak broken! Start again to rebuild your connection.',
+                        timeLeft: null
+                    };
+                }
+                
+                const lastActivity = Math.max(
+                    this.lastGiftSentTime?.getTime() || 0,
+                    this.lastGiftReceivedTime?.getTime() || 0
+                );
+                
+                const timeLeft = (lastActivity + (48 * 60 * 60 * 1000)) - now.getTime();
+                
+                if (timeLeft < (18 * 60 * 60 * 1000)) { // Less than 18 hours left
+                    return {
+                        type: 'danger',
+                        message: 'Urgent! Send gifts now or lose your streak!',
+                        timeLeft: Math.max(0, timeLeft)
+                    };
+                } else if (timeLeft < (36 * 60 * 60 * 1000)) { // Less than 36 hours left
+                    return {
+                        type: 'warning',
+                        message: 'Reminder: Send gifts to maintain your streak.',
+                        timeLeft: Math.max(0, timeLeft)
+                    };
+                } else {
+                    return {
+                        type: 'active',
+                        message: 'Streak active! Keep the love flowing!',
+                        timeLeft: Math.max(0, timeLeft)
+                    };
+                }
+            }
+
+            // Get data for Firebase storage
+            getDataForStorage() {
+                return {
+                    currentStreak: this.currentStreak,
+                    lastGiftSentTime: this.lastGiftSentTime,
+                    lastGiftReceivedTime: this.lastGiftReceivedTime,
+                    streakStartTime: this.streakStartTime,
+                    dailyGiftsSent: this.dailyGiftsSent,
+                    dailyGiftsReceived: this.dailyGiftsReceived,
+                    lastDailyReset: this.lastDailyReset,
+                    totalGiftsExchanged: this.totalGiftsExchanged,
+                    lastUpdated: serverTimestamp()
+                };
+            }
+        }
+
+        const streakManager = new StreakManager();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadUserData() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    
+                    // Initialize streak data
+                    streakData = userData.streakData || {};
+                    streakManager.initFromData(streakData);
+                    
+                    // Set up real-time listener
+                    setupUserDataListener();
+                    
+                    updateUI();
+                    startTimer();
+                } else {
+                    window.location.href = 'character.html';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        function setupUserDataListener() {
+            if (userDataListener) userDataListener();
+            
+            const userRef = doc(db, 'users', currentUser.uid);
+            userDataListener = onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const newUserData = docSnap.data();
+                    
+                    // Check for new gifts
+                    const oldSentGifts = userData?.sentGifts?.length || 0;
+                    const oldReceivedGifts = userData?.receivedGifts?.length || 0;
+                    const newSentGifts = newUserData?.sentGifts?.length || 0;
+                    const newReceivedGifts = newUserData?.receivedGifts?.length || 0;
+                    
+                    // Update streak based on new gifts
+                    if (newSentGifts > oldSentGifts) {
+                        streakManager.recordGiftSent();
+                        saveStreakData();
+                    }
+                    
+                    if (newReceivedGifts > oldReceivedGifts) {
+                        streakManager.recordGiftReceived();
+                        saveStreakData();
+                    }
+                    
+                    userData = newUserData;
+                    updateUI();
+                }
+            });
+        }
+
+        async function saveStreakData() {
+            if (!currentUser) return;
+            
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(userRef, {
+                    streakData: streakManager.getDataForStorage()
+                });
+                
+                // Also update localStorage for stars display
+                localStorage.setItem('stars', streakManager.currentStreak.toString());
+                
+                console.log('Streak data saved:', streakManager.currentStreak);
+            } catch (error) {
+                console.error('Error saving streak data:', error);
+            }
+        }
+
+        function updateUI() {
+            updateProgressRing();
+            updateStreakStatus();
+            updateCertificateAvailability();
+        }
+
+        function updateProgressRing() {
+            const currentStars = streakManager.currentStreak;
+            const maxStars = 30;
+            const percentage = (currentStars / maxStars) * 100;
+            
+            document.getElementById('currentStars').textContent = currentStars;
+            
+            const progressCircle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 90; // radius = 90
+            const offset = circumference - (percentage / 100) * circumference;
+            
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function updateStreakStatus() {
+            const status = streakManager.getStatus();
+            const statusElement = document.getElementById('streakStatus');
+            
+            // Remove all status classes
+            statusElement.classList.remove('streak-active', 'streak-warning', 'streak-danger');
+            
+            // Add appropriate class
+            statusElement.classList.add(`streak-${status.type}`);
+            statusElement.textContent = status.message;
+        }
+
+        function updateCertificateAvailability() {
+            const certificatePreview = document.getElementById('certificatePreview');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            if (streakManager.currentStreak >= 30) {
+                certificatePreview.classList.add('available');
+                generateBtn.classList.add('available');
+            } else {
+                certificatePreview.classList.remove('available');
+                generateBtn.classList.remove('available');
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const status = streakManager.getStatus();
+                
+                if (status.timeLeft !== null) {
+                    updateTimerDisplay(status.timeLeft);
+                    
+                    // Check if streak should be broken
+                    if (status.timeLeft <= 0) {
+                        streakManager.checkStreakBroken();
+                        saveStreakData();
+                        updateUI();
+                    }
+                } else {
+                    // No active streak
+                    updateTimerDisplay(24 * 60 * 60 * 1000); // 24 hours default
+                }
+                
+                updateStreakStatus();
+            }, 1000);
+        }
+
+        function updateTimerDisplay(timeLeft) {
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            document.getElementById('hoursLeft').textContent = Math.max(0, hours).toString().padStart(2, '0');
+            document.getElementById('minutesLeft').textContent = Math.max(0, minutes).toString().padStart(2, '0');
+            document.getElementById('secondsLeft').textContent = Math.max(0, seconds).toString().padStart(2, '0');
+        }
+
+        // Certificate Generation
+        window.generateCertificate = async function() {
+            if (streakManager.currentStreak < 30) {
+                alert('You need to complete 30 stars to generate your certificate!');
+                return;
+            }
+
+            try {
+                // Generate AI analysis
+                const analysis = generateAIAnalysis();
+                
+                // Populate certificate data
+                populateCertificateData(analysis);
+                
+                // Show certificate modal
+                document.getElementById('certificateModal').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error generating certificate:', error);
+                alert('Error generating certificate. Please try again.');
+            }
+        };
+
+        function generateAIAnalysis() {
+            const userStats = {
+                luck: parseInt(localStorage.getItem('luck')) || 0,
+                level: parseInt(localStorage.getItem('level')) || 1,
+                knowledge: parseInt(localStorage.getItem('knowledgeMarks')) || 0,
+                gamesPlayed: calculateTotalGames(),
+                giftsExchanged: streakManager.totalGiftsExchanged
+            };
+
+            // Simple AI analysis based on stats
+            let compatibilityScore = 70; // Base score
+            let analysisText = "Your 30-day journey together shows ";
+
+            // Analyze based on stats
+            if (userStats.luck > 60) {
+                compatibilityScore += 10;
+                analysisText += "excellent luck and fortune in your relationship. ";
+            }
+            
+            if (userStats.level > 5) {
+                compatibilityScore += 8;
+                analysisText += "Strong personal growth and development together. ";
+            }
+            
+            if (userStats.knowledge > 50) {
+                compatibilityScore += 7;
+                analysisText += "Great intellectual compatibility and learning from each other. ";
+            }
+            
+            if (userStats.giftsExchanged > 60) {
+                compatibilityScore += 5;
+                analysisText += "Exceptional gift-giving thoughtfulness and care. ";
+            }
+
+            compatibilityScore = Math.min(99, compatibilityScore);
+            
+            analysisText += "Your consistent commitment to daily exchanges demonstrates genuine care and dedication to building a strong relationship foundation.";
+
+            return {
+                compatibilityScore,
+                analysisText,
+                totalDays: 30,
+                totalGifts: userStats.giftsExchanged,
+                userStats
+            };
+        }
+
+        function calculateTotalGames() {
+            const luck = parseInt(localStorage.getItem('luckGamesPlayed')) || 0;
+            const level = parseInt(localStorage.getItem('levelGamesPlayed')) || 0;
+            const knowledge = parseInt(localStorage.getItem('knowledgeGamesPlayed')) || 0;
+            return luck + level + knowledge;
+        }
+
+        function populateCertificateData(analysis) {
+            document.getElementById('userName').textContent = userData.name || 'User';
+            document.getElementById('partnerName').textContent = userData.partnerData?.name || 'Partner';
+            
+            // Set character icons based on gender
+            const userChar = document.getElementById('userChar');
+            const partnerChar = document.getElementById('partnerChar');
+            
+            userChar.textContent = userData.gender === 'boy' ? '👨' : '👩';
+            partnerChar.textContent = userData.partnerData?.gender === 'boy' ? '👨' : '👩';
+            
+            // Update stats
+            document.getElementById('totalDays').textContent = analysis.totalDays;
+            document.getElementById('totalGifts').textContent = analysis.totalGifts + '+';
+            document.getElementById('compatibilityScore').textContent = analysis.compatibilityScore + '%';
+            document.getElementById('aiAnalysisText').textContent = analysis.analysisText;
+        }
+
+        window.closeCertificateModal = function() {
+            document.getElementById('certificateModal').classList.remove('show');
+        };
+
+        window.downloadCertificate = function() {
+            const certificate = document.getElementById('certificateDocument');
+            
+            if (typeof html2canvas !== 'undefined') {
+                html2canvas(certificate, {
+                    width: 800,
+                    height: 1000,
+                    scale: 2
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `ambar-love-certificate-${userData.name || 'user'}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            } else {
+                // Fallback - print or save as PDF
+                window.print();
+            }
+        };
+
+        // Page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.AmbarHeader) {
+                window.AmbarHeader.init({
+                    showCurrencies: ['coins', 'stars', 'hearts'],
+                    showSettings: true,
+                    showBackButton: true
+                });
+            }
+            
+            if (window.AmbarNavigation) {
+                window.AmbarNavigation.setActivePage('profile');
+            }
+        });
+
+        // API for external components
+        window.StreakAPI = {
+            recordGiftSent: () => {
+                streakManager.recordGiftSent();
+                saveStreakData();
+                updateUI();
+            },
+            recordGiftReceived: () => {
+                streakManager.recordGiftReceived();
+                saveStreakData();
+                updateUI();
+            },
+            getCurrentStreak: () => streakManager.currentStreak,
+            getStatus: () => streakManager.getStatus(),
+            resetStreak: () => {
+                streakManager.resetStreak();
+                saveStreakData();
+                updateUI();
+            }
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (userDataListener) userDataListener();
+            if (timerInterval) clearInterval(timerInterval);
+        });
+    </script>
+</body>
+</html>

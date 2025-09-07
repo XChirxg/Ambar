@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Game - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/pairs.css">
+
+</head>
+<body>
+    
+    <div class="game-container">
+        <div class="difficulty-section" id="difficulty-section">
+            <h2 class="difficulty-title">Choose Difficulty Level</h2>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" data-difficulty="easy">
+                    <div><strong>Easy</strong></div>
+                    <div class="difficulty-info">3x2 Grid • 30 seconds • 25-120 coins</div>
+                </button>
+                <button class="difficulty-btn" data-difficulty="medium">
+                    <div><strong>Medium</strong></div>
+                    <div class="difficulty-info">4x3 Grid • 45 seconds • 50-200 coins</div>
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <div><strong>Hard</strong></div>
+                    <div class="difficulty-info">5x4 Grid • 60 seconds • 100-400 coins</div>
+                </button>
+            </div>
+            <button class="start-game-btn" id="start-game-btn">Start Memory Match</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">Time Left</div>
+                    <div class="info-value timer" id="timer">30</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Matches</div>
+                    <div class="info-value" id="matches">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Moves</div>
+                    <div class="info-value" id="moves">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Accuracy</div>
+                    <div class="info-value" id="accuracy">100%</div>
+                </div>
+            </div>
+            
+            <div class="game-board" id="game-board"></div>
+        </div>
+        
+        <div class="result-popup" id="result-popup">
+            <div class="popup-content">
+                <h2 class="result-title" id="result-title">Game Complete!</h2>
+                <div class="result-amount" id="result-amount">+0 coins</div>
+                <div class="result-details" id="result-details"></div>
+                <button class="next-game-btn" id="next-game-btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="tool.js"></script>
+    <script>
+        class MemoryMatchGame {
+            constructor() {
+                this.difficulty = null;
+                this.gameConfig = {
+                    easy: { rows: 2, cols: 3, time: 30, minReward: 25, maxReward: 120 },
+                    medium: { rows: 3, cols: 4, time: 45, minReward: 50, maxReward: 200 },
+                    hard: { rows: 4, cols: 5, time: 60, minReward: 100, maxReward: 400 }
+                };
+                
+                this.gameBoard = [];
+                this.flippedCards = [];
+                this.matchedPairs = 0;
+                this.totalPairs = 0;
+                this.moves = 0;
+                this.timeLeft = 0;
+                this.timer = null;
+                this.gameInProgress = false;
+                this.canClick = true;
+                
+                this.symbols = [
+                    '🎮', '🎯', '🎲', '🎭', '🎨', '🎪', '🎼', '🎺', '🎸', '🎹',
+                    '⚽', '🏀', '🏈', '🎾', '🏐', '🏓', '🏆', '🏅', '🎖️', '🥇',
+                    '❤️', '💎', '⭐', '🔥', '⚡', '🌟', '💫', '✨', '🌈', '🦄'
+                ];
+                
+                this.initializeEventListeners();
+            }
+            
+            initializeEventListeners() {
+                // Difficulty buttons
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        this.difficulty = btn.dataset.difficulty;
+                        document.getElementById('start-game-btn').disabled = false;
+                    });
+                });
+                
+                // Start game button
+                document.getElementById('start-game-btn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Next game button
+                document.getElementById('next-game-btn').addEventListener('click', () => {
+                    this.nextGame();
+                });
+                
+                // Close popup on outside click
+                document.getElementById('result-popup').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.nextGame();
+                    }
+                });
+            }
+            
+            startGame() {
+                if (!this.difficulty || this.gameInProgress) return;
+                
+                this.gameInProgress = true;
+                const config = this.gameConfig[this.difficulty];
+                
+                document.getElementById('difficulty-section').style.display = 'none';
+                document.getElementById('game-area').style.display = 'block';
+                
+                this.setupGame(config);
+                this.startTimer();
+            }
+            
+            setupGame(config) {
+                this.totalPairs = Math.floor((config.rows * config.cols) / 2);
+                this.matchedPairs = 0;
+                this.moves = 0;
+                this.timeLeft = config.time;
+                this.flippedCards = [];
+                this.canClick = true;
+                
+                // Create game board array
+                this.gameBoard = this.generateGameBoard(config.rows, config.cols);
+                
+                // Render game board
+                this.renderGameBoard(config);
+                
+                // Update UI
+                this.updateGameInfo();
+            }
+            
+            generateGameBoard(rows, cols) {
+                const totalCards = rows * cols;
+                const pairs = Math.floor(totalCards / 2);
+                const cards = [];
+                
+                // Create pairs of symbols
+                for (let i = 0; i < pairs; i++) {
+                    const symbol = this.symbols[i % this.symbols.length];
+                    cards.push(symbol, symbol);
+                }
+                
+                // If odd number of cards, add one more
+                if (totalCards % 2 === 1) {
+                    cards.push(this.symbols[pairs % this.symbols.length]);
+                }
+                
+                // Shuffle the array
+                return this.shuffleArray(cards);
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            renderGameBoard(config) {
+                const gameBoard = document.getElementById('game-board');
+                gameBoard.innerHTML = '';
+                gameBoard.className = `game-board ${this.difficulty}`;
+                
+                this.gameBoard.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    card.dataset.index = index;
+                    card.innerHTML = `<div class="card-content">${symbol}</div>`;
+                    
+                    card.addEventListener('click', () => this.cardClick(card, index));
+                    gameBoard.appendChild(card);
+                });
+            }
+            
+            cardClick(card, index) {
+                if (!this.canClick || card.classList.contains('flipped') || 
+                    card.classList.contains('matched') || this.flippedCards.length >= 2) {
+                    return;
+                }
+                
+                card.classList.add('flipped');
+                this.flippedCards.push({ card, index, symbol: this.gameBoard[index] });
+                
+                if (this.flippedCards.length === 2) {
+                    this.moves++;
+                    this.canClick = false;
+                    
+                    setTimeout(() => this.checkMatch(), 1000);
+                }
+                
+                this.updateGameInfo();
+            }
+            
+            checkMatch() {
+                const [first, second] = this.flippedCards;
+                
+                if (first.symbol === second.symbol) {
+                    // Match found
+                    first.card.classList.remove('flipped');
+                    second.card.classList.remove('flipped');
+                    first.card.classList.add('matched');
+                    second.card.classList.add('matched');
+                    
+                    this.matchedPairs++;
+                    
+                    // Check if game is complete
+                    if (this.matchedPairs === this.totalPairs) {
+                        setTimeout(() => this.endGame(true), 500);
+                    }
+                } else {
+                    // No match
+                    first.card.classList.add('wrong');
+                    second.card.classList.add('wrong');
+                    
+                    setTimeout(() => {
+                        first.card.classList.remove('flipped', 'wrong');
+                        second.card.classList.remove('flipped', 'wrong');
+                    }, 1000);
+                }
+                
+                this.flippedCards = [];
+                this.canClick = true;
+                this.updateGameInfo();
+            }
+            
+            startTimer() {
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateGameInfo();
+                    
+                    if (this.timeLeft <= 10) {
+                        document.getElementById('timer').classList.add('warning');
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame(false);
+                    }
+                }, 1000);
+            }
+            
+            updateGameInfo() {
+                document.getElementById('timer').textContent = this.timeLeft;
+                document.getElementById('matches').textContent = `${this.matchedPairs}/${this.totalPairs}`;
+                document.getElementById('moves').textContent = this.moves;
+                
+                const accuracy = this.moves > 0 ? Math.round((this.matchedPairs * 2 / this.moves) * 100) : 100;
+                document.getElementById('accuracy').textContent = `${Math.min(accuracy, 100)}%`;
+            }
+            
+            endGame(success) {
+                this.gameInProgress = false;
+                this.canClick = false;
+                
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                const config = this.gameConfig[this.difficulty];
+                const timeBonus = this.timeLeft * 2;
+                const accuracyBonus = Math.round((this.matchedPairs * 2 / Math.max(this.moves, 1)) * 50);
+                const completionBonus = success ? config.minReward : 0;
+                
+                const totalReward = success ? 
+                    Math.min(completionBonus + timeBonus + accuracyBonus, config.maxReward) : 
+                    Math.max(Math.floor(config.minReward * 0.3), 5);
+                
+                // Update currencies and stats
+                AmbarHeader.updateCurrency('coins', totalReward);
+                this.updateGameStats(success, totalReward);
+                
+                this.showResults(success, totalReward, timeBonus, accuracyBonus);
+            }
+            
+            updateGameStats(success, coinsEarned) {
+                // Update level games stats for game.html
+                const levelGamesPlayed = parseInt(localStorage.getItem('levelGamesPlayed') || '0') + 1;
+                const levelCoinsEarned = parseInt(localStorage.getItem('levelCoinsEarned') || '0') + coinsEarned;
+                const levelsCrossed = parseInt(localStorage.getItem('levelsCrossed') || '0') + (success ? 1 : 0);
+                
+                localStorage.setItem('levelGamesPlayed', levelGamesPlayed);
+                localStorage.setItem('levelCoinsEarned', levelCoinsEarned);
+                localStorage.setItem('levelsCrossed', levelsCrossed);
+                
+                // Update personal level based on performance
+                if (success) {
+                    const currentLevel = parseInt(localStorage.getItem('level') || '1');
+                    const accuracy = Math.round((this.matchedPairs * 2 / Math.max(this.moves, 1)) * 100);
+                    if (accuracy >= 80 && this.timeLeft > 10) {
+                        localStorage.setItem('level', (currentLevel + 1));
+                    }
+                }
+            }
+            
+            showResults(success, totalReward, timeBonus, accuracyBonus) {
+                const popup = document.getElementById('result-popup');
+                const title = document.getElementById('result-title');
+                const amount = document.getElementById('result-amount');
+                const details = document.getElementById('result-details');
+                
+                if (success) {
+                    title.textContent = 'Level Complete!';
+                    title.className = 'result-title success';
+                    amount.textContent = `+${totalReward.toLocaleString()} coins`;
+                    amount.className = 'result-amount positive';
+                } else {
+                    title.textContent = 'Time\'s Up!';
+                    title.className = 'result-title failure';
+                    amount.textContent = `+${totalReward.toLocaleString()} coins`;
+                    amount.className = 'result-amount positive';
+                }
+                
+                const accuracy = Math.round((this.matchedPairs * 2 / Math.max(this.moves, 1)) * 100);
+                
+                details.innerHTML = `
+                    <p><strong>Matches Found:</strong> ${this.matchedPairs}/${this.totalPairs}</p>
+                    <p><strong>Accuracy:</strong> ${Math.min(accuracy, 100)}% (${this.moves} moves)</p>
+                    <p><strong>Time Remaining:</strong> ${this.timeLeft} seconds</p>
+                    ${success ? `
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                            <p><strong>Completion Bonus:</strong> +${this.gameConfig[this.difficulty].minReward}</p>
+                            <p><strong>Time Bonus:</strong> +${timeBonus}</p>
+                            <p><strong>Accuracy Bonus:</strong> +${accuracyBonus}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                popup.style.display = 'flex';
+            }
+            
+            nextGame() {
+                document.getElementById('result-popup').style.display = 'none';
+                document.getElementById('game-area').style.display = 'none';
+                document.getElementById('difficulty-section').style.display = 'block';
+                document.getElementById('timer').classList.remove('warning');
+                
+                // Reset selections
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('start-game-btn').disabled = true;
+                this.difficulty = null;
+            }
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize header with back button
+            AmbarHeader.init({
+                showCurrencies: ['coins', 'level'],
+                showSettings: false,
+                showBackButton: true
+            });
+            
+            // Override back button to go to games page
+            AmbarHeader.goBack = () => {
+                AmbarNavigation.navigateTo('games');
+            };
+            
+            AmbarNavigation.setActivePage('games');
+            
+            new MemoryMatchGame();
+        });
+    </script>
+</body>
+</html>

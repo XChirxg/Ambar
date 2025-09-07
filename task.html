@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Tasks</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/task.css">
+
+</head>
+<body>
+    <div class="main-content">
+        <div class="tasks-header">
+            <h1 class="tasks-title">Daily Tasks</h1>
+            <p class="tasks-subtitle">Complete tasks to earn coins and support the community</p>
+        </div>
+
+        <div class="tasks-container">
+            <div class="stats-summary">
+                <h3 style="margin-bottom: 15px; color: #f8b500;">Task Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="completed-tasks">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="earned-coins">0</span>
+                        <span class="stat-label">Coins Earned</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Tasks -->
+            <div class="task-category">
+                <div class="category-header">
+                    <i class="fas fa-share-alt"></i>
+                    Social Media Tasks
+                </div>
+
+                <div class="task-item social-task" id="share-task">
+                    <div class="task-header">
+                        <div class="task-icon">
+                            <i class="fas fa-share"></i>
+                        </div>
+                        <div class="task-info">
+                            <div class="task-title">Share Our Website</div>
+                            <div class="task-reward">+100 Coins</div>
+                        </div>
+                    </div>
+                    <div class="task-description">
+                        Share our website with your friends and family to help us grow our community!
+                    </div>
+                    <button class="task-button" onclick="completeShareTask()">
+                        <i class="fas fa-share"></i>
+                        Share Website
+                    </button>
+                </div>
+
+                <div class="task-item social-task" id="youtube-task">
+                    <div class="task-header">
+                        <div class="task-icon">
+                            <i class="fab fa-youtube"></i>
+                        </div>
+                        <div class="task-info">
+                            <div class="task-title">Subscribe to Chinurag</div>
+                            <div class="task-reward">+100 Coins</div>
+                        </div>
+                    </div>
+                    <div class="task-description">
+                        Subscribe to Chinurag's YouTube channel for amazing content and tutorials!
+                    </div>
+                    <button class="task-button" onclick="completeYouTubeTask()">
+                        <i class="fab fa-youtube"></i>
+                        Subscribe Now
+                    </button>
+                </div>
+
+                <div class="task-item social-task" id="instagram-task">
+                    <div class="task-header">
+                        <div class="task-icon">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="task-info">
+                            <div class="task-title">Follow on Instagram</div>
+                            <div class="task-reward">+100 Coins</div>
+                        </div>
+                    </div>
+                    <div class="task-description">
+                        Follow Chinurag on Instagram for daily updates and behind-the-scenes content!
+                    </div>
+                    <button class="task-button" onclick="completeInstagramTask()">
+                        <i class="fab fa-instagram"></i>
+                        Follow Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Research Tasks -->
+            <div class="task-category">
+                <div class="category-header">
+                    <i class="fas fa-clipboard-list"></i>
+                    Research Tasks
+                </div>
+                
+                <div id="research-tasks-container">
+                    <!-- Research tasks will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script src="tool.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+        let researchTasks = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadUserData() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    loadTasksData();
+                    updateCurrencyDisplay();
+                    updateTaskStats();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        function loadTasksData() {
+            // Check completed tasks
+            const completedTasks = userData.completedTasks || [];
+            
+            // Update social media tasks
+            updateTaskUI('share-task', completedTasks.includes('share'));
+            updateTaskUI('youtube-task', completedTasks.includes('youtube'));
+            updateTaskUI('instagram-task', completedTasks.includes('instagram'));
+            
+            // Load research tasks
+            loadResearchTasks();
+        }
+
+        async function loadResearchTasks() {
+            try {
+                const tasksRef = collection(db, 'researchTasks');
+                const tasksSnapshot = await getDocs(tasksRef);
+                
+                researchTasks = [];
+                tasksSnapshot.forEach((doc) => {
+                    researchTasks.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderResearchTasks();
+            } catch (error) {
+                console.error('Error loading research tasks:', error);
+            }
+        }
+
+        function renderResearchTasks() {
+            const container = document.getElementById('research-tasks-container');
+            const completedTasks = userData.completedTasks || [];
+            
+            if (researchTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="task-item research-task">
+                        <div class="task-header">
+                            <div class="task-icon">
+                                <i class="fas fa-clipboard-question"></i>
+                            </div>
+                            <div class="task-info">
+                                <div class="task-title">No Research Tasks Available</div>
+                                <div class="task-reward">Check back later!</div>
+                            </div>
+                        </div>
+                        <div class="task-description">
+                            New research surveys will appear here when available.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = researchTasks.map(task => {
+                const isCompleted = completedTasks.includes(`research_${task.id}`);
+                return `
+                    <div class="task-item research-task ${isCompleted ? 'completed' : ''}" id="research-task-${task.id}">
+                        <div class="task-header">
+                            <div class="task-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="task-info">
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-reward">+500 Coins</div>
+                            </div>
+                        </div>
+                        <div class="task-description">
+                            Complete this research survey to help us improve our services and earn rewards!
+                        </div>
+                        <div class="research-form">
+                            <div class="form-title">${task.title}</div>
+                            <div class="form-description">${task.description || 'Help us with our research by completing this survey.'}</div>
+                            <button class="form-button" onclick="completeResearchTask('${task.id}', '${task.formUrl}')" ${isCompleted ? 'disabled' : ''}>
+                                ${isCompleted ? 'Completed' : 'Take Survey'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateTaskUI(taskId, isCompleted) {
+            const taskElement = document.getElementById(taskId);
+            const button = taskElement.querySelector('.task-button');
+            
+            if (isCompleted) {
+                taskElement.classList.add('completed');
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-check"></i> Completed';
+            }
+        }
+
+        function updateTaskStats() {
+            const completedTasks = userData.completedTasks || [];
+            const taskCoinsEarned = userData.taskCoinsEarned || 0;
+            
+            document.getElementById('completed-tasks').textContent = completedTasks.length;
+            document.getElementById('earned-coins').textContent = taskCoinsEarned.toLocaleString();
+        }
+
+        function updateCurrencyDisplay() {
+            const coins = parseInt(localStorage.getItem('coins')) || 0;
+            const stars = parseInt(localStorage.getItem('stars')) || 0;
+            const hearts = parseInt(localStorage.getItem('hearts')) || 0;
+            
+            if (window.AmbarHeader && window.AmbarHeader.setCurrency) {
+                window.AmbarHeader.setCurrency('coins', coins);
+                window.AmbarHeader.setCurrency('stars', stars);
+                window.AmbarHeader.setCurrency('hearts', hearts);
+            }
+        }
+
+        async function completeTask(taskType, reward = 100) {
+            if (!currentUser || !userData) return;
+            
+            const completedTasks = userData.completedTasks || [];
+            
+            if (completedTasks.includes(taskType)) {
+                showNotification('Task already completed!', 'error');
+                return;
+            }
+            
+            try {
+                // Update user data
+                const newCompletedTasks = [...completedTasks, taskType];
+                const newTaskCoinsEarned = (userData.taskCoinsEarned || 0) + reward;
+                
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    completedTasks: newCompletedTasks,
+                    taskCoinsEarned: newTaskCoinsEarned
+                });
+                
+                // Update local storage
+                const currentCoins = parseInt(localStorage.getItem('coins')) || 0;
+                localStorage.setItem('coins', (currentCoins + reward).toString());
+                
+                // Update UI
+                userData.completedTasks = newCompletedTasks;
+                userData.taskCoinsEarned = newTaskCoinsEarned;
+                
+                updateTaskStats();
+                updateCurrencyDisplay();
+                
+                showNotification(`Task completed! +${reward} coins earned!`, 'success');
+                
+            } catch (error) {
+                console.error('Error completing task:', error);
+                showNotification('Error completing task. Please try again.', 'error');
+            }
+        }
+
+        // Global task functions
+        window.completeShareTask = function() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Ambar - Interactive Gaming Platform',
+                    text: 'Check out this amazing gaming platform!',
+                    url: window.location.origin
+                }).then(() => {
+                    completeTask('share');
+                });
+            } else {
+                // Fallback for browsers without Web Share API
+                const url = window.location.origin;
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Website URL copied to clipboard! Share it to complete the task.', 'success');
+                    completeTask('share');
+                });
+            }
+        };
+
+        window.completeYouTubeTask = function() {
+            window.open('https://www.youtube.com/@Chinurag', '_blank');
+            setTimeout(() => {
+                completeTask('youtube');
+            }, 3000); // Give user time to subscribe
+        };
+
+        window.completeInstagramTask = function() {
+            window.open('https://www.instagram.com/chinurag/', '_blank');
+            setTimeout(() => {
+                completeTask('instagram');
+            }, 3000); // Give user time to follow
+        };
+
+        window.completeResearchTask = function(taskId, formUrl) {
+            window.open(formUrl, '_blank');
+            setTimeout(() => {
+                completeTask(`research_${taskId}`, 500);
+            }, 5000); // Give user time to complete survey
+        };
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type} show`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 5000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.AmbarHeader) {
+                window.AmbarHeader.init({
+                    showCurrencies: ['coins', 'stars', 'hearts'],
+                    showSettings: false,
+                    showBackButton: true
+                });
+            }
+            
+            if (window.AmbarNavigation) {
+                window.AmbarNavigation.setActivePage('tasks');
+            }
+        });
+    </script>
+</body>
+</html>

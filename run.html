@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runner Game - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/run.css">
+
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-canvas" id="gameCanvas">
+            <div class="ground"></div>
+            
+            <div class="player" id="player">
+                <i class="fas fa-running"></i>
+            </div>
+            
+            <div class="instructions" id="instructions">
+                <h3>Runner Game</h3>
+                <p><strong>Tap JUMP</strong> to avoid obstacles</p>
+                <p><strong>Collect coins</strong> to earn rewards</p>
+                <p><strong>Survive</strong> as long as possible!</p>
+                <button class="control-btn primary" onclick="startGame()">Start Game</button>
+            </div>
+            
+            <div class="game-ui" id="gameUI" style="display: none;">
+                <div class="score-display">
+                    <div class="score-item">
+                        <div class="score-label">Distance</div>
+                        <div class="score-value" id="distance">0m</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Coins</div>
+                        <div class="score-value" id="coinsCollected">0</div>
+                    </div>
+                </div>
+                
+                <div class="score-display">
+                    <div class="score-item">
+                        <div class="score-label">Level</div>
+                        <div class="score-value" id="currentLevel">1</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Speed</div>
+                        <div class="score-value" id="gameSpeed">1x</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-panel" id="controlPanel" style="display: none;">
+            <button class="control-btn primary" id="jumpBtn">
+                <i class="fas fa-arrow-up"></i> JUMP
+            </button>
+            <button class="control-btn" id="pauseBtn">
+                <i class="fas fa-pause"></i> PAUSE
+            </button>
+        </div>
+    </div>
+    
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="gameOverTitle">Game Over!</h2>
+            <div class="modal-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Distance Traveled:</span>
+                    <span class="stat-value" id="finalDistance">0m</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Coins Collected:</span>
+                    <span class="stat-value" id="finalCoins">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Max Level Reached:</span>
+                    <span class="stat-value" id="finalLevel">1</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Coins Earned:</span>
+                    <span class="stat-value" id="coinsEarned">0</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="playAgain()">Play Again</button>
+                <button class="modal-btn secondary" onclick="goBack()">Back to Games</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="tool.js"></script>
+    <script>
+        class RunnerGame {
+            constructor() {
+                this.gameRunning = false;
+                this.gamePaused = false;
+                this.distance = 0;
+                this.coinsCollected = 0;
+                this.currentLevel = 1;
+                this.gameSpeed = 1;
+                this.obstacles = [];
+                this.coins = [];
+                this.isJumping = false;
+                this.animationFrame = null;
+                this.lastObstacleTime = 0;
+                this.lastCoinTime = 0;
+                this.levelUpDistance = 100;
+                
+                this.initializeControls();
+            }
+            
+            initializeControls() {
+                const jumpBtn = document.getElementById('jumpBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+                
+                jumpBtn.addEventListener('click', () => this.jump());
+                pauseBtn.addEventListener('click', () => this.togglePause());
+                
+                // Touch/click anywhere to jump during game
+                document.addEventListener('touchstart', (e) => {
+                    if (this.gameRunning && !this.gamePaused) {
+                        e.preventDefault();
+                        this.jump();
+                    }
+                });
+                
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' || e.code === 'ArrowUp') {
+                        e.preventDefault();
+                        if (this.gameRunning && !this.gamePaused) {
+                            this.jump();
+                        }
+                    }
+                    if (e.code === 'KeyP') {
+                        this.togglePause();
+                    }
+                });
+            }
+            
+            startGame() {
+                this.gameRunning = true;
+                this.gamePaused = false;
+                this.distance = 0;
+                this.coinsCollected = 0;
+                this.currentLevel = 1;
+                this.gameSpeed = 1;
+                this.obstacles = [];
+                this.coins = [];
+                this.isJumping = false;
+                this.lastObstacleTime = 0;
+                this.lastCoinTime = 0;
+                
+                // Hide instructions and show game UI
+                document.getElementById('instructions').style.display = 'none';
+                document.getElementById('gameUI').style.display = 'flex';
+                document.getElementById('controlPanel').style.display = 'flex';
+                
+                this.updateUI();
+                this.gameLoop();
+            }
+            
+            jump() {
+                if (this.isJumping) return;
+                
+                this.isJumping = true;
+                const player = document.getElementById('player');
+                player.classList.add('jumping');
+                
+                setTimeout(() => {
+                    this.isJumping = false;
+                    player.classList.remove('jumping');
+                }, 600);
+            }
+            
+            togglePause() {
+                if (!this.gameRunning) return;
+                
+                this.gamePaused = !this.gamePaused;
+                const pauseBtn = document.getElementById('pauseBtn');
+                
+                if (this.gamePaused) {
+                    pauseBtn.innerHTML = '<i class="fas fa-play"></i> RESUME';
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                    }
+                } else {
+                    pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+                    this.gameLoop();
+                }
+            }
+            
+            spawnObstacle() {
+                const now = Date.now();
+                if (now - this.lastObstacleTime < 1500 / this.gameSpeed) return;
+                
+                this.lastObstacleTime = now;
+                
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                obstacle.style.animationDuration = `${3 / this.gameSpeed}s`;
+                
+                const gameCanvas = document.getElementById('gameCanvas');
+                gameCanvas.appendChild(obstacle);
+                
+                this.obstacles.push({
+                    element: obstacle,
+                    x: window.innerWidth,
+                    passed: false
+                });
+                
+                // Remove obstacle after animation
+                setTimeout(() => {
+                    if (obstacle.parentNode) {
+                        obstacle.parentNode.removeChild(obstacle);
+                    }
+                    this.obstacles = this.obstacles.filter(obs => obs.element !== obstacle);
+                }, 3000 / this.gameSpeed);
+            }
+            
+            spawnCoin() {
+                const now = Date.now();
+                if (now - this.lastCoinTime < 2000 / this.gameSpeed) return;
+                
+                this.lastCoinTime = now;
+                
+                // Don't always spawn coins
+                if (Math.random() < 0.6) return;
+                
+                const coin = document.createElement('div');
+                coin.className = 'coin-collectible';
+                coin.innerHTML = '<i class="fas fa-coins"></i>';
+                coin.style.animationDuration = `${3 / this.gameSpeed}s`;
+                
+                const gameCanvas = document.getElementById('gameCanvas');
+                gameCanvas.appendChild(coin);
+                
+                this.coins.push({
+                    element: coin,
+                    x: window.innerWidth,
+                    collected: false
+                });
+                
+                // Remove coin after animation
+                setTimeout(() => {
+                    if (coin.parentNode) {
+                        coin.parentNode.removeChild(coin);
+                    }
+                    this.coins = this.coins.filter(c => c.element !== coin);
+                }, 3000 / this.gameSpeed);
+            }
+            
+            checkCollisions() {
+                const playerRect = document.getElementById('player').getBoundingClientRect();
+                
+                // Check obstacle collisions
+                for (let obstacle of this.obstacles) {
+                    if (obstacle.passed) continue;
+                    
+                    const obstacleRect = obstacle.element.getBoundingClientRect();
+                    
+                    if (playerRect.right > obstacleRect.left && 
+                        playerRect.left < obstacleRect.right &&
+                        playerRect.bottom > obstacleRect.top && 
+                        playerRect.top < obstacleRect.bottom) {
+                        
+                        if (!this.isJumping) {
+                            this.gameOver();
+                            return;
+                        }
+                    }
+                    
+                    // Mark as passed if player is past it
+                    if (obstacleRect.right < playerRect.left) {
+                        obstacle.passed = true;
+                    }
+                }
+                
+                // Check coin collisions
+                for (let coin of this.coins) {
+                    if (coin.collected) continue;
+                    
+                    const coinRect = coin.element.getBoundingClientRect();
+                    
+                    if (playerRect.right > coinRect.left && 
+                        playerRect.left < coinRect.right &&
+                        playerRect.bottom > coinRect.top && 
+                        playerRect.top < coinRect.bottom) {
+                        
+                        coin.collected = true;
+                        coin.element.style.display = 'none';
+                        this.coinsCollected++;
+                        this.showCoinEffect(coinRect);
+                    }
+                }
+            }
+            
+            showCoinEffect(rect) {
+                const effect = document.createElement('div');
+                effect.style.position = 'fixed';
+                effect.style.left = rect.left + 'px';
+                effect.style.top = rect.top + 'px';
+                effect.style.color = '#FFD700';
+                effect.style.fontSize = '1.2rem';
+                effect.style.fontWeight = 'bold';
+                effect.style.zIndex = '1000';
+                effect.style.animation = 'coinCollectEffect 1s ease-out forwards';
+                effect.textContent = '+1';
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes coinCollectEffect {
+                        0% { opacity: 1; transform: scale(1) translateY(0); }
+                        100% { opacity: 0; transform: scale(1.5) translateY(-30px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    document.body.removeChild(effect);
+                    document.head.removeChild(style);
+                }, 1000);
+            }
+            
+            updateGameSpeed() {
+                const newLevel = Math.floor(this.distance / this.levelUpDistance) + 1;
+                if (newLevel > this.currentLevel) {
+                    this.currentLevel = newLevel;
+                    this.gameSpeed = 1 + (newLevel - 1) * 0.2;
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('distance').textContent = `${Math.floor(this.distance)}m`;
+                document.getElementById('coinsCollected').textContent = this.coinsCollected;
+                document.getElementById('currentLevel').textContent = this.currentLevel;
+                document.getElementById('gameSpeed').textContent = `${this.gameSpeed.toFixed(1)}x`;
+            }
+            
+            gameLoop() {
+                if (!this.gameRunning || this.gamePaused) return;
+                
+                this.distance += 0.5 * this.gameSpeed;
+                this.updateGameSpeed();
+                this.spawnObstacle();
+                this.spawnCoin();
+                this.checkCollisions();
+                this.updateUI();
+                
+                this.animationFrame = requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            gameOver() {
+                this.gameRunning = false;
+                
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                
+                // Calculate rewards
+                const baseCoins = Math.floor(this.distance / 10);
+                const coinBonus = this.coinsCollected * 5;
+                const levelBonus = (this.currentLevel - 1) * 10;
+                const totalEarned = baseCoins + coinBonus + levelBonus;
+                
+                // Update currencies through AmbarHeader
+                AmbarHeader.updateCurrency('coins', totalEarned);
+                
+                // Update game stats
+                this.updateGameStats(totalEarned);
+                
+                // Show game over modal
+                this.showGameOverModal(totalEarned);
+            }
+            
+            updateGameStats(coinsEarned) {
+                // Update level games stats for game.html
+                const levelGamesPlayed = parseInt(localStorage.getItem('levelGamesPlayed') || '0') + 1;
+                const levelCoinsEarned = parseInt(localStorage.getItem('levelCoinsEarned') || '0') + coinsEarned;
+                const levelsCrossed = parseInt(localStorage.getItem('levelsCrossed') || '0') + (this.currentLevel - 1);
+                
+                localStorage.setItem('levelGamesPlayed', levelGamesPlayed);
+                localStorage.setItem('levelCoinsEarned', levelCoinsEarned);
+                localStorage.setItem('levelsCrossed', levelsCrossed);
+                localStorage.setItem('level', this.currentLevel);
+            }
+            
+            showGameOverModal(coinsEarned) {
+                document.getElementById('finalDistance').textContent = `${Math.floor(this.distance)}m`;
+                document.getElementById('finalCoins').textContent = this.coinsCollected;
+                document.getElementById('finalLevel').textContent = this.currentLevel;
+                document.getElementById('coinsEarned').textContent = coinsEarned;
+                
+                document.getElementById('gameOverModal').style.display = 'flex';
+            }
+            
+            reset() {
+                // Clear all obstacles and coins
+                this.obstacles.forEach(obs => {
+                    if (obs.element.parentNode) {
+                        obs.element.parentNode.removeChild(obs.element);
+                    }
+                });
+                
+                this.coins.forEach(coin => {
+                    if (coin.element.parentNode) {
+                        coin.element.parentNode.removeChild(coin.element);
+                    }
+                });
+                
+                this.obstacles = [];
+                this.coins = [];
+                
+                // Reset UI
+                document.getElementById('gameOverModal').style.display = 'none';
+                document.getElementById('instructions').style.display = 'block';
+                document.getElementById('gameUI').style.display = 'none';
+                document.getElementById('controlPanel').style.display = 'none';
+                
+                // Reset pause button
+                document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+            }
+        }
+        
+        // Global game instance
+        let game = null;
+        
+        // Global functions
+        function startGame() {
+            if (game) {
+                game.startGame();
+            }
+        }
+        
+        function playAgain() {
+            if (game) {
+                game.reset();
+            }
+        }
+        
+        function goBack() {
+            AmbarNavigation.navigateTo('games');
+        }
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize header with back button
+            AmbarHeader.init({
+                showCurrencies: ['coins', 'level'],
+                showSettings: false,
+                showBackButton: true
+            });
+            
+            // Override back button to go to games page
+            AmbarHeader.goBack = () => {
+                AmbarNavigation.navigateTo('games');
+            };
+            
+            AmbarNavigation.setActivePage('games');
+            
+            game = new RunnerGame();
+        });
+    </script>
+</body>
+</html>
