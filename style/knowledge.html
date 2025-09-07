@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Quiz - Ambar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/knowledge.css">
+
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <button class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+            Back
+        </button>
+        <div class="currency-display">
+            <div class="currency-item coins">
+                <i class="fas fa-coins"></i>
+                <span id="coins-display">0</span>
+            </div>
+            <div class="currency-item marks">
+                <i class="fas fa-brain"></i>
+                <span id="marks-display">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Category Selection -->
+        <div class="category-selection" id="categorySelection">
+            <h1 class="page-title">Knowledge Challenge</h1>
+            
+            <div class="categories-grid">
+                <div class="category-card academic" onclick="selectCategory('academic')">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="category-info">
+                            <h3>Academic Subjects</h3>
+                            <p>Test your knowledge in core academic subjects</p>
+                        </div>
+                    </div>
+                    <div class="subcategories">
+                        <span class="subcategory">History</span>
+                        <span class="subcategory">Geography</span>
+                        <span class="subcategory">Science</span>
+                        <span class="subcategory">Physics</span>
+                        <span class="subcategory">Chemistry</span>
+                        <span class="subcategory">Biology</span>
+                        <span class="subcategory">Commerce</span>
+                        <span class="subcategory">Economics</span>
+                    </div>
+                </div>
+
+                <div class="category-card math" onclick="selectCategory('math')">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="category-info">
+                            <h3>Mathematics</h3>
+                            <p>Solve mathematical problems and equations</p>
+                        </div>
+                    </div>
+                    <div class="subcategories">
+                        <span class="subcategory">Arithmetic</span>
+                        <span class="subcategory">Algebra</span>
+                        <span class="subcategory">Geometry</span>
+                        <span class="subcategory">Statistics</span>
+                        <span class="subcategory">Calculus</span>
+                    </div>
+                </div>
+
+                <div class="category-card general" onclick="selectCategory('general')">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="category-info">
+                            <h3>General Knowledge</h3>
+                            <p>Mixed topics from around the world</p>
+                        </div>
+                    </div>
+                    <div class="subcategories">
+                        <span class="subcategory">Current Affairs</span>
+                        <span class="subcategory">Sports</span>
+                        <span class="subcategory">Entertainment</span>
+                        <span class="subcategory">Technology</span>
+                        <span class="subcategory">Literature</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Preparing Quiz</div>
+                <div class="loading-subtext">Generating questions tailored for you...</div>
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="quiz-section" id="quizSection">
+            <div class="quiz-header">
+                <div class="quiz-title" id="quizTitle">Quiz Title</div>
+                <div class="quiz-progress">
+                    <span>Question <span id="currentQuestion">1</span> of 10</span>
+                    <span>Score: <span id="currentScore">0</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="question-card" id="questionCard">
+                <div class="question-header">
+                    <div class="question-number" id="questionNumber">Question 1</div>
+                    <div class="question-difficulty" id="questionDifficulty">Easy</div>
+                </div>
+                <div class="question-text" id="questionText"></div>
+                <div class="answer-options" id="answerOptions"></div>
+                <button class="submit-button" id="submitButton" onclick="submitAnswer()" disabled>
+                    Submit Answer
+                </button>
+            </div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-status" id="resultStatus"></div>
+                <div class="result-coins" id="resultCoins"></div>
+                <div id="resultExplanation"></div>
+                <button class="submit-button" onclick="nextQuestion()">Next Question</button>
+            </div>
+
+            <div class="final-results" id="finalResults">
+                <div class="final-title">Quiz Complete!</div>
+                <div class="final-score" id="finalScore"></div>
+                <div class="rewards-summary" id="rewardsSummary"></div>
+                <div>
+                    <button class="play-again-btn" onclick="playAgain()">Play Again</button>
+                    <button class="play-again-btn" onclick="goBack()">Back to Games</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Game state
+        let currentUser = null;
+        let currentCategory = '';
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let marks = 0;
+        let correctAnswers = 0;
+        let selectedAnswer = null;
+
+        // Initialize
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                updateCurrencyDisplay();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Currency management
+        function getCurrency(type) {
+            return parseInt(localStorage.getItem(type)) || 0;
+        }
+
+        function updateCurrency(type, amount) {
+            const current = getCurrency(type);
+            const newAmount = Math.max(0, current + amount);
+            localStorage.setItem(type, newAmount.toString());
+            updateCurrencyDisplay();
+        }
+
+        function updateCurrencyDisplay() {
+            document.getElementById('coins-display').textContent = getCurrency('coins').toLocaleString();
+            document.getElementById('marks-display').textContent = getCurrency('knowledgeMarks').toLocaleString();
+        }
+
+        // Category selection
+        window.selectCategory = async function(category) {
+            currentCategory = category;
+            document.getElementById('categorySelection').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            try {
+                await generateQuiz(category);
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('quizSection').style.display = 'block';
+                startQuiz();
+            } catch (error) {
+                console.error('Error generating quiz:', error);
+                alert('Failed to generate quiz. Please try again.');
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('categorySelection').style.display = 'block';
+            }
+        };
+
+        // Generate quiz using AI
+        async function generateQuiz(category) {
+            const prompts = {
+                academic: "Generate 10 academic quiz questions covering subjects like History, Geography, Science, Physics, Chemistry, Biology, Commerce, and Economics. Start with easy questions and gradually increase difficulty.",
+                math: "Generate 10 mathematical problems including arithmetic, algebra, geometry, and statistics. Provide numerical answers only (no complex equations or symbols). Start easy and increase difficulty.",
+                general: "Generate 10 general knowledge questions covering current affairs, sports, entertainment, technology, and literature. Start easy and increase difficulty."
+            };
+
+            const isMath = category === 'math';
+            const prompt = `${prompts[category]}
+
+Return a JSON array of exactly 10 questions in this format:
+{
+  "questions": [
+    {
+      "question": "Question text here",
+      "type": "${isMath ? 'math' : 'mcq'}",
+      ${isMath ? '"answer": "numerical answer",' : '"options": ["A", "B", "C", "D"], "answer": "correct option letter",'}
+      "difficulty": "easy|medium|hard",
+      "explanation": "Brief explanation of the answer"
+    }
+  ]
+}
+
+For math questions, provide only numerical answers (integers or simple decimals).
+For MCQ questions, ensure exactly 4 options and mark the correct answer with A, B, C, or D.
+Distribute difficulty: questions 1-3 easy, 4-7 medium, 8-10 hard.`;
+
+            try {
+                const response = await fetch(window.CONFIG.googleAI.baseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': window.CONFIG.googleAI.apiKey
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+
+                const data = await response.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                
+                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error('Invalid AI response format');
+                
+                const result = JSON.parse(jsonMatch[0]);
+                questions = result.questions;
+                
+                if (!questions || questions.length !== 10) {
+                    throw new Error('Invalid questions format');
+                }
+
+            } catch (error) {
+                console.error('AI generation failed:', error);
+                // Fallback to sample questions
+                questions = getSampleQuestions(category);
+            }
+        }
+
+        // Sample questions as fallback
+        function getSampleQuestions(category) {
+            const samples = {
+                academic: [
+                    { question: "What is the capital of France?", type: "mcq", options: ["London", "Berlin", "Paris", "Rome"], answer: "C", difficulty: "easy", explanation: "Paris is the capital and largest city of France." },
+                    { question: "Which element has the chemical symbol 'O'?", type: "mcq", options: ["Gold", "Silver", "Oxygen", "Iron"], answer: "C", difficulty: "easy", explanation: "Oxygen has the chemical symbol O." },
+                    { question: "In which year did World War II end?", type: "mcq", options: ["1944", "1945", "1946", "1947"], answer: "B", difficulty: "medium", explanation: "World War II ended in 1945." }
+                ],
+                math: [
+                    { question: "What is 15 + 27?", type: "math", answer: "42", difficulty: "easy", explanation: "15 + 27 = 42" },
+                    { question: "What is the square root of 64?", type: "math", answer: "8", difficulty: "medium", explanation: "8 × 8 = 64, so √64 = 8" },
+                    { question: "If x + 5 = 12, what is x?", type: "math", answer: "7", difficulty: "medium", explanation: "x = 12 - 5 = 7" }
+                ],
+                general: [
+                    { question: "Which planet is known as the Red Planet?", type: "mcq", options: ["Venus", "Mars", "Jupiter", "Saturn"], answer: "B", difficulty: "easy", explanation: "Mars is called the Red Planet due to its reddish appearance." },
+                    { question: "Who painted the Mona Lisa?", type: "mcq", options: ["Van Gogh", "Picasso", "Da Vinci", "Monet"], answer: "C", difficulty: "medium", explanation: "Leonardo da Vinci painted the Mona Lisa." }
+                ]
+            };
+
+            // Repeat and extend to 10 questions
+            const base = samples[category] || samples.general;
+            const result = [];
+            for (let i = 0; i < 10; i++) {
+                result.push({...base[i % base.length]});
+            }
+            return result;
+        }
+
+        // Start quiz
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            marks = 0;
+            correctAnswers = 0;
+            selectedAnswer = null;
+            
+            const titles = {
+                academic: 'Academic Quiz',
+                math: 'Mathematics Challenge',
+                general: 'General Knowledge Quiz'
+            };
+            
+            document.getElementById('quizTitle').textContent = titles[currentCategory] || 'Knowledge Quiz';
+            showQuestion();
+        }
+
+        // Show current question
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressFill').style.width = `${((currentQuestionIndex) / 10) * 100}%`;
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestionIndex + 1}`;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('questionDifficulty').textContent = question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
+            document.getElementById('questionDifficulty').className = `question-difficulty difficulty-${question.difficulty}`;
+            
+            const answerContainer = document.getElementById('answerOptions');
+            answerContainer.innerHTML = '';
+            selectedAnswer = null;
+            
+            if (question.type === 'math') {
+                // Math input
+                const inputContainer = document.createElement('div');
+                inputContainer.className = 'math-input-container';
+                inputContainer.innerHTML = `
+                    <input type="number" class="math-input" id="mathAnswer" 
+                           placeholder="Enter your answer" step="any">
+                `;
+                answerContainer.appendChild(inputContainer);
+                
+                const mathInput = document.getElementById('mathAnswer');
+                mathInput.addEventListener('input', () => {
+                    const value = mathInput.value.trim();
+                    document.getElementById('submitButton').disabled = !value;
+                    selectedAnswer = value;
+                });
+                
+                setTimeout(() => mathInput.focus(), 100);
+            } else {
+                // Multiple choice
+                question.options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'answer-option';
+                    optionElement.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                    optionElement.addEventListener('click', () => selectOption(optionElement, String.fromCharCode(65 + index)));
+                    answerContainer.appendChild(optionElement);
+                });
+            }
+            
+            document.getElementById('submitButton').disabled = true;
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('questionCard').style.display = 'block';
+        }
+
+        // Select MCQ option
+        function selectOption(element, letter) {
+            document.querySelectorAll('.answer-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedAnswer = letter;
+            document.getElementById('submitButton').disabled = false;
+        }
+
+        // Submit answer
+        window.submitAnswer = function() {
+            if (!selectedAnswer) return;
+            
+            const question = questions[currentQuestionIndex];
+            const isCorrect = selectedAnswer.toString().toLowerCase() === question.answer.toString().toLowerCase();
+            
+            let coinsEarned = 0;
+            let marksEarned = 0;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                if (question.type === 'math') {
+                    coinsEarned = 30; // Math problems give 30 coins
+                    marksEarned = 4;
+                } else {
+                    coinsEarned = 15; // MCQ gives 15 coins
+                    marksEarned = 4;
+                }
+            } else {
+                coinsEarned = -3; // Wrong answer penalty
+                marksEarned = -1;
+            }
+            
+            score += coinsEarned;
+            marks += marksEarned;
+            
+            // Update currencies
+            updateCurrency('coins', coinsEarned);
+            updateCurrency('knowledgeMarks', marksEarned);
+            
+            // Show result
+            showResult(isCorrect, coinsEarned, question.explanation);
+            
+            // Update display
+            document.getElementById('currentScore').textContent = score;
+        };
+
+        // Show result for current question
+        function showResult(isCorrect, coinsEarned, explanation) {
+            const question = questions[currentQuestionIndex];
+            
+            // Highlight correct/incorrect answers
+            if (question.type === 'mcq') {
+                document.querySelectorAll('.answer-option').forEach((opt, index) => {
+                    const letter = String.fromCharCode(65 + index);
+                    if (letter === question.answer) {
+                        opt.classList.add('correct');
+                    } else if (letter === selectedAnswer && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+            }
+            
+            document.getElementById('questionCard').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'block';
+            
+            document.getElementById('resultStatus').textContent = isCorrect ? 'Correct!' : 'Incorrect';
+            document.getElementById('resultStatus').className = `result-status ${isCorrect ? 'correct' : 'incorrect'}`;
+            
+            document.getElementById('resultCoins').textContent = coinsEarned > 0 ? `+${coinsEarned} coins` : `${coinsEarned} coins`;
+            document.getElementById('resultCoins').className = `result-coins ${coinsEarned > 0 ? 'positive' : 'negative'}`;
+            
+            document.getElementById('resultExplanation').innerHTML = `
+                <p><strong>Correct Answer:</strong> ${question.type === 'math' ? question.answer : question.answer + '. ' + question.options[question.answer.charCodeAt(0) - 65]}</p>
+                <p>${explanation}</p>
+            `;
+        }
+
+        // Next question
+        window.nextQuestion = function() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= 10) {
+                showFinalResults();
+            } else {
+                showQuestion();
+            }
+        };
+
+        // Show final results
+        function showFinalResults() {
+            const percentage = (correctAnswers / 10) * 100;
+            let bonusCoins = 0;
+            
+            // Bonus calculation
+            if (percentage >= 50) bonusCoins += 30;
+            if (percentage >= 70) bonusCoins += 20; // Total 50
+            if (percentage >= 90) bonusCoins += 20; // Total 70
+            if (percentage === 100) bonusCoins += 30; // Total 100
+            
+            if (bonusCoins > 0) {
+                updateCurrency('coins', bonusCoins);
+            }
+            
+            document.getElementById('quizSection').querySelector('.quiz-header').style.display = 'none';
+            document.getElementById('questionCard').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('finalResults').style.display = 'block';
+            
+            document.getElementById('finalScore').innerHTML = `
+                <div>Score: ${correctAnswers}/10 (${percentage}%)</div>
+                <div>Total Marks: ${marks}</div>
+            `;
+            
+            document.getElementById('rewardsSummary').innerHTML = `
+                <div class="reward-item">
+                    <span>Base Coins:</span>
+                    <span>${score - bonusCoins} coins</span>
+                </div>
+                ${bonusCoins > 0 ? `
+                <div class="reward-item">
+                    <span>Bonus Coins:</span>
+                    <span>+${bonusCoins} coins</span>
+                </div>` : ''}
+                <div class="reward-item">
+                    <span><strong>Total Coins:</strong></span>
+                    <span><strong>${score} coins</strong></span>
+                </div>
+                <div class="reward-item">
+                    <span><strong>Total Marks:</strong></span>
+                    <span><strong>${marks} marks</strong></span>
+                </div>
+            `;
+            
+            // Update game stats
+            updateGameStats();
+        }
+
+        // Update game statistics
+        function updateGameStats() {
+            const gamesPlayed = parseInt(localStorage.getItem('knowledgeGamesPlayed') || '0') + 1;
+            const totalMarks = parseInt(localStorage.getItem('knowledgeMarks') || '0');
+            const totalCoinsEarned = parseInt(localStorage.getItem('knowledgeCoinsEarned') || '0') + Math.max(0, score);
+            
+            localStorage.setItem('knowledgeGamesPlayed', gamesPlayed.toString());
+            localStorage.setItem('knowledgeCoinsEarned', totalCoinsEarned.toString());
+            
+            // Update level based on marks
+            const newLevel = Math.floor(totalMarks / 50) + 1;
+            localStorage.setItem('level', newLevel.toString());
+        }
+
+        // Play again
+        window.playAgain = function() {
+            document.getElementById('finalResults').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'none';
+            document.getElementById('categorySelection').style.display = 'block';
+            
+            // Reset quiz state
+            questions = [];
+            currentQuestionIndex = 0;
+            score = 0;
+            marks = 0;
+            correctAnswers = 0;
+            selectedAnswer = null;
+        };
+
+        // Go back to games
+        window.goBack = function() {
+            window.location.href = 'game.html';
+        };
+
+        // Initialize display
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrencyDisplay();
+        });
+
+        // Listen for storage changes
+        window.addEventListener('storage', function(event) {
+            if (event.storageArea === localStorage) {
+                updateCurrencyDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

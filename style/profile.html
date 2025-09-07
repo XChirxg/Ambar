@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambar - Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/tool.css">
+    <link rel="stylesheet" href="style/profile.css">
+
+</head>
+<body>
+    <div class="main-content">
+        <div class="profile-content" id="profileContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+<script src="config.js"></script>
+    <script src="tool.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot, arrayUnion
+        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const firebaseConfig = window.CONFIG.firebase;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = null;
+        let partnerData = null;
+        let userDataListener = null;
+        let aiAnalysisCache = null;
+
+        // Optimized crop config - single configuration used for all
+        const CROP_CONFIG = {
+            boy: { x: 198, y: 512, w: 484, h: 484 },
+            girl: { x: 470, y: 623, w: 466, h: 474 }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadUserData() {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    setupUserDataListener();
+                    await loadPartnerData();
+                    renderProfile();
+                    checkForNotifications();
+                } else {
+                    window.location.href = 'character-design.html';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('Error loading profile data', 'error');
+            }
+        }
+
+        async function loadPartnerData() {
+            if (userData.partnerId) {
+                try {
+                    const partnerDoc = await getDoc(doc(db, 'users', userData.partnerId));
+                    if (partnerDoc.exists()) {
+                        partnerData = partnerDoc.data();
+                    }
+                } catch (error) {
+                    console.error('Error loading partner data:', error);
+                }
+            }
+        }
+
+        function setupUserDataListener() {
+            if (userDataListener) userDataListener();
+            
+            const userRef = doc(db, 'users', currentUser.uid);
+            userDataListener = onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const newUserData = docSnap.data();
+                    const oldGiftCount = userData?.receivedGifts?.length || 0;
+                    const newGiftCount = newUserData?.receivedGifts?.length || 0;
+                    
+                    userData = newUserData;
+                    
+                    if (newGiftCount > oldGiftCount) {
+                        const latestGift = newUserData.receivedGifts[newGiftCount - 1];
+                        showGiftNotification(latestGift);
+                    }
+                    
+                    renderProfile();
+                }
+            });
+        }
+
+        function checkForNotifications() {
+            // Check for unread messages
+            if (userData.lastMessageTime && userData.lastReadTime && 
+                userData.lastMessageTime.toMillis() > (userData.lastReadTime?.toMillis() || 0)) {
+                const lastMessage = userData.lastMessage || "New message received";
+                showMessageNotification(lastMessage);
+            }
+        }
+
+        function showMessageNotification(messageText) {
+            const notification = document.createElement('div');
+            notification.className = 'notification show';
+            notification.style.background = 'linear-gradient(135deg, #74b9ff, #0984e3)';
+            notification.innerHTML = `
+                <i class="fas fa-comment-dots"></i> 
+                ${messageText.length > 30 ? messageText.substring(0, 30) + '...' : messageText}
+            `;
+            notification.addEventListener('click', () => {
+                window.location.href = 'line.html';
+            });
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 5000);
+        }
+
+        function showGiftNotification(gift) {
+            const notification = document.createElement('div');
+            notification.className = 'notification show';
+            notification.style.background = 'linear-gradient(135deg, #ff6b9d, #c44569)';
+            notification.innerHTML = `
+                <i class="fas fa-gift"></i> 
+                New gift received: ${gift.category}
+            `;
+            notification.addEventListener('click', () => {
+                window.location.href = 'line.html';
+            });
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 5000);
+        }
+
+        function getLiveStats() {
+            return {
+                totalWinRate: parseInt(localStorage.getItem('totalWinRate')) || 0,
+                luckGamesPlayed: parseInt(localStorage.getItem('luckGamesPlayed')) || 0,
+                levelsCrossed: parseInt(localStorage.getItem('levelsCrossed')) || 0,
+                levelGamesPlayed: parseInt(localStorage.getItem('levelGamesPlayed')) || 0,
+                knowledgeMarks: parseInt(localStorage.getItem('knowledgeMarks')) || 0,
+                knowledgeGamesPlayed: parseInt(localStorage.getItem('knowledgeGamesPlayed')) || 0,
+                coins: parseInt(localStorage.getItem('coins')) || 0,
+                stars: parseInt(localStorage.getItem('stars')) || 0,
+                currentStreak: parseInt(localStorage.getItem('currentStreak')) || 0,
+                luck: parseInt(localStorage.getItem('luck')) || 0,
+                level: parseInt(localStorage.getItem('level')) || 1,
+                hearts: userData?.gameStats?.hearts || 0
+            };
+        }
+
+        function generateCharacterAvatar(containerId, characterData, gender) {
+            const container = document.getElementById(containerId)?.querySelector('.character-layers');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const layers = ['backhair', 'skin', 'eyeball', 'eyebrow', 'mouth', 'bottom', 'shoes', 'top', 'full', 'fronthair'];
+
+            layers.forEach(layer => {
+                if (characterData[layer]) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 80;
+                    canvas.height = 80;
+                    canvas.className = 'avatar-layer';
+                    container.appendChild(canvas);
+                    cropCharacterPart(canvas, gender, layer, characterData[layer]);
+                }
+            });
+        }
+
+        function cropCharacterPart(canvas, gender, layer, id) {
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = () => {
+                const crop = CROP_CONFIG[gender];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, canvas.width, canvas.height);
+            };
+            
+            img.onerror = () => {
+                ctx.fillStyle = gender === 'boy' ? '#4285f4' : '#ea4335';
+                ctx.fillRect(0, 0, 80, 80);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(40, 30, 15, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(40, 65, 25, 0, Math.PI);
+                ctx.fill();
+            };
+            
+            let imagePath;
+            if (['eyeball', 'eyebrow', 'mouth'].includes(layer)) {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/face/${layer}/${id}.png`;
+            } else {
+                imagePath = `https://raw.githubusercontent.com/xchirxg/db/main/${gender}/${layer}/${id}.png`;
+            }
+            
+            img.src = imagePath;
+        }
+
+        function generateStreakStars(count) {
+            if (count === 0) {
+                return '<div style="color: rgba(255,255,255,0.6); font-style: italic;">No streak yet - start exchanging gifts!</div>';
+            }
+            
+            let starsHtml = '';
+            const maxStars = 10;
+            
+            if (count <= maxStars) {
+                for (let i = 0; i < count; i++) {
+                    starsHtml += '<i class="fas fa-star streak-star"></i>';
+                }
+            } else {
+                for (let i = 0; i < 5; i++) {
+                    starsHtml += '<i class="fas fa-star streak-star"></i>';
+                }
+                starsHtml += `<div class="streak-counter">${count} Days</div>`;
+                for (let i = 0; i < 5; i++) {
+                    starsHtml += '<i class="fas fa-star streak-star"></i>';
+                }
+            }
+            
+            return starsHtml;
+        }
+
+        function calculateTotalGamesPlayed(stats) {
+            return (stats.luckGamesPlayed || 0) + (stats.levelGamesPlayed || 0) + (stats.knowledgeGamesPlayed || 0);
+        }
+
+        async function generateAIAnalysis() {
+            if (aiAnalysisCache) {
+                return aiAnalysisCache;
+            }
+
+            const userStats = getLiveStats();
+            const partnerStats = partnerData ? {
+                totalWinRate: partnerData.gameStats?.luck || 0,
+                luckGamesPlayed: partnerData.gameStats?.luckGamesPlayed || 0,
+                levelsCrossed: partnerData.gameStats?.levelsCrossed || 0,
+                knowledgeMarks: partnerData.gameStats?.knowledgeMarks || 0,
+                level: partnerData.gameStats?.level || 1
+            } : {};
+
+            const analysisData = {
+                user: {
+                    name: userData.name,
+                    gender: userData.gender,
+                    marks: userStats.knowledgeMarks,
+                    luck: userStats.totalWinRate,
+                    luckGamesPlayed: userStats.luckGamesPlayed,
+                    level: userStats.level,
+                    levelGamesPlayed: userStats.levelGamesPlayed
+                },
+                partner: {
+                    name: partnerData?.name || "Partner",
+                    gender: partnerData?.gender || "unknown",
+                    marks: partnerStats.knowledgeMarks || 0,
+                    luck: partnerStats.totalWinRate || 0,
+                    luckGamesPlayed: partnerStats.luckGamesPlayed || 0,
+                    level: partnerStats.level || 1,
+                    levelGamesPlayed: partnerStats.levelGamesPlayed || 0
+                },
+                streak: userStats.currentStreak
+            };
+
+            const prompt = `Analyze the relationship compatibility between ${analysisData.user.name} and ${analysisData.partner.name}. 
+
+User Stats:
+- Knowledge marks: ${analysisData.user.marks} (from quiz games)
+- Luck percentage: ${analysisData.user.luck}% (from ${analysisData.user.luckGamesPlayed} luck games)  
+- Level: ${analysisData.user.level} (from ${analysisData.user.levelGamesPlayed} adventure games)
+- Gender: ${analysisData.user.gender}
+
+Partner Stats:
+- Knowledge marks: ${analysisData.partner.marks}
+- Luck percentage: ${analysisData.partner.luck}% (from ${analysisData.partner.luckGamesPlayed} luck games)
+- Level: ${analysisData.partner.level} (from ${analysisData.partner.levelGamesPlayed} adventure games)  
+- Gender: ${analysisData.partner.gender}
+
+Current streak: ${analysisData.streak} days
+
+Provide a JSON response with:
+{
+  "compatibility": percentage (0-100),
+  "analysis": "detailed analysis of their connection, personality traits based on game performance, and relationship insights (max 200 words)"
+}
+
+Focus on how their gaming patterns reveal personality traits and compatibility.`;
+
+            try {
+                const response = await fetch(window.CONFIG.googleAI.baseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': window.CONFIG.googleAI.apiKey
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                
+                // Extract JSON from response
+                const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const result = JSON.parse(jsonMatch[0]);
+                    aiAnalysisCache = result;
+                    return result;
+                }
+                throw new Error('Invalid AI response format');
+            } catch (error) {
+                console.error('AI Analysis error:', error);
+                return {
+                    compatibility: Math.round(65 + Math.random() * 30),
+                    analysis: "Your gaming patterns show a strong foundation for partnership. Both of you demonstrate commitment through consistent play, with complementary strengths that create a balanced dynamic in your relationship."
+                };
+            }
+        }
+
+        async function refreshAIAnalysis() {
+            aiAnalysisCache = null; // Clear cache
+            const analysisContainer = document.getElementById('aiAnalysisText');
+            if (analysisContainer) {
+                analysisContainer.innerHTML = '<div class="loading-text">Generating new analysis...</div>';
+                const result = await generateAIAnalysis();
+                analysisContainer.innerHTML = `
+                    <div><strong>Compatibility: ${result.compatibility}%</strong></div>
+                    <div style="margin-top: 10px;">${result.analysis}</div>
+                `;
+            }
+        }
+
+        async function renderProfile() {
+            if (!userData) return;
+
+            const profileContent = document.getElementById('profileContent');
+            const liveStats = getLiveStats();
+            const userGamesPlayed = calculateTotalGamesPlayed(liveStats);
+            const streakDays = liveStats.currentStreak || 0;
+            
+            let html = `
+                <div class="id-card user-card ${userData.gender}">
+                    <div class="card-header">
+                        <div class="character-avatar" id="userAvatar">
+                            <div class="character-layers"></div>
+                        </div>
+                        <div class="card-title">
+                            <div class="name">${userData.name}</div>
+                            <div class="relationship-status user-status ${userData.gender}">You</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">${liveStats.hearts}</div>
+                            <div class="stat-label">Hearts Received</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${liveStats.coins}</div>
+                            <div class="stat-label">Coins</div>
+                        </div>
+                    </div>
+
+                    <div class="game-scores">
+                        <div class="score-item">
+                            <div class="score-value luck">${liveStats.totalWinRate}%</div>
+                            <div class="score-label">Luck</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value level">Level ${liveStats.level}</div>
+                            <div class="score-label">Progress</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value knowledge">${liveStats.knowledgeMarks}</div>
+                            <div class="score-label">Knowledge</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-value games">${userGamesPlayed}</div>
+                            <div class="score-label">Games Played</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (userData.partnerId && partnerData) {
+                const partnerGamesPlayed = calculateTotalGamesPlayed({
+                    luckGamesPlayed: partnerData.gameStats?.luckGamesPlayed || 0,
+                    levelGamesPlayed: partnerData.gameStats?.levelGamesPlayed || 0,
+                    knowledgeGamesPlayed: partnerData.gameStats?.knowledgeGamesPlayed || 0
+                });
+
+                html += `
+                    <div class="id-card partner-card ${partnerData.gender || ''} click-area" onclick="window.location.href='line.html'">
+                        <div class="card-header">
+                            <div class="character-avatar" id="partnerAvatar">
+                                <div class="character-layers"></div>
+                            </div>
+                            <div class="card-title">
+                                <div class="name">
+                                    ${partnerData.name || "Partner"}
+                                    ${partnerData.isBot ? '<span class="bot-indicator">Bot</span>' : ''}
+                                </div>
+                                <div class="relationship-status partner-status ${partnerData.gender || ''}">Your Partner</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${partnerData.gameStats?.hearts || 0}</div>
+                                <div class="stat-label">Hearts Received</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${partnerData.gameStats?.coins || 0}</div>
+                                <div class="stat-label">Coins</div>
+                            </div>
+                        </div>
+
+                        <div class="game-scores">
+                            <div class="score-item">
+                                <div class="score-value luck">${partnerData.gameStats?.luck || 0}%</div>
+                                <div class="score-label">Luck</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value level">Level ${partnerData.gameStats?.level || 1}</div>
+                                <div class="score-label">Progress</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value knowledge">${partnerData.gameStats?.knowledgeMarks || 0}</div>
+                                <div class="score-label">Knowledge</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value games">${partnerGamesPlayed}</div>
+                                <div class="score-label">Games Played</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="id-card partner-card">
+                        <div class="no-partner-card">
+                            <i class="fas fa-user-plus no-partner-icon"></i>
+                            <div class="no-partner-title">No Partner Yet</div>
+                            <div class="no-partner-subtitle">Find someone special to start your journey</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Streak Section
+            html += `
+                <div class="streak-section">
+                    <div class="streak-header">
+                        <div class="streak-title">Love Streak: ${streakDays} Days</div>
+                        <button class="star-button" onclick="window.location.href='star.html'">
+                            <i class="fas fa-star"></i> Star Info
+                        </button>
+                    </div>
+                    <div class="streak-display">
+                        <div class="streak-stars">
+                            ${generateStreakStars(streakDays)}
+                        </div>
+                    </div>
+                    <div class="streak-info">
+                        Exchange gifts daily with your partner to build your streak. Reach 30 stars to unlock your love certificate!
+                    </div>
+                </div>
+            `;
+
+            // AI Analysis Section
+            if (streakDays >= 15 && userData.partnerId && partnerData) {
+                html += `
+                    <div class="ai-analysis">
+                        <div class="analysis-header">
+                            <div class="analysis-title">
+                                <i class="fas fa-robot"></i>
+                                AI Relationship Analysis
+                            </div>
+                            <div class="analysis-actions">
+                                <button class="refresh-btn" onclick="refreshAIAnalysis()">
+                                    <i class="fas fa-refresh"></i> Refresh
+                                </button>
+                                <span class="analysis-status unlocked">Unlocked</span>
+                            </div>
+                        </div>
+                        <div class="analysis-text" id="aiAnalysisText">
+                            <div class="loading-text">Loading analysis...</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const starsNeeded = Math.max(0, 15 - streakDays);
+                html += `
+                    <div class="ai-analysis">
+                        <div class="analysis-header">
+                            <div class="analysis-title">
+                                <i class="fas fa-robot"></i>
+                                AI Relationship Analysis
+                            </div>
+                            <span class="analysis-status">${starsNeeded} more stars needed</span>
+                        </div>
+                        <div class="analysis-text">
+                            Build a 15-day streak to unlock AI-powered compatibility analysis. Our AI will analyze your gaming patterns, personalities, and relationship dynamics to provide personalized insights about your connection.
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Action Buttons
+            if (userData.partnerId && partnerData) {
+                html += `
+                    <div class="action-buttons">
+                        ${partnerData.isBot ? `
+                            <button class="action-button find-partner" onclick="findRealPartner()">
+                                <i class="fas fa-search"></i>
+                                Find Real Partner
+                            </button>
+                        ` : `
+                            <button class="action-button" onclick="endRelationship()">
+                                <i class="fas fa-heart-broken"></i>
+                                End Relationship
+                            </button>
+                        `}
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="action-buttons">
+                        <button class="action-button add-partner" onclick="findPartner()">
+                            <i class="fas fa-plus"></i>
+                            Add Partner
+                        </button>
+                    </div>
+                `;
+            }
+
+            profileContent.innerHTML = html;
+
+            // Generate avatars
+            setTimeout(() => {
+                generateCharacterAvatar('userAvatar', userData.character, userData.gender);
+                if (partnerData && partnerData.character) {
+                    generateCharacterAvatar('partnerAvatar', partnerData.character, partnerData.gender);
+                }
+                
+                // Load AI analysis if unlocked
+                if (streakDays >= 15 && userData.partnerId && partnerData) {
+                    loadAIAnalysis();
+                }
+            }, 100);
+        }
+
+        async function loadAIAnalysis() {
+            try {
+                const result = await generateAIAnalysis();
+                const analysisContainer = document.getElementById('aiAnalysisText');
+                if (analysisContainer) {
+                    analysisContainer.innerHTML = `
+                        <div><strong>Compatibility: ${result.compatibility}%</strong></div>
+                        <div style="margin-top: 10px;">${result.analysis}</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading AI analysis:', error);
+                const analysisContainer = document.getElementById('aiAnalysisText');
+                if (analysisContainer) {
+                    analysisContainer.innerHTML = 'Unable to generate analysis at this time. Please try refreshing.';
+                }
+            }
+        }
+
+        window.findPartner = function() {
+            window.location.href = 'add.html';
+        }
+
+        window.findRealPartner = function() {
+            window.location.href = 'add.html';
+        }
+
+        window.refreshAIAnalysis = refreshAIAnalysis;
+
+        window.endRelationship = async function() {
+            if (!confirm('Are you sure you want to end this relationship? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                if (partnerData && partnerData.isBot) {
+                    await deleteDoc(doc(db, 'users', userData.partnerId));
+                } else {
+                    const partnerRef = doc(db, 'users', userData.partnerId);
+                    await updateDoc(partnerRef, {
+                        partnerId: null,
+                        partnerData: null,
+                        partnershipEnded: serverTimestamp()
+                    });
+                }
+
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    partnerId: null,
+                    partnerData: null,
+                    partnershipEnded: serverTimestamp()
+                });
+
+                showNotification('Relationship ended successfully.');
+                
+                setTimeout(() => {
+                    window.location.href = 'add.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error ending relationship:', error);
+                showNotification('Error ending relationship. Please try again.', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.AmbarHeader) {
+                window.AmbarHeader.init({
+                    showCurrencies: ['coins', 'stars', 'hearts'],
+                    showSettings: true,
+                    showBackButton: false
+                });
+            }
+            
+            if (window.AmbarNavigation) {
+                window.AmbarNavigation.setActivePage('profile');
+            }
+        });
+
+        // Listen for localStorage changes
+        window.addEventListener('storage', function(event) {
+            if (event.storageArea === localStorage && userData) {
+                renderProfile();
+            }
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (userDataListener) {
+                userDataListener();
+            }
+        });
+
+        // Export API
+        window.ProfileAPI = {
+            refreshProfile: loadUserData,
+            getCurrentUserData: () => userData,
+            isPartnerBot: () => partnerData?.isBot || false,
+            getLiveStats: getLiveStats
+        };
+    </script>
+</body>
+</html>
